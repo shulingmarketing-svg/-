@@ -3,11 +3,17 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
 # ── 顏色 ──
-C_HEADER   = "1B3A6B"
-C_FB_JUL   = "D6E4F0"
-C_FB_AUG   = "D5E8D4"
-C_FB_SEP   = "FFF2CC"
-C_LINE_JUL = "FFE0CC"
+C_HEADER      = "1B3A6B"
+C_FB_JUL      = "D6E4F0"
+C_FB_AUG      = "D5E8D4"
+C_FB_SEP      = "FFF2CC"
+C_LINE_JUL    = "FFE0CC"
+C_SHOPEE_JUL  = "FDDCCC"
+C_SHOPEE_AUG  = "FABBA0"
+C_SHOPEE_SEP  = "F79A80"
+C_MOMO_JUL    = "EDD5F5"
+C_MOMO_AUG    = "D9B0EE"
+C_MOMO_SEP    = "C48DE6"
 C_LINE_AUG = "FFD0B0"
 C_LINE_SEP = "FFBC94"
 C_AUTO     = "F0F0F0"
@@ -203,12 +209,84 @@ for ci, (h, w) in enumerate(zip(combo_headers, combo_widths), 1):
     ws1.column_dimensions[get_column_letter(ci)].width = w
 ws1.row_dimensions[1].height = 22
 
-# 合併 FB + LINE，按日期排序
-month_fb   = {"7": C_FB_JUL,   "8": C_FB_AUG,   "9": C_FB_SEP}
-month_line = {"7": C_LINE_JUL, "8": C_LINE_AUG, "9": C_LINE_SEP}
-type_color = {"活動": C_EVENT, "食譜": C_RECIPE, "知識": C_KNOW,
-              "喚醒推播": "FFAA80", "活動倒數": "FF9966", "得獎公告": "FF8855",
-              "禮盒限定": "FF7744", "食譜推播": "FF6633", "活動預告": "FF5522", "暖場": "FF4411"}
+# ════════════════════════════════════════
+# 資料：蝦皮活動
+# ════════════════════════════════════════
+shopee_posts = [
+    ("2025/7/1",  "二", "蝦皮", "活動開跑",
+     "十全好食節開跑｜任 2 件 9 折 + 蝦幣回饋",
+     "【活動期間】7/1–7/25\n【主打商品】即飲果醋 + 蒟蒻飲組合\n【優惠】任選 2 件 9 折 + 蝦幣回饋\n【配合動作】訂單包裝內夾官網入會 QR Code 卡",
+     "上架前確認商品頁圖片與活動標籤設定", "上午 10:00", "訂單數、新客比例"),
+    ("2025/7/25", "五", "蝦皮", "活動收尾",
+     "好食節收尾倒數｜8 月中元預告",
+     "【動作】更新商品頁 Banner 預告 8 月中元活動\n【文案方向】「好食節感謝，中元好料即將登場」\n【注意】確保庫存備貨到位",
+     "更新蝦皮店頭 Banner", "下午 2:00", "頁面瀏覽數"),
+    ("2025/8/10", "日", "蝦皮", "活動預告",
+     "中元閃購倒數預告｜8/12–8/14 每天 2 小時限時",
+     "【預告內容】8/12、8/13、8/14 每天 14:00–16:00 閃購\n【主打商品】味噌 + 烏醋 + 辣椒醬三件組\n【預告動作】限時動態 + 商品頁倒數標籤",
+     "設定蝦皮閃購時段，確認庫存", "上午 10:00", "加購清單數"),
+    ("2025/8/12", "二", "蝦皮", "限時閃購",
+     "中元閃購 Day 1｜14:00–16:00",
+     "【時段】14:00–16:00\n【折扣】限時 85 折\n【商品】味噌 + 烏醋 + 辣椒醬三件組\n【配合】同步在 LINE OA 提醒好友",
+     "閃購期間監控庫存與訂單狀況", "14:00", "閃購訂單數、GMV"),
+    ("2025/8/13", "三", "蝦皮", "限時閃購",
+     "中元閃購 Day 2｜14:00–16:00",
+     "【時段】14:00–16:00\n【折扣】限時 85 折\n【商品】同 Day 1\n【加碼】留評價送小禮（若庫存允許）",
+     "確認 Day 1 庫存餘量，調整 Day 2 數量", "14:00", "閃購訂單數、評價數"),
+    ("2025/8/14", "四", "蝦皮", "限時閃購",
+     "中元閃購 Day 3（最終場）｜14:00–16:00",
+     "【時段】14:00–16:00\n【折扣】限時 85 折\n【文案】「今天最後一場，明天恢復原價」\n【配合】FB + LINE OA 最後提醒",
+     "最後一天加強社群提醒力道", "14:00", "閃購訂單數、三天累計 GMV"),
+    ("2025/9/8",  "一", "蝦皮", "早鳥預購",
+     "中秋早鳥預購開始｜9/8–9/10 限定 9 折",
+     "【活動期間】9/8–9/10\n【折扣】早鳥 9 折\n【主打商品】味噌 + 味醂 + 烏醋 + 米醋四件組\n【加碼】前 100 組附「烤肉醬食譜卡」\n【定價原則】不低於官網會員價",
+     "設定早鳥折扣碼，確認食譜卡印製數量", "上午 10:00", "預購訂單數"),
+    ("2025/9/12", "五", "蝦皮", "正式開賣",
+     "中秋禮盒正式開賣（與官網同步）",
+     "【動作】早鳥結束，恢復原價開賣\n【配合】FB + LINE OA 同步公告\n【文案】「中秋送禮，天然調味料用一整年」\n【注意】確保物流在中秋前 3 天可到貨",
+     "確認物流時效，中秋前 3 天截單", "上午 10:00", "中秋期間總訂單數、GMV"),
+]
+
+# ════════════════════════════════════════
+# 資料：MOMO 活動
+# ════════════════════════════════════════
+momo_posts = [
+    ("2025/8/10", "日", "MOMO", "商品上架",
+     "中元禮盒上架｜滿 1,200 免運 + 贈品",
+     "【商品】中元天然調味禮盒（味噌 + 烏醋 + 辣椒醬）\n【定價】與官網同步\n【優惠】滿 1,200 免運 + 贈品（小包裝試用品）\n【圖片】使用官網禮盒實物圖",
+     "確認 MOMO 商品頁審核通過，圖片規格符合平台要求", "上午 10:00", "商品頁瀏覽數、加購數"),
+    ("2025/8/15", "五", "MOMO", "節慶衝單",
+     "中元禮盒主力日｜配合抽獎公告衝單",
+     "【動作】配合 FB + LINE 抽獎公告，在 MOMO 同步推廣\n【文案方向】「送禮送健康，天然調味全家用」\n【可申請】MOMO 節慶聯合檔期（若有補貼）",
+     "查詢 MOMO 8 月是否有聯合檔期補貼可申請", "上午 10:00", "當日訂單數、禮盒銷售佔比"),
+    ("2025/9/8",  "一", "MOMO", "商品上架",
+     "中秋禮盒上架｜滿 2,000 加購優惠",
+     "【商品】中秋天然調味禮盒（味噌 + 味醂 + 烏醋 + 米醋四件組）\n【優惠】滿 2,000 加購第二件 75 折\n【目標客群】30–55 歲，送禮給長輩或朋友",
+     "確認 MOMO 商品頁上架，主圖需有中秋氛圍", "上午 10:00", "商品頁瀏覽數、加購數"),
+    ("2025/9/12", "五", "MOMO", "節慶衝單",
+     "中秋正式開賣｜主力推廣日",
+     "【動作】與蝦皮、官網同步開賣\n【MOMO 特色】主打禮盒送禮情境，文案偏「送給爸媽」\n【可申請】MOMO 中秋聯合檔期（若有補貼）",
+     "查詢 MOMO 9 月中秋聯合檔期補貼，截止申請日期", "上午 10:00", "當日訂單數、GMV"),
+    ("2025/9/17", "三", "MOMO", "活動收尾",
+     "中秋禮盒最後衝刺｜中秋前 2 天截單",
+     "【動作】更新商品頁「中秋前 2 天下單才來得及」緊迫文案\n【配合】FB + LINE 同步提醒\n【截單時間】9/17 23:59",
+     "確認物流可在 9/19 前到貨，超過截止下架禮盒", "上午 10:00", "最終累計訂單數、中秋期間總 GMV"),
+]
+
+# 合併 FB + LINE + 蝦皮 + MOMO，按日期排序
+month_fb     = {"7": C_FB_JUL,      "8": C_FB_AUG,      "9": C_FB_SEP}
+month_line   = {"7": C_LINE_JUL,    "8": C_LINE_AUG,    "9": C_LINE_SEP}
+month_shopee = {"7": C_SHOPEE_JUL,  "8": C_SHOPEE_AUG,  "9": C_SHOPEE_SEP}
+month_momo   = {"7": C_MOMO_JUL,    "8": C_MOMO_AUG,    "9": C_MOMO_SEP}
+
+type_color = {
+    "活動": C_EVENT, "食譜": C_RECIPE, "知識": C_KNOW,
+    "喚醒推播": "FFAA80", "活動倒數": "FF9966", "得獎公告": "FF8855",
+    "禮盒限定": "FF7744", "食譜推播": "FF6633", "活動預告": "FF5522", "暖場": "FF4411",
+    "活動開跑": "FFA070", "活動收尾": "FF8060", "限時閃購": "FF6050",
+    "早鳥預購": "FF9080", "正式開賣": "FF7060", "活動預告": "FF8050",
+    "商品上架": "CC88DD", "節慶衝單": "BB66CC",
+}
 
 all_rows = []
 for p in fb_posts:
@@ -220,12 +298,26 @@ for p in line_posts:
     date, dow, ch, typ, title, body, send_t, kpi = p
     all_rows.append((date, dow, ch, typ, title, body, "", send_t, kpi))
 
+for p in shopee_posts:
+    date, dow, ch, typ, title, body, note, send_t, kpi = p
+    all_rows.append((date, dow, ch, typ, title, body, note, send_t, kpi))
+
+for p in momo_posts:
+    date, dow, ch, typ, title, body, note, send_t, kpi = p
+    all_rows.append((date, dow, ch, typ, title, body, note, send_t, kpi))
+
 all_rows.sort(key=lambda x: x[0])
+
+def get_bg(ch, month):
+    if ch == "LINE OA": return month_line[month]
+    if ch == "蝦皮":    return month_shopee[month]
+    if ch == "MOMO":    return month_momo[month]
+    return month_fb[month]
 
 for ri, row in enumerate(all_rows, 2):
     date, dow, ch, typ, title, body, note, send_t, kpi = row
     month = date.split("/")[1]
-    bg = month_line[month] if ch == "LINE OA" else month_fb[month]
+    bg = get_bg(ch, month)
     type_bg = type_color.get(typ, "FFFFFF")
     vals = [date, dow, ch, typ, title, body, note, send_t, kpi, ""]
     for ci, v in enumerate(vals, 1):
@@ -336,29 +428,73 @@ for ri,p in enumerate(line_auto,2):
                                    horizontal="center" if ci in (1,2) else "left")
     ws4.row_dimensions[ri].height = 80
 
-# ── Sheet 5：圖例 ──
-ws5 = wb.create_sheet("📌 圖例說明")
+# ── Sheet 5：蝦皮 / MOMO 活動完整稿 ──
+ws5 = wb.create_sheet("🛒 蝦皮MOMO活動完整稿")
+ec_headers = ["編號","日期","星期","平台","類型","活動主題","活動內容","執行備注","發布時間","追蹤指標"]
+ec_widths  = [5,12,6,8,10,30,50,30,12,20]
+
+for ci,(h,w) in enumerate(zip(ec_headers,ec_widths),1):
+    cell = ws5.cell(row=1,column=ci,value=h)
+    cell.font = Font(bold=True,color="FFFFFF",size=10)
+    cell.fill = PatternFill("solid",fgColor="B71C1C")
+    cell.alignment = Alignment(horizontal="center",vertical="center",wrap_text=True)
+    ws5.column_dimensions[get_column_letter(ci)].width = w
+ws5.row_dimensions[1].height = 22
+
+ec_all = [(p, "蝦皮") for p in shopee_posts] + [(p, "MOMO") for p in momo_posts]
+ec_all.sort(key=lambda x: x[0][0])
+
+for ri,(p,_) in enumerate(ec_all,2):
+    date,dow,ch,typ,title,body,note,send_t,kpi = p
+    month = date.split("/")[1]
+    bg = month_shopee[month] if ch=="蝦皮" else month_momo[month]
+    type_bg = type_color.get(typ,"FFDDCC")
+    vals = [ri-1,date,dow,ch,typ,title,body,note,send_t,kpi]
+    for ci,v in enumerate(vals,1):
+        cell = ws5.cell(row=ri,column=ci,value=v)
+        cell.border = border
+        if ci in (4,5):
+            cell.fill = PatternFill("solid",fgColor=type_bg if ci==5 else
+                                    (C_SHOPEE_AUG if ch=="蝦皮" else C_MOMO_AUG))
+            cell.alignment = Alignment(horizontal="center",vertical="top",wrap_text=True)
+        else:
+            cell.fill = PatternFill("solid",fgColor=bg)
+            cell.alignment = Alignment(vertical="top",wrap_text=True,
+                                       horizontal="center" if ci in (1,2,3,9) else "left")
+    ws5.row_dimensions[ri].height = 100
+
+ws5.freeze_panes = "A2"
+
+# ── Sheet 6：圖例 ──
+ws6 = wb.create_sheet("📌 圖例說明")
 legend = [
     ("顏色","說明"),
     ("淺藍","FB 7 月貼文"),("淺綠","FB 8 月貼文"),("淺黃","FB 9 月貼文"),
-    ("淺橘 1","LINE OA 7 月推播"),("淺橘 2","LINE OA 8 月推播"),("深橘","LINE OA 9 月推播"),
-    ("紅色類型","活動類"),("橘色類型","食譜類"),("粉紫類型","知識類"),
-    ("淺紫欄","Olivia 配圖方向（FB Sheet 第 10-11 欄）"),
+    ("淺橘","LINE OA 7 月推播"),("中橘","LINE OA 8 月推播"),("深橘","LINE OA 9 月推播"),
+    ("淺珊瑚","蝦皮 7 月"),("中珊瑚","蝦皮 8 月"),("深珊瑚","蝦皮 9 月"),
+    ("淺紫","MOMO 7 月"),("中紫","MOMO 8 月"),("深紫","MOMO 9 月"),
     ("",""),
     ("Sheet 說明",""),
-    ("📅 綜合排程月曆","FB + LINE OA 所有內容按日期合併，直接用於排程"),
+    ("📅 綜合排程月曆","FB + LINE OA + 蝦皮 + MOMO 全通路按日期合併"),
     ("📘 FB 貼文完整稿","FB 24 篇含 Olivia 配圖方向"),
     ("💬 LINE OA 推播完整稿","13 則定期推播訊息"),
-    ("🤖 LINE 自動序列","新好友加入後的 3 則自動回覆（需在 LINE OA 後台設定）"),
+    ("🤖 LINE 自動序列","新好友加入後的 3 則自動回覆"),
+    ("🛒 蝦皮MOMO活動完整稿","蝦皮 8 則 + MOMO 5 則，共 13 筆活動"),
+    ("",""),
+    ("重要原則",""),
+    ("定價","蝦皮 / MOMO 售價 ≥ 官網原價，保護會員制稀缺性"),
+    ("時序","官網會員 → LINE OA → 蝦皮 = MOMO → FB，會員永遠最早"),
+    ("導流","每筆蝦皮 / MOMO 訂單包裝夾「官網入會 QR Code 卡」"),
 ]
 for ri,(a,b) in enumerate(legend,1):
-    ws5.cell(row=ri,column=1,value=a).font = Font(bold=(ri==1 or ri==12))
-    ws5.cell(row=ri,column=2,value=b)
-ws5.column_dimensions["A"].width = 22
-ws5.column_dimensions["B"].width = 45
+    bold = ri==1 or ri==14 or ri==21
+    ws6.cell(row=ri,column=1,value=a).font = Font(bold=bold)
+    ws6.cell(row=ri,column=2,value=b)
+ws6.column_dimensions["A"].width = 22
+ws6.column_dimensions["B"].width = 50
 
 output = "/home/user/-/十全特好_7-9月完整排程月曆.xlsx"
 wb.save(output)
 print(f"✅ {output}")
-print(f"   FB：{len(fb_posts)} 篇 ｜ LINE OA 推播：{len(line_posts)} 則 ｜ 自動序列：{len(line_auto)} 則")
+print(f"   FB：{len(fb_posts)} 篇 ｜ LINE OA：{len(line_posts)} 則 ｜ 蝦皮：{len(shopee_posts)} 則 ｜ MOMO：{len(momo_posts)} 則")
 print(f"   綜合月曆共 {len(all_rows)} 筆，按日期排序")
