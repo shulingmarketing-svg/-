@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>芓綾 | 品牌行銷顧問</title>
+  <meta name="description" content="張書玲 — 幫助中小企業用品牌思維做行銷。廣告投放、社群經營、SEO 內容規劃。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #0f172a;
+      --navy-light: #1e293b;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --accent-mid: #bfdbfe;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-300: #cbd5e1;
+      --gray-500: #64748b;
+      --gray-700: #334155;
+      --white: #ffffff;
+      --font-sans: 'Inter', 'Noto Sans TC', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--navy);
+      background: var(--white);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--gray-100);
+      padding: 0 5%;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      font-size: 1.2rem; font-weight: 700; color: var(--navy);
+      text-decoration: none; letter-spacing: 0.02em;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      text-decoration: none; color: var(--gray-700); font-size: 0.9rem;
+      font-weight: 500; transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-cta {
+      background: var(--accent); color: var(--white);
+      padding: 0.5rem 1.2rem; border-radius: 6px;
+      text-decoration: none; font-size: 0.85rem; font-weight: 600;
+      transition: background 0.2s;
+    }
+    .nav-cta:hover { background: #1d4ed8; }
+
+    /* ── HERO ── */
+    #home {
+      min-height: 100vh;
+      display: flex; align-items: center;
+      padding: 100px 5% 60px;
+      background: linear-gradient(135deg, #ffffff 0%, var(--accent-light) 100%);
+      position: relative; overflow: hidden;
+    }
+    #home::before {
+      content: '';
+      position: absolute; top: -200px; right: -200px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, var(--accent-mid) 0%, transparent 70%);
+      opacity: 0.4;
+    }
+    .hero-inner {
+      max-width: 1100px; margin: 0 auto; width: 100%;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+      position: relative;
+    }
+    .hero-tag {
+      display: inline-block;
+      background: var(--accent-light); color: var(--accent);
+      padding: 0.3rem 0.9rem; border-radius: 100px;
+      font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em;
+      margin-bottom: 1.2rem;
+    }
+    .hero-title {
+      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      font-weight: 700; line-height: 1.25;
+      color: var(--navy); margin-bottom: 1.2rem;
+    }
+    .hero-title em { color: var(--accent); font-style: normal; }
+    .hero-desc {
+      font-size: 1.05rem; color: var(--gray-500); line-height: 1.8;
+      margin-bottom: 2rem; max-width: 480px;
+    }
+    .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--accent); color: var(--white);
+      padding: 0.8rem 1.8rem; border-radius: 8px;
+      text-decoration: none; font-weight: 600; font-size: 0.95rem;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .btn-outline {
+      border: 2px solid var(--navy); color: var(--navy);
+      padding: 0.75rem 1.6rem; border-radius: 8px;
+      text-decoration: none; font-weight: 600; font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+    .btn-outline:hover { background: var(--navy); color: var(--white); }
+    .hero-visual {
+      display: flex; justify-content: center; align-items: center;
+    }
+    .hero-card {
+      background: var(--white); border-radius: 20px;
+      padding: 2.5rem; max-width: 340px; width: 100%;
+      box-shadow: 0 20px 60px rgba(37,99,235,0.12);
+    }
+    .hero-card-avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #7c3aed);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; font-weight: 700; color: white;
+      margin-bottom: 1.2rem;
+    }
+    .hero-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .hero-card p { font-size: 0.85rem; color: var(--gray-500); margin-bottom: 1.5rem; }
+    .hero-stats {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+      border-top: 1px solid var(--gray-100); padding-top: 1.2rem;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat strong { display: block; font-size: 1.4rem; font-weight: 700; color: var(--accent); }
+    .hero-stat span { font-size: 0.75rem; color: var(--gray-500); }
+
+    /* ── SECTION BASE ── */
+    section { padding: 100px 5%; }
+    .section-inner { max-width: 1100px; margin: 0 auto; }
+    .section-tag {
+      display: inline-block;
+      background: var(--accent-light); color: var(--accent);
+      padding: 0.3rem 0.9rem; border-radius: 100px;
+      font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 3vw, 2.4rem);
+      font-weight: 700; line-height: 1.3; margin-bottom: 1rem;
+    }
+    .section-desc { color: var(--gray-500); font-size: 1rem; max-width: 560px; line-height: 1.8; }
+
+    /* ── SERVICES ── */
+    #services { background: var(--gray-50); }
+    .services-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem; margin-top: 3rem;
+    }
+    .service-card {
+      background: var(--white); border-radius: 16px;
+      padding: 2rem; border: 1px solid var(--gray-100);
+      transition: box-shadow 0.25s, transform 0.2s;
+    }
+    .service-card:hover {
+      box-shadow: 0 12px 40px rgba(37,99,235,0.1);
+      transform: translateY(-3px);
+    }
+    .service-icon {
+      width: 52px; height: 52px; border-radius: 12px;
+      background: var(--accent-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; margin-bottom: 1.2rem;
+    }
+    .service-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.6rem; }
+    .service-card p { font-size: 0.88rem; color: var(--gray-500); line-height: 1.75; }
+
+    /* ── ABOUT ── */
+    #about {
+      background: var(--white);
+    }
+    .about-inner {
+      display: grid; grid-template-columns: 1fr 1.3fr; gap: 5rem; align-items: center;
+    }
+    .about-photo-wrap {
+      position: relative;
+    }
+    .about-photo {
+      width: 100%; aspect-ratio: 4/5; border-radius: 20px;
+      background: linear-gradient(135deg, var(--accent-light), var(--accent-mid));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 5rem; color: var(--accent);
+    }
+    .about-photo-badge {
+      position: absolute; bottom: -16px; right: -16px;
+      background: var(--navy); color: var(--white);
+      border-radius: 12px; padding: 1rem 1.2rem;
+      font-size: 0.8rem; font-weight: 600; line-height: 1.4;
+    }
+    .about-photo-badge strong { display: block; font-size: 1.4rem; font-weight: 700; color: var(--accent); }
+    .about-content .section-title { margin-top: 0.5rem; }
+    .about-body { color: var(--gray-700); font-size: 0.95rem; line-height: 1.9; margin: 1.5rem 0 2rem; }
+    .about-body p + p { margin-top: 1rem; }
+    .about-values { display: flex; flex-direction: column; gap: 0.8rem; }
+    .about-value {
+      display: flex; align-items: flex-start; gap: 0.8rem;
+      font-size: 0.9rem; color: var(--gray-700);
+    }
+    .about-value-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent); flex-shrink: 0; margin-top: 0.45rem;
+    }
+
+    /* ── CONTACT ── */
+    #contact { background: var(--navy); color: var(--white); }
+    #contact .section-tag { background: rgba(37,99,235,0.3); color: #93c5fd; }
+    #contact .section-title { color: var(--white); }
+    #contact .section-desc { color: #94a3b8; }
+    .contact-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+      margin-top: 3rem; align-items: start;
+    }
+    .contact-form { display: flex; flex-direction: column; gap: 1rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group label { font-size: 0.82rem; color: #94a3b8; font-weight: 500; }
+    .form-group input, .form-group textarea, .form-group select {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px; padding: 0.75rem 1rem;
+      color: var(--white); font-size: 0.9rem; font-family: var(--font-sans);
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    .form-group input::placeholder, .form-group textarea::placeholder {
+      color: #475569;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: var(--accent);
+    }
+    .form-group textarea { resize: vertical; min-height: 120px; }
+    .form-group select option { background: var(--navy-light); }
+    .btn-submit {
+      background: var(--accent); color: var(--white);
+      border: none; padding: 0.85rem 2rem; border-radius: 8px;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      font-family: var(--font-sans);
+    }
+    .btn-submit:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .contact-info { display: flex; flex-direction: column; gap: 2.5rem; padding-top: 0.5rem; }
+    .contact-info-block h4 { font-size: 1rem; font-weight: 600; margin-bottom: 0.6rem; color: var(--white); }
+    .contact-info-block p { font-size: 0.9rem; color: #94a3b8; line-height: 1.75; }
+    .contact-quote {
+      background: rgba(37,99,235,0.15); border-left: 3px solid var(--accent);
+      padding: 1.2rem 1.5rem; border-radius: 0 10px 10px 0;
+    }
+    .contact-quote p { font-size: 0.95rem; color: #bfdbfe; font-style: italic; line-height: 1.7; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #020617; color: #475569;
+      text-align: center; padding: 2rem 5%;
+      font-size: 0.82rem;
+    }
+    footer a { color: #64748b; text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      nav { padding: 0 1.2rem; }
+      .nav-links { display: none; }
+      #home { padding: 100px 1.2rem 60px; }
+      .hero-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+      .hero-visual { display: none; }
+      section { padding: 70px 1.2rem; }
+      .about-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+      .about-photo-wrap { max-width: 280px; }
+      .contact-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a class="nav-logo" href="#home">芓<span>綾</span></a>
+    <ul class="nav-links">
+      <li><a href="#services">服務項目</a></li>
+      <li><a href="#about">關於我</a></li>
+      <li><a href="#contact">聯絡我</a></li>
+    </ul>
+    <a class="nav-cta" href="#contact">合作洽詢</a>
+  </nav>
+
+  <!-- HERO -->
+  <section id="home">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <span class="hero-tag">品牌行銷顧問</span>
+        <h1 class="hero-title">
+          用<em>品牌思維</em>做行銷<br />幫中小企業找到<br />屬於自己的聲音
+        </h1>
+        <p class="hero-desc">
+          不靠促銷降價維持熱度，回到品牌故事的根本。<br />
+          廣告、社群、SEO，工具是加分，品牌力才是核心。
+        </p>
+        <div class="hero-btns">
+          <a class="btn-primary" href="#services">了解服務</a>
+          <a class="btn-outline" href="#about">認識芓綾</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-card">
+          <div class="hero-card-avatar">芓</div>
+          <h3>張書玲 / 芓綾</h3>
+          <p>網路行銷 × 品牌策略顧問</p>
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <strong>FB</strong>
+              <span>廣告投放</span>
+            </div>
+            <div class="hero-stat">
+              <strong>SEO</strong>
+              <span>內容規劃</span>
+            </div>
+            <div class="hero-stat">
+              <strong>社群</strong>
+              <span>內容經營</span>
+            </div>
+            <div class="hero-stat">
+              <strong>AI</strong>
+              <span>工具應用</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section id="services">
+    <div class="section-inner">
+      <span class="section-tag">服務項目</span>
+      <h2 class="section-title">我能幫你做什麼</h2>
+      <p class="section-desc">每個合作都從目標對齊開始，確認方向後再執行，讓每一分預算花在刀口上。</p>
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="service-icon">📣</div>
+          <h3>社群媒體經營</h3>
+          <p>Facebook、Instagram 內容規劃與文案撰寫，建立品牌一致的視覺與語言風格，持續累積受眾信任。</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🎯</div>
+          <h3>廣告投放顧問</h3>
+          <p>從小預算測試出發，觀察 CPC 與轉換數據，找到最有效率的投放策略，讓廣告費用創造真實成效。</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🔍</div>
+          <h3>SEO 內容規劃</h3>
+          <p>關鍵字研究、網站內容架構規劃，撰寫對搜尋引擎友善、對讀者有價值的長期流量內容。</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">📋</div>
+          <h3>行銷企劃書</h3>
+          <p>協助整合活動目標、受眾分析、執行策略與預算規劃，提供清晰可執行的行銷企劃方案。</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🏷️</div>
+          <h3>品牌策略建立</h3>
+          <p>從品牌故事、品牌形象到核心價值定位，幫助中小企業打造有辨識度、有溫度的品牌。</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🤖</div>
+          <h3>AI 工具導入</h3>
+          <p>協助企業或個人將 Claude、Gemini 等 AI 工具整合進行銷工作流程，提升內容產出效率。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="section-inner">
+      <div class="about-inner">
+        <div class="about-photo-wrap">
+          <div class="about-photo">👩‍💼</div>
+          <div class="about-photo-badge">
+            <strong>AI</strong>
+            工具深度<br />使用者
+          </div>
+        </div>
+        <div class="about-content">
+          <span class="section-tag">關於我</span>
+          <h2 class="section-title">你好，我是芓綾</h2>
+          <div class="about-body">
+            <p>
+              我是張書玲，一個在網路行銷這條路上持續自學、持續前進的實踐者。目前主要負責廣告投放、SEO 內容規劃與社群平台的日常經營，同時也接受企業的行銷顧問委託。
+            </p>
+            <p>
+              我相信，在資訊爆炸的時代，品牌熱度很容易被下一波浪潮淹沒——但真正有底氣的品牌，靠的不是降價促銷，而是清晰的品牌故事與紮實的品牌形象。工具只是加分，把產品做好才是根本。
+            </p>
+            <p>
+              每一次合作，我習慣先做訪談，確認目標對齊之後才開始執行。因為方向錯了，再努力也是白費。
+            </p>
+          </div>
+          <div class="about-values">
+            <div class="about-value">
+              <div class="about-value-dot"></div>
+              <span>沒有能不能，只有做不做——遇到問題，先找方法，不找藉口</span>
+            </div>
+            <div class="about-value">
+              <div class="about-value-dot"></div>
+              <span>高度決定視野——格局大，才不會糾結在小事上</span>
+            </div>
+            <div class="about-value">
+              <div class="about-value-dot"></div>
+              <span>資料先行，直覺輔助——決策前先蒐集分析，再做判斷</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="section-inner">
+      <span class="section-tag">聯絡我</span>
+      <h2 class="section-title">開始一次合作</h2>
+      <p class="section-desc">告訴我你的需求，我會在兩個工作天內回覆，並安排初步的目標對齊訪談。</p>
+      <div class="contact-grid">
+        <form class="contact-form" onsubmit="handleSubmit(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label>您的姓名</label>
+              <input type="text" placeholder="王小明" required />
+            </div>
+            <div class="form-group">
+              <label>聯絡信箱</label>
+              <input type="email" placeholder="hello@example.com" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>需要的服務</label>
+            <select>
+              <option value="">請選擇服務項目</option>
+              <option>社群媒體經營</option>
+              <option>廣告投放顧問</option>
+              <option>SEO 內容規劃</option>
+              <option>行銷企劃書</option>
+              <option>品牌策略建立</option>
+              <option>AI 工具導入</option>
+              <option>其他</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>簡單說說你的需求</label>
+            <textarea placeholder="例如：我是餐飲業，想開始經營 Instagram，目前沒有任何社群基礎..."></textarea>
+          </div>
+          <button type="submit" class="btn-submit">送出詢問 →</button>
+        </form>
+        <div class="contact-info">
+          <div class="contact-info-block">
+            <h4>合作流程</h4>
+            <p>
+              1. 填寫表單說明需求<br />
+              2. 兩個工作天內回覆確認<br />
+              3. 安排 30 分鐘目標對齊訪談<br />
+              4. 提供服務方案與報價<br />
+              5. 確認合作，正式啟動
+            </p>
+          </div>
+          <div class="contact-quote">
+            <p>「每個品牌都有屬於自己的聲音，我的工作是幫你找到它，然後讓更多人聽見。」</p>
+          </div>
+          <div class="contact-info-block">
+            <h4>服務地區</h4>
+            <p>台灣全區，遠端合作為主<br />視需求安排面對面會議</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>© 2025 芓綾 張書玲｜品牌行銷顧問&nbsp;&nbsp;·&nbsp;&nbsp;用品牌思維做行銷</p>
+  </footer>
+
+  <script>
+    function handleSubmit(e) {
+      e.preventDefault();
+      const btn = e.target.querySelector('.btn-submit');
+      btn.textContent = '已送出！感謝你的詢問 ✓';
+      btn.style.background = '#16a34a';
+      btn.disabled = true;
+    }
+  </script>
+
+</body>
+</html>
