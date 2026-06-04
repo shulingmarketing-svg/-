@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>綾策後台 | 文章管理</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0a0f1e; --accent: #6366f1; --accent-2: #8b5cf6;
+      --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb;
+      --gray-400: #9ca3af; --gray-500: #6b7280; --gray-700: #374151;
+      --white: #fff; --font: 'Inter','Noto Sans TC',sans-serif;
+      --danger: #ef4444; --success: #10b981;
+    }
+    body { font-family: var(--font); background: var(--gray-50); color: var(--navy); -webkit-font-smoothing: antialiased; }
+
+    /* LOGIN */
+    #login-screen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: var(--navy);
+    }
+    .login-box {
+      background: var(--white); border-radius: 20px; padding: 2.5rem;
+      width: 100%; max-width: 380px; text-align: center;
+    }
+    .login-logo {
+      font-size: 1.4rem; font-weight: 800; margin-bottom: 0.3rem;
+    }
+    .login-logo span { color: var(--accent); }
+    .login-sub { color: var(--gray-400); font-size: 0.85rem; margin-bottom: 2rem; }
+    .login-box input {
+      width: 100%; padding: 0.8rem 1rem; border: 1.5px solid var(--gray-200);
+      border-radius: 10px; font-size: 0.95rem; font-family: var(--font);
+      outline: none; transition: border-color 0.2s; margin-bottom: 1rem;
+    }
+    .login-box input:focus { border-color: var(--accent); }
+    .login-btn {
+      width: 100%; padding: 0.85rem; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: var(--white); border: none; border-radius: 10px;
+      font-size: 0.95rem; font-weight: 700; cursor: pointer; font-family: var(--font);
+    }
+    .login-error { color: var(--danger); font-size: 0.82rem; margin-top: 0.8rem; display: none; }
+
+    /* MAIN LAYOUT */
+    #app { display: none; min-height: 100vh; }
+    header {
+      background: var(--navy); padding: 0 2rem; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .header-logo { font-size: 1rem; font-weight: 800; color: var(--white); }
+    .header-logo span { color: var(--accent); }
+    .header-right { display: flex; align-items: center; gap: 1rem; }
+    .btn-logout {
+      background: rgba(255,255,255,0.1); color: var(--white); border: none;
+      padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.8rem;
+      cursor: pointer; font-family: var(--font);
+    }
+    .btn-visit { color: #a5b4fc; font-size: 0.8rem; text-decoration: none; }
+
+    main { max-width: 1000px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* TABS */
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; }
+    .tab {
+      padding: 0.55rem 1.2rem; border-radius: 8px; font-size: 0.88rem;
+      font-weight: 600; cursor: pointer; border: none; font-family: var(--font);
+      background: var(--white); color: var(--gray-500); border: 1.5px solid var(--gray-200);
+      transition: all 0.2s;
+    }
+    .tab.active { background: var(--accent); color: var(--white); border-color: var(--accent); }
+
+    /* ARTICLE LIST */
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .panel-title { font-size: 1.1rem; font-weight: 700; }
+    .btn-new {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: var(--white); border: none; padding: 0.6rem 1.2rem;
+      border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; font-family: var(--font);
+    }
+    .article-list { display: flex; flex-direction: column; gap: 1rem; }
+    .article-item {
+      background: var(--white); border-radius: 12px; padding: 1.2rem 1.5rem;
+      border: 1.5px solid var(--gray-200); display: flex;
+      justify-content: space-between; align-items: center; gap: 1rem;
+    }
+    .article-item-info { flex: 1; }
+    .article-item-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .article-item-meta { font-size: 0.78rem; color: var(--gray-400); display: flex; gap: 1rem; }
+    .badge {
+      padding: 0.2rem 0.7rem; border-radius: 100px; font-size: 0.72rem; font-weight: 600;
+    }
+    .badge-published { background: #d1fae5; color: #065f46; }
+    .badge-draft { background: #fef3c7; color: #92400e; }
+    .article-item-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+    .btn-edit, .btn-delete, .btn-toggle {
+      padding: 0.4rem 0.9rem; border-radius: 6px; font-size: 0.78rem;
+      font-weight: 600; cursor: pointer; border: none; font-family: var(--font);
+    }
+    .btn-edit { background: var(--gray-100); color: var(--gray-700); }
+    .btn-delete { background: #fee2e2; color: var(--danger); }
+    .btn-toggle { background: #e0e7ff; color: var(--accent); }
+    .empty-state { text-align: center; padding: 3rem; color: var(--gray-400); font-size: 0.9rem; }
+
+    /* ARTICLE FORM */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label { font-size: 0.8rem; font-weight: 600; color: var(--gray-700); }
+    .form-group input, .form-group select, .form-group textarea {
+      padding: 0.75rem 1rem; border: 1.5px solid var(--gray-200); border-radius: 8px;
+      font-size: 0.9rem; font-family: var(--font); outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--accent);
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    #content-editor { min-height: 300px; font-size: 0.88rem; line-height: 1.7; }
+    .form-hint { font-size: 0.75rem; color: var(--gray-400); margin-top: 0.2rem; }
+    .form-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
+    .btn-save {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: var(--white); border: none; padding: 0.75rem 2rem;
+      border-radius: 8px; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; font-family: var(--font);
+    }
+    .btn-cancel {
+      background: var(--gray-100); color: var(--gray-700); border: none;
+      padding: 0.75rem 1.5rem; border-radius: 8px; font-size: 0.9rem;
+      font-weight: 600; cursor: pointer; font-family: var(--font);
+    }
+    .btn-save-draft {
+      background: var(--white); color: var(--accent);
+      border: 1.5px solid var(--accent); padding: 0.72rem 1.5rem;
+      border-radius: 8px; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; font-family: var(--font);
+    }
+
+    /* SETTINGS */
+    .settings-card { background: var(--white); border-radius: 12px; padding: 1.5rem; border: 1.5px solid var(--gray-200); margin-bottom: 1.5rem; }
+    .settings-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 1rem; }
+    .settings-card p { font-size: 0.85rem; color: var(--gray-500); line-height: 1.7; margin-bottom: 1rem; }
+    .settings-card input, .settings-card textarea {
+      width: 100%; padding: 0.75rem 1rem; border: 1.5px solid var(--gray-200);
+      border-radius: 8px; font-size: 0.88rem; font-family: var(--font); outline: none;
+    }
+    .settings-card input:focus { border-color: var(--accent); }
+    .btn-save-setting {
+      margin-top: 0.8rem; background: var(--accent); color: var(--white);
+      border: none; padding: 0.6rem 1.2rem; border-radius: 8px;
+      font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: var(--font);
+    }
+    .status-msg { font-size: 0.82rem; margin-top: 0.5rem; display: none; }
+    .status-ok { color: var(--success); }
+    .status-err { color: var(--danger); }
+
+    /* TOAST */
+    #toast {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: var(--navy); color: var(--white); padding: 0.8rem 1.5rem;
+      border-radius: 10px; font-size: 0.85rem; font-weight: 500;
+      transition: transform 0.3s; z-index: 999; pointer-events: none;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media(max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .article-item { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">綾策 <span>後台</span></div>
+    <div class="login-sub">Ling Strategy Admin</div>
+    <input type="password" id="pw-input" placeholder="請輸入後台密碼" onkeydown="if(event.key==='Enter')doLogin()" />
+    <button class="login-btn" onclick="doLogin()">登入</button>
+    <div class="login-error" id="login-error">密碼錯誤，請再試一次</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="header-logo">綾策 <span>後台管理</span></div>
+    <div class="header-right">
+      <a class="btn-visit" href="index.html" target="_blank">查看網站 →</a>
+      <button class="btn-logout" onclick="logout()">登出</button>
+    </div>
+  </header>
+  <main>
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('articles', this)">📝 文章管理</button>
+      <button class="tab" onclick="switchTab('new', this)">✏️ 新增文章</button>
+      <button class="tab" onclick="switchTab('settings', this)">⚙️ 設定</button>
+    </div>
+
+    <!-- ARTICLES LIST -->
+    <div class="panel active" id="panel-articles">
+      <div class="panel-header">
+        <div class="panel-title">所有文章</div>
+        <button class="btn-new" onclick="switchTab('new', document.querySelectorAll('.tab')[1])">+ 新增文章</button>
+      </div>
+      <div class="article-list" id="article-list"></div>
+    </div>
+
+    <!-- NEW / EDIT ARTICLE -->
+    <div class="panel" id="panel-new">
+      <div class="panel-header">
+        <div class="panel-title" id="form-title">新增文章</div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>文章標題 *</label>
+          <input type="text" id="f-title" placeholder="輸入文章標題" />
+        </div>
+        <div class="form-group">
+          <label>分類</label>
+          <select id="f-category">
+            <option>品牌策略</option>
+            <option>廣告投放</option>
+            <option>社群經營</option>
+            <option>SEO</option>
+            <option>AI 工具</option>
+            <option>行銷觀點</option>
+            <option>其他</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>發佈日期</label>
+          <input type="date" id="f-date" />
+        </div>
+        <div class="form-group full">
+          <label>文章摘要（顯示在卡片上）</label>
+          <textarea id="f-summary" rows="2" placeholder="一兩句話說明文章重點..."></textarea>
+        </div>
+        <div class="form-group full">
+          <label>文章內容</label>
+          <textarea id="content-editor" placeholder="在這裡輸入文章內容。
+
+支援基本 Markdown：
+**粗體**、*斜體*、## 標題、- 列表項目"></textarea>
+          <div class="form-hint">支援 **粗體**、*斜體*、## 標題、- 列表</div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-save" onclick="saveArticle(true)">發佈文章</button>
+        <button class="btn-save-draft" onclick="saveArticle(false)">儲存草稿</button>
+        <button class="btn-cancel" onclick="cancelEdit()">取消</button>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="panel" id="panel-settings">
+      <div class="settings-card">
+        <h3>🔑 GitHub 存取設定</h3>
+        <p>後台透過 GitHub API 儲存文章。請輸入你的 GitHub Personal Access Token（需要 <code>repo</code> 權限）。Token 只存在你的瀏覽器，不會上傳到任何地方。</p>
+        <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxx" />
+        <br/>
+        <button class="btn-save-setting" onclick="saveToken()">儲存 Token</button>
+        <div class="status-msg status-ok" id="token-ok">✓ Token 已儲存</div>
+        <div class="status-msg status-err" id="token-err">Token 格式有誤</div>
+      </div>
+      <div class="settings-card">
+        <h3>🔒 修改後台密碼</h3>
+        <p>修改你的後台登入密碼（密碼存在瀏覽器本地）。</p>
+        <input type="password" id="new-pw" placeholder="輸入新密碼" />
+        <br/>
+        <button class="btn-save-setting" onclick="changePw()">更新密碼</button>
+        <div class="status-msg status-ok" id="pw-ok">✓ 密碼已更新</div>
+      </div>
+      <div class="settings-card">
+        <h3>📧 Mailchimp 電子報設定</h3>
+        <p>請到 Mailchimp 建立一個 Embedded Form，複製 HTML 程式碼後貼在下方。網站的電子報訂閱區塊會自動使用這段程式碼。</p>
+        <textarea id="mc-code" rows="6" placeholder="貼上 Mailchimp Embedded Form HTML 程式碼..."></textarea>
+        <br/>
+        <button class="btn-save-setting" onclick="saveMC()">儲存</button>
+        <div class="status-msg status-ok" id="mc-ok">✓ Mailchimp 設定已儲存</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  // ── CONSTANTS ──
+  const REPO   = 'shulingmarketing-svg/-';
+  const BRANCH = 'gh-pages';
+  const FILE   = 'data/articles.json';
+  const DEFAULT_PW = 'lingstrategy2025';
+
+  // ── AUTH ──
+  function doLogin() {
+    const pw = document.getElementById('pw-input').value;
+    const stored = localStorage.getItem('admin_pw') || DEFAULT_PW;
+    if (pw === stored) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      loadArticles();
+      initSettings();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  }
+  function logout() {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('pw-input').value = '';
+  }
+
+  // ── TABS ──
+  function switchTab(name, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('panel-' + name).classList.add('active');
+    if (name === 'new' && !editingId) resetForm();
+    if (name === 'articles') loadArticles();
+  }
+
+  // ── GITHUB API ──
+  async function ghGet() {
+    const token = localStorage.getItem('gh_token');
+    const headers = token ? { Authorization: 'token ' + token } : {};
+    const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}?ref=${BRANCH}`, { headers });
+    if (!res.ok) throw new Error('無法讀取文章資料，請確認 GitHub Token 設定');
+    return res.json();
+  }
+  async function ghPut(articles, sha, msg) {
+    const token = localStorage.getItem('gh_token');
+    if (!token) { showToast('請先在設定中輸入 GitHub Token'); return false; }
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(articles, null, 2))));
+    const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}`, {
+      method: 'PUT',
+      headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg, content, sha, branch: BRANCH })
+    });
+    return res.ok;
+  }
+
+  // ── ARTICLES ──
+  let articles = [];
+  let fileSHA  = '';
+  let editingId = null;
+
+  async function loadArticles() {
+    const list = document.getElementById('article-list');
+    list.innerHTML = '<div class="empty-state">載入中...</div>';
+    try {
+      const data = await ghGet();
+      fileSHA  = data.sha;
+      articles = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+      renderList();
+    } catch(e) {
+      list.innerHTML = `<div class="empty-state">${e.message}</div>`;
+    }
+  }
+
+  function renderList() {
+    const list = document.getElementById('article-list');
+    if (!articles.length) { list.innerHTML = '<div class="empty-state">還沒有文章，點上方「新增文章」開始寫吧！</div>'; return; }
+    list.innerHTML = [...articles].reverse().map(a => `
+      <div class="article-item">
+        <div class="article-item-info">
+          <div class="article-item-title">${a.title}</div>
+          <div class="article-item-meta">
+            <span>${a.date}</span>
+            <span>${a.category}</span>
+            <span class="badge ${a.published ? 'badge-published' : 'badge-draft'}">${a.published ? '已發佈' : '草稿'}</span>
+          </div>
+        </div>
+        <div class="article-item-actions">
+          <button class="btn-toggle" onclick="togglePublish('${a.id}')">${a.published ? '設為草稿' : '發佈'}</button>
+          <button class="btn-edit" onclick="editArticle('${a.id}')">編輯</button>
+          <button class="btn-delete" onclick="deleteArticle('${a.id}')">刪除</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function resetForm() {
+    editingId = null;
+    document.getElementById('form-title').textContent = '新增文章';
+    document.getElementById('f-title').value = '';
+    document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+    document.getElementById('f-summary').value = '';
+    document.getElementById('content-editor').value = '';
+    document.getElementById('f-category').value = '行銷觀點';
+  }
+
+  function editArticle(id) {
+    const a = articles.find(x => x.id === id);
+    if (!a) return;
+    editingId = id;
+    document.getElementById('form-title').textContent = '編輯文章';
+    document.getElementById('f-title').value = a.title;
+    document.getElementById('f-date').value = a.date;
+    document.getElementById('f-summary').value = a.summary;
+    document.getElementById('content-editor').value = a.content;
+    document.getElementById('f-category').value = a.category;
+    switchTab('new', document.querySelectorAll('.tab')[1]);
+  }
+
+  async function saveArticle(publish) {
+    const title = document.getElementById('f-title').value.trim();
+    if (!title) { showToast('請輸入文章標題'); return; }
+    if (!fileSHA) { await loadArticles(); }
+    if (editingId) {
+      const idx = articles.findIndex(x => x.id === editingId);
+      articles[idx] = { ...articles[idx], title, date: document.getElementById('f-date').value,
+        category: document.getElementById('f-category').value,
+        summary: document.getElementById('f-summary').value,
+        content: document.getElementById('content-editor').value,
+        published: publish };
+    } else {
+      articles.push({ id: Date.now().toString(), title,
+        date: document.getElementById('f-date').value,
+        category: document.getElementById('f-category').value,
+        summary: document.getElementById('f-summary').value,
+        content: document.getElementById('content-editor').value,
+        published: publish });
+    }
+    const ok = await ghPut(articles, fileSHA, (editingId ? '更新' : '新增') + `文章：${title}`);
+    if (ok) {
+      showToast(publish ? '✓ 文章已發佈！' : '✓ 草稿已儲存');
+      editingId = null;
+      await loadArticles();
+      switchTab('articles', document.querySelectorAll('.tab')[0]);
+    } else {
+      showToast('❌ 儲存失敗，請確認 Token 設定');
+    }
+  }
+
+  async function deleteArticle(id) {
+    if (!confirm('確定要刪除這篇文章嗎？')) return;
+    if (!fileSHA) await loadArticles();
+    articles = articles.filter(x => x.id !== id);
+    const ok = await ghPut(articles, fileSHA, '刪除文章');
+    if (ok) { showToast('文章已刪除'); await loadArticles(); }
+    else showToast('❌ 刪除失敗');
+  }
+
+  async function togglePublish(id) {
+    if (!fileSHA) await loadArticles();
+    const a = articles.find(x => x.id === id);
+    a.published = !a.published;
+    const ok = await ghPut(articles, fileSHA, `${a.published ? '發佈' : '取消發佈'}：${a.title}`);
+    if (ok) { showToast(a.published ? '✓ 已發佈' : '已設為草稿'); await loadArticles(); }
+  }
+
+  function cancelEdit() {
+    editingId = null;
+    switchTab('articles', document.querySelectorAll('.tab')[0]);
+  }
+
+  // ── SETTINGS ──
+  function initSettings() {
+    const token = localStorage.getItem('gh_token') || '';
+    if (token) document.getElementById('gh-token').value = token;
+    const mc = localStorage.getItem('mc_code') || '';
+    if (mc) document.getElementById('mc-code').value = mc;
+  }
+  function saveToken() {
+    const val = document.getElementById('gh-token').value.trim();
+    if (!val.startsWith('ghp_') && !val.startsWith('github_pat_')) {
+      document.getElementById('token-err').style.display = 'block';
+      document.getElementById('token-ok').style.display = 'none'; return;
+    }
+    localStorage.setItem('gh_token', val);
+    document.getElementById('token-ok').style.display = 'block';
+    document.getElementById('token-err').style.display = 'none';
+  }
+  function changePw() {
+    const val = document.getElementById('new-pw').value;
+    if (!val) return;
+    localStorage.setItem('admin_pw', val);
+    document.getElementById('pw-ok').style.display = 'block';
+    setTimeout(() => document.getElementById('pw-ok').style.display = 'none', 2000);
+  }
+  function saveMC() {
+    localStorage.setItem('mc_code', document.getElementById('mc-code').value);
+    document.getElementById('mc-ok').style.display = 'block';
+    setTimeout(() => document.getElementById('mc-ok').style.display = 'none', 2000);
+  }
+
+  // ── TOAST ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // init date
+  document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+</script>
+</body>
+</html>
