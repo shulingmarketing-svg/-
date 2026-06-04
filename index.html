@@ -194,7 +194,9 @@
       background: linear-gradient(135deg, var(--accent), var(--accent-2));
       display: flex; align-items: center; justify-content: center;
       font-size: 1.3rem; font-weight: 800; color: white; flex-shrink: 0;
+      overflow: hidden;
     }
+    .hero-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .hero-card-name { color: var(--white); font-weight: 700; font-size: 1rem; }
     .hero-card-role { color: rgba(255,255,255,0.45); font-size: 0.8rem; }
     .hero-tag-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
@@ -298,6 +300,7 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 6rem; position: relative; overflow: hidden;
     }
+    .about-img-box img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
     .about-img-box::after {
       content: '';
       position: absolute; inset: 0;
@@ -489,7 +492,7 @@
       <div class="hero-right reveal reveal-delay-2">
         <div class="hero-card-main">
           <div class="hero-card-header">
-            <div class="hero-avatar">芓</div>
+            <div class="hero-avatar"><img src="avatar.jpg" alt="芓綾" /></div>
             <div>
               <div class="hero-card-name">芓綾</div>
               <div class="hero-card-role">網路行銷 × 品牌策略顧問</div>
@@ -581,7 +584,7 @@
     <div class="section-inner">
       <div class="about-grid">
         <div class="about-visual reveal">
-          <div class="about-img-box">👩‍💼</div>
+          <div class="about-img-box"><img src="profile.JPG" alt="芓綾" /></div>
           <div class="about-badge">
             <strong>AI</strong>
             工具深度使用者
