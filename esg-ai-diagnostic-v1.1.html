@@ -161,19 +161,123 @@ let step = 0;
 let answers = {};
 let multiAnswers = { climateRisks: [], climateOpps: [] };
 let materialityAnswers = {}; // topic -> {financial, impact}
+let view = 'form'; // 'form' | 'history' | 'historyDetail'
+let historyList = [];
+let historyDetail = null;
+let reportSaved = false;
+const API_BASE = '/api';
+
+/* ===================== 後端儲存／歷史紀錄 ===================== */
+async function saveSubmission(reportPayload) {
+  try {
+    await fetch(`${API_BASE}/submissions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answers, multiAnswers, materialityAnswers, report: reportPayload }),
+    });
+  } catch (e) {
+    console.warn('儲存診斷紀錄失敗（可能未啟動後端伺服器）', e);
+  }
+}
+
+async function loadHistory() {
+  try {
+    const res = await fetch(`${API_BASE}/submissions`);
+    historyList = res.ok ? await res.json() : [];
+  } catch (e) {
+    historyList = [];
+  }
+}
+
+async function loadHistoryDetail(id) {
+  try {
+    const res = await fetch(`${API_BASE}/submissions/${id}`);
+    historyDetail = res.ok ? await res.json() : null;
+  } catch (e) {
+    historyDetail = null;
+  }
+}
 
 /* ===================== 渲染 ===================== */
 function render() {
   const app = document.getElementById('app');
+  if (view === 'history') {
+    app.innerHTML = renderHistoryList();
+    bindHistoryListEvents();
+    return;
+  }
+  if (view === 'historyDetail') {
+    app.innerHTML = renderHistoryDetail();
+    bindHistoryDetailEvents();
+    return;
+  }
   if (step < sections.length) {
     app.innerHTML = renderSection(sections[step]);
     bindSectionEvents(sections[step]);
   } else {
+    const scores = computeScores();
     app.innerHTML = renderReport();
     bindReportEvents();
     drawRadar();
     drawMaterialityChart();
+    if (!reportSaved) {
+      saveSubmission({ total: scores.total, levelName: scores.level.name, industry: scores.industry });
+      reportSaved = true;
+    }
   }
+}
+
+function renderHistoryList() {
+  const rows = historyList.map(r => `
+    <tr class="border-b">
+      <td class="py-2">${r.id}</td>
+      <td>${r.company_name || '-'}</td>
+      <td>${r.industry || '-'}</td>
+      <td>${r.employee_count || '-'}</td>
+      <td>${r.created_at}</td>
+      <td><button data-id="${r.id}" class="viewHistoryBtn text-blue-600 underline">查看</button></td>
+    </tr>`).join('');
+  return `
+    <h1 class="text-2xl font-bold mb-1 text-center">歷史診斷紀錄</h1>
+    <p class="text-center text-slate-400 mb-6">資料來源：後端 SQLite 資料庫</p>
+    <div class="bg-white rounded-xl shadow-sm p-5 mb-6 overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="text-left border-b"><th class="py-2">#</th><th>公司</th><th>產業</th><th>員工數</th><th>建立時間</th><th>操作</th></tr></thead>
+        <tbody>${rows || '<tr><td colspan="6" class="py-4 text-center text-slate-400">尚無紀錄，或後端伺服器未啟動</td></tr>'}</tbody>
+      </table>
+    </div>
+    <button id="backToFormBtn" class="px-5 py-2 rounded-lg border border-slate-300">返回診斷問卷</button>
+  `;
+}
+
+function renderHistoryDetail() {
+  if (!historyDetail) return `<p class="text-center text-slate-400 mb-6">找不到紀錄</p><button id="backToHistoryBtn" class="px-5 py-2 rounded-lg border border-slate-300">返回列表</button>`;
+  const r = historyDetail.report || {};
+  return `
+    <h1 class="text-2xl font-bold mb-1 text-center">診斷紀錄 #${historyDetail.id}</h1>
+    <p class="text-center text-slate-500 mb-6">產業：${historyDetail.industry||'-'}　建立時間：${historyDetail.created_at}</p>
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6 text-center">
+      <p class="text-slate-500 mb-1">ESG成熟度總分</p>
+      <p class="text-5xl font-bold text-green-600 mb-2">${r.total ?? '-'}<span class="text-xl text-slate-400">/100</span></p>
+      <p class="text-xl font-semibold">${r.levelName ?? ''}</p>
+    </div>
+    <button id="backToHistoryBtn" class="px-5 py-2 rounded-lg border border-slate-300">返回列表</button>
+  `;
+}
+
+function bindHistoryListEvents() {
+  document.querySelectorAll('.viewHistoryBtn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await loadHistoryDetail(btn.dataset.id);
+      view = 'historyDetail';
+      render();
+    });
+  });
+  document.getElementById('backToFormBtn').addEventListener('click', () => { view = 'form'; render(); });
+}
+
+function bindHistoryDetailEvents() {
+  document.getElementById('backToHistoryBtn').addEventListener('click', () => { view = 'history'; render(); });
 }
 
 function renderProgress() {
@@ -195,7 +299,11 @@ function renderSection(section) {
   let itemsHtml = '';
 
   if (section.type === 'basic') {
-    itemsHtml = section.items.map(({id,title,options}) => {
+    itemsHtml = `<div class="bg-white rounded-xl shadow-sm p-5 mb-4">
+      <p class="font-semibold mb-3">公司名稱（選填）</p>
+      <input id="companyNameInput" type="text" value="${answers.companyName || ''}" placeholder="請輸入公司名稱"
+        class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+    </div>` + section.items.map(({id,title,options}) => {
       const current = answers[id];
       return `<div class="bg-white rounded-xl shadow-sm p-5 mb-4">
         <p class="font-semibold mb-3">${title}</p>
@@ -248,6 +356,9 @@ function renderSection(section) {
   const canNext = isSectionComplete(section);
 
   return `
+    <div class="flex justify-end mb-2 no-print">
+      <button id="historyBtn" class="text-sm text-blue-600 underline">查看歷史紀錄</button>
+    </div>
     <h1 class="text-2xl font-bold mb-1 text-center">ESG AI 智能成熟度診斷系統</h1>
     <p class="text-center text-slate-500 mb-6">V1.1 顧問級版本</p>
     ${renderProgress()}
@@ -261,6 +372,10 @@ function renderSection(section) {
 }
 
 function bindSectionEvents(section) {
+  const companyNameInput = document.getElementById('companyNameInput');
+  if (companyNameInput) {
+    companyNameInput.addEventListener('input', () => { answers.companyName = companyNameInput.value; });
+  }
   document.querySelectorAll('.option-btn[data-qid]').forEach(btn => {
     btn.addEventListener('click', () => {
       const qid = btn.dataset.qid;
@@ -290,8 +405,10 @@ function bindSectionEvents(section) {
   });
   const prevBtn = document.getElementById('prevBtn');
   const nextBtn = document.getElementById('nextBtn');
+  const historyBtn = document.getElementById('historyBtn');
   if (prevBtn) prevBtn.addEventListener('click', () => { if (step>0) { step--; render(); } });
   if (nextBtn && !nextBtn.disabled) nextBtn.addEventListener('click', () => { step++; render(); });
+  if (historyBtn) historyBtn.addEventListener('click', async () => { await loadHistory(); view = 'history'; render(); });
 }
 
 /* ===================== 計分邏輯 ===================== */
@@ -529,7 +646,7 @@ function renderReport() {
 
 function bindReportEvents() {
   document.getElementById('restartBtn').addEventListener('click', () => {
-    answers = {}; multiAnswers = { climateRisks:[], climateOpps:[] }; materialityAnswers = {}; step = 0; render();
+    answers = {}; multiAnswers = { climateRisks:[], climateOpps:[] }; materialityAnswers = {}; step = 0; reportSaved = false; render();
   });
   document.getElementById('printBtn').addEventListener('click', () => window.print());
 }
