@@ -1,5 +1,16 @@
 # -
-抽獎使用的工具
+工具箱。可用瀏覽器直接開啟 `index.html`，或透過 GitHub Pages 部署後使用。
+
+## 英文學習工具
+
+- `english-quiz-tool.html` — 英文測驗練習（TOEIC & PTE），依選擇的考試類型、題型、難度、題數，由 Claude AI 即時出題並批改
+- `toeic700-learning-plan.html` — TOEIC 700 六個月衝刺計畫，含分階段學習主題、每週節奏、AI 出題測驗、考試技巧整理
+
+這兩個工具在瀏覽器端直接呼叫 Anthropic API 出題，**需要使用者自備 Anthropic API Key**：
+
+1. 打開工具，點右上角齒輪圖示 ⚙ 開啟設定
+2. 貼上你的 API Key（可於 [console.anthropic.com](https://console.anthropic.com/settings/keys) 申請）
+3. Key 只會存在瀏覽器的 `localStorage`，直接從瀏覽器送往 Anthropic API，不會經過任何第三方伺服器
 
 ## ESG AI 智能成熟度診斷系統
 
