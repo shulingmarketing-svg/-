@@ -185,34 +185,57 @@ const API_BASE = "";
 /* ---------------- Demo 種子資料（與 schema.sql 一致） ---------------- */
 const seed = {
 clients: [
- {id:'c-shihchuan',company_name:'十全特好食品',brand_name:'十全特好',industry:'食品',monthly_fee:45000,case_scale:'中案',data_completeness:92,timeline_status:'一般排程',tags:['1954','古法釀造','母親節','618'],color:'#3e7d5a'},
- {id:'c-ioio',company_name:'iOiO 食在愛我',brand_name:'iOiO',industry:'健康飲品',monthly_fee:38000,case_scale:'中案',data_completeness:88,timeline_status:'一般排程',tags:['親子','低卡','好喝好玩','暑假'],color:'#b04a3a'}
+ {id:'c-shihchuan',company_name:'十全特好食品股份有限公司',brand_name:'十全',industry:'調味品・果醋',monthly_fee:20000,case_scale:'中案',data_completeness:85,timeline_status:'一般排程',tags:['1954','古法釀造','Clean Label','果醋'],color:'#C0392B'},
+ {id:'c-ioio',company_name:'十全特好食品股份有限公司',brand_name:'iOiO 食在愛我',industry:'健康飲品',monthly_fee:0,case_scale:'中案',data_completeness:80,timeline_status:'一般排程',tags:['蒟蒻','低卡','0脂肪','下午茶'],color:'#2A9D8F'},
+ {id:'c-yibiyaya',company_name:'十全特好食品股份有限公司',brand_name:'一比呀呀 YIBIYAYA',industry:'兒童天然果汁',monthly_fee:0,case_scale:'中案',data_completeness:78,timeline_status:'一般排程',tags:['親子','0添加糖','0色素','校園'],color:'#E9911C'}
 ],
 profiles: {
- 'c-shihchuan':{positioning:'創立1954年，古法釀造、非基改黃豆、台灣國產白米，訴求職人精神與安心食安。',target_audience:'30-55歲料理愛好者、家庭採買者，重視健康與家常料理。三條線：家庭料理線（35-49）、健康輕飲線（25-39）、餐飲業務線（30-55）。',content_pillars:'百年工藝、天然安心、料理提案、家庭共餐溫度。',competitors:'醬料品牌、健康飲品禮盒、節慶送禮電商品牌；日本進口高階線、台灣同業、有機自然食品、B2B 大宗供應。',writing_restrictions:'避免醫療療效宣稱；強調天然釀造、料理應用、送禮情境與購買 CTA。',regulation_notes:'警戒詞：幫助消化、開胃、促進新陳代謝。禁用詞：改善體質、增強免疫力、減肥/瘦身/塑身、美白、抗老、解毒、治療、預防疾病、降血壓、改善過敏。',platform_preferences:'FB 適合品牌故事、食譜教育、節慶互動與導購；IG 適合 Reels、產品近拍、生活情境與短句 CTA。'},
- 'c-ioio':{positioning:'蒟蒻飲、果汁、益生菌，主打親子健康零負擔的趣味飲品。',target_audience:'25-40歲年輕媽媽與注重健康的上班族，親子場景、暑假檔期。',content_pillars:'低卡輕負擔、親子同樂、好喝好玩。',competitors:'機能飲料、兒童飲品、便利商店通路品牌。',writing_restrictions:'避免減肥瘦身宣稱；以「輕負擔」等安全表述替代。',regulation_notes:'禁止療效宣稱；益生菌不可宣稱改善腸道疾病。',platform_preferences:'IG 為主力：親子日常、繽紛視覺、互動貼紙；FB 輔以團購導流。'}
+ 'c-shihchuan':{
+  positioning:'創立 1954 年、立基新竹的 70 年老字號。核心理念「十全十美」的品質堅持，通過 Clean Label 雙潔淨標章、FSSC 22000、ISO 22000、HACCP 認證，定位為食安守門員。市場定位：融合古法釀造與現代自動化科技的高 CP 值國民品牌，主力味噌、味醂、釀造醋，並以果醋飲品引領「健康新食代」。',
+  target_audience:'家庭料理線｜家庭為主、有料理習慣的媽媽與愛料理的人\n餐飲業務線｜餐飲業者、B2B 大宗採購\n果醋送禮線｜25-55 歲上班族、一般企業客戶、節慶送禮需求',
+  content_pillars:'百年工藝職人故事、食安認證與安心、料理提案食譜、果醋健康飲、節慶送禮。',
+  competitors:'日系進口味噌味醂、台灣同業調味品牌、健康醋飲品牌、節慶禮盒電商。',
+  writing_restrictions:'避免療效宣稱；強調天然釀造、Clean Label 認證、料理應用、送禮情境與購買 CTA。',
+  regulation_notes:'禁用（涉療效）：治療、治癒、改善疾病、預防疾病、抗癌、降血壓、降血糖、降膽固醇、增強免疫力、改善過敏、解毒、消炎。禁用（誇大）：減肥、瘦身、塑身、燃脂、美白、抗老、回春。警戒詞：幫助消化、開胃、促進新陳代謝、調整體質。安全替代：天然釀造、無添加、輕負擔、料理應用、營養補給、健康好氣色、全家安心。',
+  platform_preferences:'FB：品牌故事、食譜教育、節慶互動與導購。IG：Reels、產品近拍、生活情境與短句 CTA。SEO：料理知識與果醋喝法長文，導流官網。'},
+ 'c-ioio':{
+  positioning:'十全副品牌，主打超口感蒟蒻飲，以「低卡、0 脂肪」為訴求，包裝活潑充滿元氣，鎖定年輕消費者與在意身材的女性族群。',
+  target_audience:'輕卡上班族線｜25-55 歲上班族、習慣下午茶、愛買飲品\n控糖體態線｜控糖與體態管理族群（表述限用「低卡、輕負擔」）',
+  content_pillars:'低卡輕負擔、蒟蒻口感趣味、辦公室下午茶情境、體態管理安全表述。',
+  competitors:'機能飲料、蒟蒻果凍飲、便利商店手搖與包裝飲品。',
+  writing_restrictions:'嚴禁「減肥／瘦身／燃脂」字眼，一律以「低卡、0 脂肪、輕負擔」替代；口吻活潑年輕。',
+  regulation_notes:'同食品法規禁用詞（療效、減肥美容誇大均禁）。益生菌產品不可宣稱改善腸道疾病。警戒詞：促進新陳代謝、調整體質。安全替代：低卡、0 脂肪、輕負擔、無負擔、飽足感。',
+  platform_preferences:'IG 主力：繽紛視覺、互動貼紙、下午茶情境。FB：團購導流。SEO：低卡飲品、蒟蒻相關關鍵字。'},
+ 'c-yibiyaya':{
+  positioning:'定位「孩子的第一杯果汁」。嚴選天然果汁濃縮，0 添加糖、0 色素、0 防腐劑，解決家長對市售含糖飲料的食安疑慮，深受家庭與校園青睞。',
+  target_audience:'親子家庭線｜媽媽、爸爸、2-12 歲孩子的家庭、注重天然飲品\n校園團體線｜幼稚園、托兒所、親子活動團購',
+  content_pillars:'0 添加食安安心、親子日常場景、幼兒飲食知識、校園與團購。',
+  competitors:'市售含糖兒童飲料、兒童果汁品牌、乳酸飲品。',
+  writing_restrictions:'不可宣稱幫助發育、增強免疫；訴求 0 添加、天然、家長安心；口吻溫暖親切。',
+  regulation_notes:'同食品法規禁用詞。兒童食品不得宣稱促進發育、長高、增強抵抗力等療效。安全替代：天然果汁、0 添加糖、0 色素、0 防腐劑、安心、無負擔。',
+  platform_preferences:'FB：家長社群、團購揪團、食安溝通。IG：親子日常、繽紛視覺。SEO：育兒飲食、兒童飲品挑選文章。'}
 },
 campaigns: [
- {id:'cp-sc-q2',client_id:'c-shihchuan',quarter:'2026-Q2',theme:'品牌聲量期：職人故事 → 母親節果醋禮盒 → 夏日飲品',budget:120000},
- {id:'cp-io-q2',client_id:'c-ioio',quarter:'2026-Q2',theme:'暑假親子檔期：品牌認知 → 健康禮盒 → 團購轉換',budget:90000}
+ {id:'cp-sc-q3',client_id:'c-shihchuan',quarter:'2026-Q3',theme:'夏日果醋檔期 → 中元/中秋禮盒預熱',budget:0},
+ {id:'cp-io-q3',client_id:'c-ioio',quarter:'2026-Q3',theme:'夏季下午茶輕卡檔期',budget:0},
+ {id:'cp-yb-q3',client_id:'c-yibiyaya',quarter:'2026-Q3',theme:'開學季校園安心果汁檔期',budget:0}
 ],
 content: [
- {id:'ct-001',client_id:'c-shihchuan',campaign_id:'cp-sc-q2',title:'70年味噌職人精神',platform:'FB+IG',status:'已發布',content_body:'老照片與現代釀造廠對比，導入品牌精神。',business_goal:'建立信任',scheduled_date:'2026-04-01',published_date:'2026-04-01',value_ntd:1500,next_step:'可認列交付並追蹤成效'},
- {id:'ct-002',client_id:'c-shihchuan',campaign_id:'cp-sc-q2',title:'味噌顏色秘密大解密',platform:'IG',status:'待客戶審核',content_body:'60天、4個月、6個月味噌差異短影音。',business_goal:'互動增長',scheduled_date:'2026-04-02',published_date:null,value_ntd:1800,next_step:'等待客戶回覆或催審'},
- {id:'ct-003',client_id:'c-shihchuan',campaign_id:'cp-sc-q2',title:'果醋禮盒搶先看',platform:'FB+IG',status:'已發布',content_body:'天然釀造、無添加、送媽媽健康好氣色。',business_goal:'轉換營收',scheduled_date:'2026-05-01',published_date:'2026-05-01',value_ntd:1500,next_step:'可認列交付並追蹤成效'},
- {id:'ct-004',client_id:'c-shihchuan',campaign_id:'cp-sc-q2',title:'果醋禮盒最後倒數',platform:'FB+IG',status:'待補資料',content_body:'媽媽照顧家人，這次換我們照顧她的健康。',business_goal:'轉換營收',scheduled_date:'2026-05-08',published_date:null,value_ntd:1500,next_step:'向客戶補資料後再產文'},
- {id:'ct-005',client_id:'c-shihchuan',campaign_id:'cp-sc-q2',title:'夏日果醋喝法專題',platform:'SEO',status:'草稿中',content_body:'',business_goal:'導流名單',scheduled_date:'2026-06-12',published_date:null,value_ntd:2000,next_step:'完成初稿後送審'},
- {id:'ct-006',client_id:'c-ioio',campaign_id:'cp-io-q2',title:'iOiO 是什麼？',platform:'FB+IG',status:'已發布',content_body:'品牌認知首發文。',business_goal:'建立信任',scheduled_date:'2026-04-01',published_date:'2026-04-01',value_ntd:1200,next_step:'可認列交付並追蹤成效'},
- {id:'ct-007',client_id:'c-ioio',campaign_id:'cp-io-q2',title:'健康禮盒最後 XX 組',platform:'FB+IG',status:'已發布',content_body:'限量倒數，親子健康禮盒。',business_goal:'轉換營收',scheduled_date:'2026-05-01',published_date:'2026-05-01',value_ntd:1500,next_step:'可認列交付並追蹤成效'}
+ {id:'ct-001',client_id:'c-shihchuan',campaign_id:'cp-sc-q3',title:'70年味噌職人精神',platform:'FB+IG',status:'已發布',content_body:'老照片與現代釀造廠對比，導入品牌精神。',business_goal:'建立信任',scheduled_date:'2026-07-01',published_date:'2026-07-01',value_ntd:1500,next_step:'可認列交付並追蹤成效'},
+ {id:'ct-002',client_id:'c-shihchuan',campaign_id:'cp-sc-q3',title:'味噌顏色秘密大解密',platform:'IG',status:'待客戶審核',content_body:'60天、4個月、6個月味噌差異短影音。',business_goal:'互動增長',scheduled_date:'2026-07-08',published_date:null,value_ntd:1800,next_step:'等待客戶回覆或催審'},
+ {id:'ct-003',client_id:'c-shihchuan',campaign_id:'cp-sc-q3',title:'夏日果醋喝法專題',platform:'SEO',status:'草稿中',content_body:'',business_goal:'導流名單',scheduled_date:'2026-07-15',published_date:null,value_ntd:2000,next_step:'完成初稿後送審'},
+ {id:'ct-004',client_id:'c-shihchuan',campaign_id:'cp-sc-q3',title:'果醋中元禮盒搶先看',platform:'FB+IG',status:'待補資料',content_body:'天然釀造、無添加，禮盒視覺待客戶提供。',business_goal:'轉換營收',scheduled_date:'2026-07-22',published_date:null,value_ntd:1500,next_step:'向客戶補禮盒素材後再產文'},
+ {id:'ct-005',client_id:'c-ioio',campaign_id:'cp-io-q3',title:'iOiO 辦公室下午茶輕卡提案',platform:'IG',status:'已發布',content_body:'蒟蒻口感 × 低卡 0 脂肪，下午茶新選擇。',business_goal:'建立信任',scheduled_date:'2026-07-03',published_date:'2026-07-03',value_ntd:1200,next_step:'可認列交付並追蹤成效'},
+ {id:'ct-006',client_id:'c-ioio',campaign_id:'cp-io-q3',title:'iOiO 團購倒數',platform:'FB+IG',status:'待客戶審核',content_body:'辦公室團購方案，限時倒數。',business_goal:'轉換營收',scheduled_date:'2026-07-17',published_date:null,value_ntd:1500,next_step:'等待客戶回覆或催審'},
+ {id:'ct-007',client_id:'c-yibiyaya',campaign_id:'cp-yb-q3',title:'開學季安心果汁：孩子的第一杯果汁',platform:'Facebook',status:'草稿中',content_body:'0 添加糖、0 色素、0 防腐劑，家長安心的開學準備。',business_goal:'建立信任',scheduled_date:'2026-08-05',published_date:null,value_ntd:1500,next_step:'完成初稿後送審'}
 ],
 crm: [
- {id:'crm-001',company_name:'十全特好食品',contact_name:'王經理',contact_title:'行銷經理',contact_method:'Email',stage:'已成交',follow_up_status:'續約追蹤',next_contact_date:'2026-07-20',deal_value:225000,marketing_need:'FB/IG 經營 + SEO 文章',owner:'業務 A',priority:'高',notes:'Q2 交付順利，Q3 續約會議排程中。'},
- {id:'crm-002',company_name:'iOiO 食在愛我',contact_name:'林小姐',contact_title:'品牌窗口',contact_method:'LINE',stage:'已成交',follow_up_status:'續約追蹤',next_contact_date:'2026-07-25',deal_value:120000,marketing_need:'IG 經營 + 團購導流',owner:'PM B',priority:'一般',notes:'暑假檔期表現待覆盤後談續約。'}
+ {id:'crm-001',company_name:'十全特好食品股份有限公司',contact_name:'（待補聯絡人）',contact_title:'行銷窗口',contact_method:'待確認',stage:'已成交',follow_up_status:'服務中',next_contact_date:'2026-07-20',deal_value:60000,marketing_need:'FB/IG 經營 + SEO 文章（三品牌）',owner:'待指派',priority:'高',notes:'月費 2 萬、中案。三品牌（十全/iOiO/一比呀呀）內容經營中，月費如何分攤到副品牌待確認。'}
 ]
 };
 
 const STATUSES = ['草稿中','待補資料','待客戶審核','已發布','緊急處理','延後發布'];
-const state = { data: JSON.parse(JSON.stringify(seed)), selClient:'c-shihchuan', calMonth:'2026-05', route:'overview' };
+const state = { data: JSON.parse(JSON.stringify(seed)), selClient:'c-shihchuan', calMonth:'2026-07', route:'overview' };
 const live = () => API_BASE !== "";
 
 /* ---------------- API 抽象層：Demo / 連線兩用 ---------------- */
@@ -282,10 +305,11 @@ function renderNav(){
 ===================================================== */
 function pageOverview(){
   const d = state.data;
-  const monthDue = d.content.filter(c=>c.scheduled_date && c.scheduled_date.startsWith('2026-0')).length;
+  const nowMonth = new Date().toISOString().slice(0,7);
+  const monthDue = d.content.filter(c=>c.scheduled_date && c.scheduled_date.startsWith(nowMonth)).length;
   const avgComplete = Math.round(d.clients.reduce((s,c)=>s+(c.data_completeness||0),0)/(d.clients.length||1));
-  const pending = d.content.filter(c=>['待客戶審核','待補資料','緊急處理'].includes(c.status)).length + 3;
-  const receivable = d.content.filter(c=>c.status==='已發布').reduce((s,c)=>s+(c.value_ntd||0),0) + 1500;
+  const pending = d.content.filter(c=>['待客戶審核','待補資料','緊急處理'].includes(c.status)).length;
+  const receivable = d.content.filter(c=>c.status==='已發布').reduce((s,c)=>s+(c.value_ntd||0),0);
   const review = d.content.filter(c=>c.status==='待客戶審核');
   const urgent = d.content.filter(c=>c.status==='緊急處理');
   const published = d.content.filter(c=>c.status==='已發布');
@@ -457,11 +481,11 @@ function pageGenerate(){
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
     <div class="panel"><div class="panel-head"><h3>產出文章</h3><span class="hint">平台化 prompt 設計</span></div>
       <div class="grid2">
-        <div class="field"><label>客戶</label><select id="g_client">${d.clients.map(c=>`<option value="${c.id}" ${c.id===state.selClient?'selected':''}>${esc(c.company_name)}</option>`).join('')}</select></div>
+        <div class="field"><label>客戶（品牌）</label><select id="g_client" onchange="refreshTA()">${d.clients.map(c=>`<option value="${c.id}" ${c.id===state.selClient?'selected':''}>${esc(c.brand_name||c.company_name)}</option>`).join('')}</select></div>
         <div class="field"><label>平台</label><select id="g_platform"><option>Instagram</option><option>Facebook</option><option>FB+IG</option><option>SEO 文章</option><option>Reels 腳本</option><option>蝦皮商品文</option><option>KOL brief</option></select></div>
         <div class="field"><label>季度活動</label><select id="g_campaign"><option>品牌聲量期</option><option>轉換衝刺期</option><option>節慶檔期</option></select></div>
         <div class="field"><label>商業目的</label><select id="g_goal"><option>建立信任</option><option>轉換營收</option><option>互動增長</option><option>導流名單</option></select></div>
-        <div class="field"><label>目標對象</label><select id="g_ta"><option>家庭料理線｜家庭餐桌守門員</option><option>健康輕飲線｜健康輕養生女孩</option><option>餐飲業務線｜餐飲補貨決策者</option></select></div>
+        <div class="field"><label>目標對象（讀取該品牌 TA 分線）</label><select id="g_ta">${taOptions(state.selClient)}</select></div>
         <div class="field"><label>文章架構</label><select id="g_structure"><option>SEO 五段式</option><option>Hook → Problem → Agitate → Solution → CTA</option><option>故事型（品牌敘事）</option><option>清單型（教學收藏）</option></select></div>
         <div class="field"><label>深度資料</label><select id="g_data"><option value="all">全部啟用：TA + 競品 + 法規 + 社群</option><option value="ta">只用 TA</option><option value="min">最小：定位 + 限制</option></select></div>
         <div class="field"><label>內容格式</label><select id="g_format"><option value="outline">文章骨架 + AI Prompt</option><option value="full">完整貼文文案</option></select></div>
@@ -474,6 +498,16 @@ function pageGenerate(){
       <div class="gen-out empty" id="g_out">選擇客戶、平台與商業目的後，按下生成。${live()?'將呼叫 Worker 上的 Claude API 產出初稿。':'Demo 模式會模擬未來 AI 根據品牌資料庫、季度活動與平台 prompt 產出的初稿。'}</div>
     </div>
   </div>`;
+}
+function taOptions(cid){
+  const ta = (state.data.profiles[cid]?.target_audience||'').trim();
+  const lines = ta.split('\n').map(s=>s.trim()).filter(s=>s.includes('｜'));
+  if(lines.length) return lines.map(l=>`<option>${esc(l)}</option>`).join('');
+  return `<option>${esc(ta||'主要 TA（請先到「訓練資料」設定目標客群）')}</option>`;
+}
+function refreshTA(){
+  state.selClient = $('#g_client').value;
+  $('#g_ta').innerHTML = taOptions(state.selClient);
 }
 async function generateArticle(){
   const cid = $('#g_client').value; const c = clientOf(cid); const p = state.data.profiles[cid]||{};
@@ -517,7 +551,13 @@ function pageCampaign(){
   <p class="page-desc">用三個月視角規劃預算、主題、活動節點與內容任務，支援小案、中案、大案。</p>
   <div class="panel"><div class="panel-head"><h3>季度戰役看板</h3>
     <span>${d.clients.map(c=>`<button class="btn small ${c.id===sel?'':'ghost'}" onclick="state.selClient='${c.id}';render()">${esc(c.brand_name||c.company_name)}</button>`).join(' ')}</span></div>
-    ${camp?`<p style="font-size:13px;color:var(--muted);margin-bottom:14px">${esc(camp.quarter)}｜${esc(camp.theme)}｜預算 ${fmt(camp.budget)}</p>`:''}
+    ${camp?`<p style="font-size:13px;color:var(--muted);margin-bottom:14px">${esc(camp.quarter)}｜${esc(camp.theme)}${camp.budget?`｜預算 ${fmt(camp.budget)}`:''}</p>`:`
+    <div class="grid4" style="margin-bottom:14px;align-items:end">
+      <div class="field"><label>季度</label><input id="cp_quarter" placeholder="例如：2026-Q3"></div>
+      <div class="field"><label>戰役主題</label><input id="cp_theme" placeholder="例如：夏日檔期 → 中秋禮盒預熱"></div>
+      <div class="field"><label>預算（可略）</label><input id="cp_budget" type="number" value="0"></div>
+      <div><button class="btn" onclick="createCampaign()">建立本季戰役</button></div>
+    </div>`}
     <div class="kanban">
       ${STATUSES.map(st=>{
         const list = items.filter(c=>c.status===st);
@@ -538,6 +578,15 @@ function pageCampaign(){
     </tbody></table>
   </div>`;
 }
+async function createCampaign(){
+  const quarter = $('#cp_quarter').value.trim(), theme = $('#cp_theme').value.trim();
+  if(!quarter || !theme) return toast('請填寫季度與戰役主題');
+  const body = {client_id: state.selClient, quarter, theme, budget: +$('#cp_budget').value||0};
+  const res = await apiPost('/api/campaigns', body);
+  state.data.campaigns.push({...body, id: res.id});
+  toast('已建立戰役：'+quarter+'｜'+theme);
+  render();
+}
 async function moveStatus(id, st){
   if(!st) return;
   const item = state.data.content.find(c=>c.id===id);
@@ -551,9 +600,14 @@ async function moveStatus(id, st){
 /* =====================================================
    模組 7：內容排程（月曆）
 ===================================================== */
+function shiftMonth(delta){
+  const [y,m] = state.calMonth.split('-').map(Number);
+  const dt = new Date(y, m-1+delta, 1);
+  state.calMonth = dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0');
+  render();
+}
 function pageSchedule(){
   const d = state.data;
-  const months = ['2026-04','2026-05','2026-06'];
   const [y,m] = state.calMonth.split('-').map(Number);
   const first = new Date(y, m-1, 1); const days = new Date(y, m, 0).getDate();
   const startDow = first.getDay();
@@ -577,7 +631,9 @@ function pageSchedule(){
       <div class="field" style="width:200px"><label>客戶篩選</label><select onchange="state.schedCl=this.value;render()">
         <option value="">全部客戶</option>${d.clients.map(c=>`<option value="${c.id}" ${filterCl===c.id?'selected':''}>${esc(c.company_name)}</option>`).join('')}</select></div>
       <div style="margin-left:auto;display:flex;gap:6px;align-items:flex-end">
-        ${months.map(mm=>`<button class="mbtn ${state.calMonth===mm?'on':''}" onclick="state.calMonth='${mm}';render()">${+mm.split('-')[1]}月</button>`).join('')}
+        <button class="mbtn" onclick="shiftMonth(-1)">◀ 上月</button>
+        <button class="mbtn on">${y} 年 ${m} 月</button>
+        <button class="mbtn" onclick="shiftMonth(1)">下月 ▶</button>
       </div>
     </div>
     <div class="legend">${STATUSES.map(s=>chip(s)).join(' ')}</div>
@@ -595,7 +651,7 @@ function pageRevenue(){
   const d = state.data;
   const done = d.content.filter(c=>c.status==='已發布');
   const stuck = d.content.filter(c=>['待補資料','待客戶審核','草稿中','緊急處理'].includes(c.status));
-  const contract = d.clients.reduce((s,c)=>s+(c.monthly_fee||0)*3,0) + 96000;
+  const contract = d.clients.reduce((s,c)=>s+(c.monthly_fee||0)*3,0);
   const avg = done.length? Math.round(done.reduce((s,c)=>s+(c.value_ntd||0),0)/done.length):0;
   return `
   <h1 class="page-title">收益與交付</h1>
