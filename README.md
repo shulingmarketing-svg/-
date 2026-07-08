@@ -36,9 +36,9 @@ API：
 
 ## 大心整合行銷 — AI 行銷管理系統
 
-- `daxin-marketing.html` — 前端（總覽、客戶資料庫、Onboarding、訓練資料、產出文章、季度戰役、內容排程、收益與交付、CRM 共 9 大模組）
-- `daxin-marketing/worker.js` — Cloudflare Worker：D1 資料庫 REST API + Claude API 代理
-- `daxin-marketing/schema.sql` — Cloudflare D1 資料庫結構與種子資料
-- `daxin-marketing/DEPLOY.md` — 完整部署教學（D1 → Worker → Pages）
+- `daxin-marketing.html` — 前端（總覽、客戶資料庫、Onboarding、訓練資料、產出文章、季度戰役、內容排程、收益與交付、CRM、管理員共 10 大模組，含會員登入/註冊/忘記密碼）
+- `daxin-marketing/worker.js` — Cloudflare Worker：D1 資料庫 REST API + 會員認證（PBKDF2 雜湊、Session Token）+ Claude API 代理
+- `daxin-marketing/schema.sql` — Cloudflare D1 資料庫結構與種子資料（含會員、Session、忘記密碼申請表）
+- `daxin-marketing/DEPLOY.md` — 完整部署教學（D1 → Worker → Pages → 會員系統初始化）
 
-直接開啟 `daxin-marketing.html` 即為 **Demo 模式**（示範資料存在瀏覽器記憶體，重新整理會還原）。要接上真實資料庫與 Claude API，依 `daxin-marketing/DEPLOY.md` 部署 D1 + Worker 後，將 `daxin-marketing.html` 內的 `API_BASE` 填上 Worker 網址即可切換為連線模式。
+直接開啟 `daxin-marketing.html` 即為 **Demo 模式**（會先看到登入閘門，可點「以訪客瀏覽」直接體驗，示範資料存在瀏覽器記憶體，重新整理會還原）。要接上真實資料庫與 Claude API，依 `daxin-marketing/DEPLOY.md` 部署 D1 + Worker 後，將 `daxin-marketing.html` 內的 `API_BASE` 填上 Worker 網址即可切換為連線模式，並用內建總管理員帳號 `chelsea` 登入使用。

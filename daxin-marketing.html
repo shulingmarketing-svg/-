@@ -143,6 +143,27 @@ td .sub{font-size:12px;color:var(--muted);margin-top:3px}
 .toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:13.5px;box-shadow:0 6px 20px rgba(0,0,0,.25);opacity:0;transition:.3s;pointer-events:none;border-left:4px solid var(--gold)}
 .toast.show{opacity:1}
 
+/* ---------- 登入閘門與確認視窗 ---------- */
+.modal-bg{position:fixed;inset:0;background:rgba(20,17,12,.72);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:var(--paper);border-radius:16px;padding:28px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.modal h3{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:900;margin-bottom:6px}
+.modal .desc{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.6}
+.modal .field{margin-bottom:12px}
+.modal .err{color:var(--red);font-size:12.5px;margin-bottom:10px;min-height:16px}
+.modal .row{display:flex;gap:10px;margin-top:6px}
+.modal .row .btn{flex:1}
+.btn.danger{background:var(--red);color:#fff}
+.btn.danger:hover{background:#8f3a2d}
+.auth-tabs{display:flex;gap:6px;margin-bottom:16px}
+.auth-tabs button{flex:1;padding:9px;border:1px solid var(--line);background:#fff;border-radius:8px;font-size:14px;font-weight:700}
+.auth-tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.side-actions{padding:0 12px 14px;display:flex;flex-direction:column;gap:6px}
+.side-actions button{background:#26221b;border:1px solid #3a342a;color:#c9c0ae;border-radius:8px;padding:8px;font-size:12.5px}
+.side-actions button:hover{color:#fff;border-color:var(--gold)}
+.del-x{background:none;border:none;color:var(--red);font-size:13px;padding:2px 6px;border-radius:6px}
+.del-x:hover{background:var(--red-bg)}
+
 @media (max-width:900px){
   .sidebar{width:64px}
   .brand{font-size:0;padding:20px 0;text-align:center}
@@ -160,6 +181,10 @@ td .sub{font-size:12px;color:var(--muted);margin-top:3px}
 <aside class="sidebar">
   <div class="brand">大心整合行銷</div>
   <nav class="nav" id="nav"></nav>
+  <div class="side-actions">
+    <button onclick="downloadBackup()">⬇ 下載完整備份</button>
+    <button onclick="doLogout()" id="logoutBtn">登出</button>
+  </div>
   <div class="mode-tag" id="modeTag"></div>
 </aside>
 
@@ -173,6 +198,50 @@ td .sub{font-size:12px;color:var(--muted);margin-top:3px}
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- 登入 / 註冊閘門 -->
+<div class="modal-bg" id="authGate">
+  <div class="modal">
+    <h3>大心整合行銷</h3>
+    <p class="desc" id="authDesc">請登入以進入系統。</p>
+    <div class="auth-tabs">
+      <button id="tabLogin" class="on" onclick="authTab('login')">登入</button>
+      <button id="tabReg" onclick="authTab('register')">註冊</button>
+    </div>
+    <div id="regEmailWrap" class="field" style="display:none"><label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px">Email 信箱</label><input id="au_email" type="email" placeholder="name@example.com"></div>
+    <div class="field"><label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px">帳號</label><input id="au_user" placeholder="至少 3 個字元"></div>
+    <div class="field"><label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px">密碼</label><input id="au_pass" type="password" placeholder="至少 8 個字元">
+      <div style="text-align:right;margin-top:5px"><a href="javascript:void(0)" onclick="toggleForgot()" style="font-size:12px;color:var(--gold-deep)">忘記密碼？</a></div>
+    </div>
+    <div id="forgotWrap" style="display:none;background:var(--cream);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px">
+      <p style="font-size:12.5px;margin-bottom:8px;line-height:1.6">輸入你的帳號或 Email，系統會通知總管理員。管理員重設完成後，會以 Email 通知你新密碼。</p>
+      <input id="fg_id" placeholder="帳號或 Email" style="margin-bottom:8px">
+      <button class="btn small" onclick="submitForgot()">送出重設申請</button>
+      <div id="fg_msg" style="font-size:12px;color:var(--green);margin-top:8px"></div>
+    </div>
+    <div id="regCodeWrap" class="field" style="display:none"><label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px">邀請碼（管理者有設定才需填）</label><input id="au_code" placeholder="選填"></div>
+    <div class="err" id="authErr"></div>
+    <div class="row">
+      <button class="btn" id="authBtn" onclick="submitAuth()">登入</button>
+      <button class="btn ghost" id="guestBtn" onclick="guestEnter()" style="display:none">以訪客瀏覽（Demo）</button>
+    </div>
+  </div>
+</div>
+
+<!-- 刪除確認：需帳號密碼 -->
+<div class="modal-bg" id="delModal">
+  <div class="modal">
+    <h3>確認刪除</h3>
+    <p class="desc" id="delDesc"></p>
+    <div class="field"><label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px">帳號</label><input id="del_user"></div>
+    <div class="field"><label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px">密碼</label><input id="del_pass" type="password"></div>
+    <div class="err" id="delErr"></div>
+    <div class="row">
+      <button class="btn ghost" onclick="closeDelete()">取消</button>
+      <button class="btn danger" onclick="performDelete()">確認刪除</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* =====================================================
@@ -238,35 +307,178 @@ const STATUSES = ['草稿中','待補資料','待客戶審核','已發布','緊�
 const state = { data: JSON.parse(JSON.stringify(seed)), selClient:'c-shihchuan', calMonth:'2026-07', route:'overview' };
 const live = () => API_BASE !== "";
 
+/* ---------------- 會員認證 ---------------- */
+let TOKEN = null; try{ TOKEN = localStorage.getItem('daxin_token'); }catch(e){}
+let authMode = 'login';
+const authHeaders = () => TOKEN ? {'Authorization':'Bearer '+TOKEN} : {};
+
+function authTab(mode){
+  authMode = mode;
+  $('#tabLogin').classList.toggle('on', mode==='login');
+  $('#tabReg').classList.toggle('on', mode==='register');
+  $('#regEmailWrap').style.display = mode==='register'?'block':'none';
+  $('#regCodeWrap').style.display = mode==='register'?'block':'none';
+  $('#authBtn').textContent = mode==='register'?'註冊':'登入';
+  $('#authErr').textContent = '';
+}
+function showGate(){
+  $('#authGate').classList.add('show');
+  if(!live()){
+    $('#authDesc').textContent = 'Demo 模式：尚未連接後端，註冊登入需部署後才生效。可先以訪客身分瀏覽介面。';
+    $('#guestBtn').style.display = 'block';
+  }else{
+    $('#authDesc').textContent = '請登入以進入系統。首次使用請先切換到「註冊」建立帳號。';
+  }
+}
+function hideGate(){ $('#authGate').classList.remove('show'); }
+function guestEnter(){
+  hideGate();
+  state.me = {username:'chelsea（示範）', email:'admin@daxin.local', is_admin:true};
+  state.admin = {users:[
+    {id:'u-admin-chelsea',email:'admin@daxin.local',username:'chelsea',is_admin:1,created_at:'（種子帳號）'},
+    {id:'u-demo-staff',email:'staff@example.com',username:'staffA',is_admin:0,created_at:'（示範）'}],
+    resets:[{id:'pr-demo',user_id:'u-demo-staff',username:'staffA',email:'staff@example.com',requested_at:'2026-07-07 09:12'}]};
+  render();
+  toast('訪客瀏覽中：Demo 資料，重新整理會還原');
+}
+function toggleForgot(){
+  const w = $('#forgotWrap');
+  w.style.display = w.style.display==='none'?'block':'none';
+}
+async function submitForgot(){
+  const id = $('#fg_id').value.trim();
+  if(!id) return $('#fg_msg').textContent = '請輸入帳號或 Email';
+  if(!live()) return $('#fg_msg').textContent = 'Demo 模式無後端；部署後此功能會通知管理員。';
+  try{
+    const res = await fetch(API_BASE+'/api/auth/forgot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({identifier:id})});
+    const data = await res.json();
+    $('#fg_msg').textContent = data.message || data.error || '已送出';
+  }catch(e){ $('#fg_msg').textContent = '連線失敗：'+e.message; }
+}
+
+async function submitAuth(){
+  const err = $('#authErr'); err.textContent = '';
+  if(!live()){ err.textContent = 'Demo 模式無後端，請以訪客瀏覽，或先完成部署。'; return; }
+  const username = $('#au_user').value.trim(), password = $('#au_pass').value;
+  try{
+    if(authMode==='register'){
+      const res = await fetch(API_BASE+'/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email:$('#au_email').value.trim(),username,password,register_code:$('#au_code').value.trim()})});
+      const data = await res.json();
+      if(!res.ok){ err.textContent = data.error||'註冊失敗'; return; }
+      toast('註冊成功，請直接登入'); authTab('login'); return;
+    }
+    const res = await fetch(API_BASE+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username,password})});
+    const data = await res.json();
+    if(!res.ok){ err.textContent = data.error||'登入失敗'; return; }
+    TOKEN = data.token;
+    try{ localStorage.setItem('daxin_token', TOKEN); }catch(e){}
+    state.me = {username:data.username, email:data.email, is_admin:!!data.is_admin};
+    hideGate(); toast('歡迎回來，'+data.username+(data.is_admin?'（總管理員）':''));
+    await apiLoad(); render();
+  }catch(e){ err.textContent = '連線失敗：'+e.message; }
+}
+async function doLogout(){
+  if(live() && TOKEN){ try{ await fetch(API_BASE+'/api/auth/logout',{method:'POST',headers:authHeaders()}); }catch(e){} }
+  TOKEN = null; try{ localStorage.removeItem('daxin_token'); }catch(e){}
+  showGate(); toast('已登出');
+}
+
+/* ---------------- 刪除（需帳密二次確認） ---------------- */
+let pendingDelete = null;
+function askDelete(type, id, label){
+  pendingDelete = {type, id, label};
+  $('#delDesc').innerHTML = `即將刪除：<b>${esc(label)}</b>${type==='client'?'<br><span style="color:var(--red)">⚠ 將連同該品牌的所有內容、戰役、品牌 DNA 一併刪除，無法復原。</span>':'<br>此動作無法復原。'}<br>請輸入你的帳號與密碼確認。`;
+  $('#del_user').value=''; $('#del_pass').value=''; $('#delErr').textContent='';
+  $('#delModal').classList.add('show');
+}
+function closeDelete(){ $('#delModal').classList.remove('show'); pendingDelete=null; }
+async function performDelete(){
+  if(!pendingDelete) return;
+  const username = $('#del_user').value.trim(), password = $('#del_pass').value;
+  const err = $('#delErr');
+  if(!username || !password){ err.textContent='請輸入帳號與密碼'; return; }
+  const {type, id, label} = pendingDelete;
+  const paths = {content:'/api/content/', crm:'/api/crm/', campaign:'/api/campaigns/', client:'/api/clients/'};
+  if(live()){
+    try{
+      const res = await fetch(API_BASE+paths[type]+id,{method:'DELETE',
+        headers:{'Content-Type':'application/json',...authHeaders()},
+        body:JSON.stringify({username,password})});
+      const data = await res.json();
+      if(!res.ok){ err.textContent = data.error||'刪除失敗'; return; }
+    }catch(e){ err.textContent='連線失敗：'+e.message; return; }
+  }
+  // 本地資料同步移除
+  const d = state.data;
+  if(type==='content') d.content = d.content.filter(x=>x.id!==id);
+  if(type==='crm') d.crm = d.crm.filter(x=>x.id!==id);
+  if(type==='campaign') d.campaigns = d.campaigns.filter(x=>x.id!==id);
+  if(type==='client'){
+    d.content = d.content.filter(x=>x.client_id!==id);
+    d.campaigns = d.campaigns.filter(x=>x.client_id!==id);
+    delete d.profiles[id];
+    d.clients = d.clients.filter(x=>x.id!==id);
+    if(state.selClient===id) state.selClient = d.clients[0]?.id || null;
+  }
+  closeDelete(); toast('已刪除：'+label); render();
+}
+
+/* ---------------- 備份下載 ---------------- */
+async function downloadBackup(){
+  let dump;
+  if(live()){
+    try{
+      const res = await fetch(API_BASE+'/api/backup',{headers:authHeaders()});
+      if(res.status===401){ showGate(); return; }
+      dump = await res.json();
+    }catch(e){ return toast('備份失敗：'+e.message); }
+  }else{
+    dump = {exported_at:new Date().toISOString(), mode:'demo', ...state.data};
+  }
+  const blob = new Blob([JSON.stringify(dump,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'daxin-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('備份已下載（含會員與全部營運資料）');
+}
+
 /* ---------------- API 抽象層：Demo / 連線兩用 ---------------- */
 async function apiLoad(){
   if(!live()) return;
   try{
-    const [clients, content, campaigns, crm] = await Promise.all([
-      fetch(API_BASE+'/api/clients').then(r=>r.json()),
-      fetch(API_BASE+'/api/content').then(r=>r.json()),
-      fetch(API_BASE+'/api/campaigns').then(r=>r.json()),
-      fetch(API_BASE+'/api/crm').then(r=>r.json()),
+    const h = {headers:authHeaders()};
+    const first = await fetch(API_BASE+'/api/clients', h);
+    if(first.status===401){ showGate(); return; }
+    try{ state.me = await fetch(API_BASE+'/api/auth/me', h).then(r=>r.json()); }catch(e){}
+    const clients = await first.json();
+    const [content, campaigns, crm] = await Promise.all([
+      fetch(API_BASE+'/api/content', h).then(r=>r.json()),
+      fetch(API_BASE+'/api/campaigns', h).then(r=>r.json()),
+      fetch(API_BASE+'/api/crm', h).then(r=>r.json()),
     ]);
-    const colors = ['#3e7d5a','#b04a3a','#3d6b8e','#a07816','#b0447a'];
+    const colors = ['#C0392B','#2A9D8F','#E9911C','#3d6b8e','#b0447a'];
     state.data.clients = clients.map((c,i)=>({...c, tags: typeof c.tags==='string'? JSON.parse(c.tags||'[]'):c.tags, color: colors[i%colors.length]}));
     state.data.content = content; state.data.campaigns = campaigns; state.data.crm = crm;
     state.data.profiles = {};
     for(const c of clients){
-      state.data.profiles[c.id] = await fetch(API_BASE+'/api/profiles/'+c.id).then(r=>r.json());
+      state.data.profiles[c.id] = await fetch(API_BASE+'/api/profiles/'+c.id, h).then(r=>r.json());
     }
+    if(!state.data.clients.find(c=>c.id===state.selClient)) state.selClient = state.data.clients[0]?.id || null;
   }catch(e){ toast('無法連線 Worker API，請檢查 API_BASE 設定'); }
 }
 async function apiPost(path, body){
-  if(live()) return fetch(API_BASE+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json());
+  if(live()) return fetch(API_BASE+path,{method:'POST',headers:{'Content-Type':'application/json',...authHeaders()},body:JSON.stringify(body)}).then(r=>r.json());
   return {id:'demo-'+Date.now().toString(36)};
 }
 async function apiPatch(path, body){
-  if(live()) return fetch(API_BASE+path,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json());
+  if(live()) return fetch(API_BASE+path,{method:'PATCH',headers:{'Content-Type':'application/json',...authHeaders()},body:JSON.stringify(body)}).then(r=>r.json());
   return {ok:true};
 }
 async function apiPut(path, body){
-  if(live()) return fetch(API_BASE+path,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json());
+  if(live()) return fetch(API_BASE+path,{method:'PUT',headers:{'Content-Type':'application/json',...authHeaders()},body:JSON.stringify(body)}).then(r=>r.json());
   return {ok:true};
 }
 
@@ -290,10 +502,11 @@ const ROUTES = [
  {key:'schedule',     num:7, title:'內容排程',   sub:'跨品牌排程看板，A 品牌不會發到 B 品牌', icon:'▦'},
  {key:'revenue',      num:8, title:'收益與交付', sub:'交付流水帳、預算分配、內容 → 營收關聯', icon:'▤'},
  {key:'crm',          num:9, title:'客戶總管理', sub:'CRM 管線：從名單、提案到續約全追蹤', icon:'◇'},
+ {key:'admin',        num:10,title:'管理員',     sub:'會員管理、密碼重設申請處理', icon:'⚙', adminOnly:true},
 ];
 
 function renderNav(){
-  $('#nav').innerHTML = ROUTES.map(r=>
+  $('#nav').innerHTML = ROUTES.filter(r=>!r.adminOnly || state.me?.is_admin).map(r=>
     `<a href="#${r.key}" class="${state.route===r.key?'active':''}"><span class="ic">${r.icon}</span><span class="txt">${r.title}</span></a>`).join('');
   $('#modeTag').innerHTML = live()
     ? `<b>連線模式</b><br>資料存於 Cloudflare D1`
@@ -378,6 +591,17 @@ function pageClients(){
     </div>
     <div class="panel"><div class="panel-head"><h3>${esc(sel.company_name)}｜AI 資料庫</h3><span class="hint">產出文章前的底層資料</span></div>
       <div class="grid2">${cards.map(([t,v])=>`<div class="info-card"><h4>${t}</h4><p>${esc(v)||'<i style="color:var(--muted)">待補充</i>'}</p></div>`).join('')}</div>
+      <div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px">
+        <h4 style="font-size:13.5px;margin-bottom:10px">品牌基本資料編輯</h4>
+        <div class="grid4">
+          <div class="field"><label>品牌名稱</label><input id="cl_brand" value="${esc(sel.brand_name||'')}"></div>
+          <div class="field"><label>月費 NT$</label><input id="cl_fee" type="number" value="${sel.monthly_fee||0}"></div>
+          <div class="field"><label>資料完整度 %</label><input id="cl_complete" type="number" min="0" max="100" value="${sel.data_completeness||0}"></div>
+          <div class="field"><label>標籤（逗號分隔）</label><input id="cl_tags" value="${esc((sel.tags||[]).join('、'))}"></div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px"><button class="btn small" onclick="saveClientInfo()">儲存基本資料</button>
+        <button class="btn small danger" onclick="askDelete('client','${sel.id}','${esc(sel.brand_name||sel.company_name)}（整個品牌）')">刪除此品牌</button></div>
+      </div>
     </div>
   </div>`;
 }
@@ -461,6 +685,16 @@ function pageTraining(){
     <div style="margin-top:14px"><button class="btn" onclick="saveProfile()">儲存訓練資料</button></div>
   </div>`;
 }
+async function saveClientInfo(){
+  const c = clientOf(state.selClient);
+  c.brand_name = $('#cl_brand').value.trim();
+  c.monthly_fee = +$('#cl_fee').value||0;
+  c.data_completeness = Math.min(100, Math.max(0, +$('#cl_complete').value||0));
+  c.tags = $('#cl_tags').value.split(/[、,，]/).map(s=>s.trim()).filter(Boolean);
+  await apiPatch('/api/clients/'+c.id, {brand_name:c.brand_name, monthly_fee:c.monthly_fee, data_completeness:c.data_completeness, tags:c.tags});
+  toast('已更新品牌基本資料');
+  render();
+}
 async function saveProfile(){
   const p = state.data.profiles[state.selClient] || (state.data.profiles[state.selClient]={});
   for(const k of ['positioning','target_audience','content_pillars','competitors','writing_restrictions','regulation_notes','platform_preferences'])
@@ -519,7 +753,7 @@ async function generateArticle(){
   let text;
   if(live()){
     try{
-      const res = await fetch(API_BASE+'/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},
+      const res = await fetch(API_BASE+'/api/generate',{method:'POST',headers:{'Content-Type':'application/json',...authHeaders()},
         body:JSON.stringify({client_id:cid, platform, business_goal:goal,
           target_audience_line:$('#g_ta').value, structure:$('#g_structure').value,
           campaign_theme:$('#g_campaign').value, topic, extra_constraints:$('#g_extra').value,
@@ -551,7 +785,7 @@ function pageCampaign(){
   <p class="page-desc">用三個月視角規劃預算、主題、活動節點與內容任務，支援小案、中案、大案。</p>
   <div class="panel"><div class="panel-head"><h3>季度戰役看板</h3>
     <span>${d.clients.map(c=>`<button class="btn small ${c.id===sel?'':'ghost'}" onclick="state.selClient='${c.id}';render()">${esc(c.brand_name||c.company_name)}</button>`).join(' ')}</span></div>
-    ${camp?`<p style="font-size:13px;color:var(--muted);margin-bottom:14px">${esc(camp.quarter)}｜${esc(camp.theme)}${camp.budget?`｜預算 ${fmt(camp.budget)}`:''}</p>`:`
+    ${camp?`<p style="font-size:13px;color:var(--muted);margin-bottom:14px">${esc(camp.quarter)}｜${esc(camp.theme)}${camp.budget?`｜預算 ${fmt(camp.budget)}`:''} <button class="del-x" onclick="askDelete('campaign','${camp.id}','${esc(camp.quarter)}戰役')">✕ 刪除戰役</button></p>`:`
     <div class="grid4" style="margin-bottom:14px;align-items:end">
       <div class="field"><label>季度</label><input id="cp_quarter" placeholder="例如：2026-Q3"></div>
       <div class="field"><label>戰役主題</label><input id="cp_theme" placeholder="例如：夏日檔期 → 中秋禮盒預熱"></div>
@@ -562,7 +796,7 @@ function pageCampaign(){
       ${STATUSES.map(st=>{
         const list = items.filter(c=>c.status===st);
         return `<div class="kcol"><h4>${st}<span>${list.length}</span></h4>
-          ${list.map(c=>`<div class="kcard"><b>${esc(c.title)}</b>
+          ${list.map(c=>`<div class="kcard"><b>${esc(c.title)} <button class="del-x" onclick="askDelete('content','${c.id}','${esc(c.title)}')" title="刪除">✕</button></b>
             <div class="meta">${esc(c.platform)} · ${c.scheduled_date||'未排程'}</div>
             <div style="margin-top:6px">${chip(c.status)}${c.business_goal?` <span class="chip" style="background:var(--cream-2)">${esc(c.business_goal)}</span>`:''}</div>
             <div style="margin-top:7px"><select onchange="moveStatus('${c.id}',this.value)" style="padding:4px 6px;font-size:11.5px">
@@ -600,6 +834,41 @@ async function moveStatus(id, st){
 /* =====================================================
    模組 7：內容排程（月曆）
 ===================================================== */
+function deletePicked(){
+  const id = $('#ci_pick').value;
+  const c = state.data.content.find(x=>x.id===id);
+  if(c) askDelete('content', c.id, c.title);
+}
+function pickContent(){
+  const id = $('#ci_pick').value;
+  const c = state.data.content.find(x=>x.id===id);
+  $('#ci_del').style.display = c ? 'inline-block' : 'none';
+  if(!c){ $('#ci_title').value=''; $('#ci_date').value=''; $('#ci_next').value=''; return; }
+  $('#ci_client').value = c.client_id; $('#ci_title').value = c.title;
+  $('#ci_platform').value = c.platform; $('#ci_status').value = c.status;
+  $('#ci_date').value = c.scheduled_date||''; $('#ci_value').value = c.value_ntd||0;
+  $('#ci_next').value = c.next_step||'';
+}
+async function saveContent(){
+  const id = $('#ci_pick').value;
+  const title = $('#ci_title').value.trim();
+  if(!title) return toast('請填寫標題');
+  const body = {client_id:$('#ci_client').value, title, platform:$('#ci_platform').value,
+    status:$('#ci_status').value, scheduled_date:$('#ci_date').value||null,
+    value_ntd:+$('#ci_value').value||0, next_step:$('#ci_next').value};
+  if(body.status==='已發布') body.published_date = body.scheduled_date || new Date().toISOString().slice(0,10);
+  if(id){
+    const item = state.data.content.find(x=>x.id===id);
+    Object.assign(item, body);
+    await apiPatch('/api/content/'+id, body);
+    toast('已更新：'+title);
+  }else{
+    const res = await apiPost('/api/content', body);
+    state.data.content.push({...body, id:res.id, content_body:'', business_goal:'', campaign_id:null});
+    toast('已新增內容：'+title);
+  }
+  render();
+}
 function shiftMonth(delta){
   const [y,m] = state.calMonth.split('-').map(Number);
   const dt = new Date(y, m-1+delta, 1);
@@ -624,6 +893,24 @@ function pageSchedule(){
   return `
   <h1 class="page-title">內容排程</h1>
   <p class="page-desc">把活動、平台和員工交付節奏排進日曆，快速找到草稿中、待補資料、待客戶審核、緊急處理和已發布內容。</p>
+  <div class="panel"><div class="panel-head"><h3>新增／編輯內容</h3><span class="hint">手動匯入內容，或幫 AI 草稿補上日期與價值</span></div>
+    <div class="grid4">
+      <div class="field"><label>選擇項目</label><select id="ci_pick" onchange="pickContent()">
+        <option value="">＋ 新增一筆內容</option>
+        ${d.content.map(c=>`<option value="${c.id}">${esc(clientOf(c.client_id).brand_name||'')}｜${esc(c.title)}</option>`).join('')}</select></div>
+      <div class="field"><label>品牌</label><select id="ci_client">${d.clients.map(c=>`<option value="${c.id}">${esc(c.brand_name||c.company_name)}</option>`).join('')}</select></div>
+      <div class="field"><label>標題</label><input id="ci_title" placeholder="例如：果醋中元禮盒搶先看"></div>
+      <div class="field"><label>平台</label><select id="ci_platform"><option>FB+IG</option><option>Facebook</option><option>Instagram</option><option>SEO</option><option>Reels</option><option>蝦皮</option><option>KOL</option></select></div>
+    </div>
+    <div class="grid4" style="margin-top:12px">
+      <div class="field"><label>狀態</label><select id="ci_status">${STATUSES.map(s=>`<option>${s}</option>`).join('')}</select></div>
+      <div class="field"><label>預計發布日</label><input id="ci_date" type="date"></div>
+      <div class="field"><label>每篇價值 NT$</label><input id="ci_value" type="number" value="1500"></div>
+      <div class="field"><label>下一步備註</label><input id="ci_next" placeholder="例如：等客戶補圖"></div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px"><button class="btn" onclick="saveContent()">儲存內容</button>
+    <button class="btn danger" onclick="deletePicked()" id="ci_del" style="display:none">刪除此內容</button></div>
+  </div>
   <div class="panel">
     <div class="cal-head">
       <div class="field" style="width:180px"><label>狀態篩選</label><select onchange="state.schedSt=this.value;render()">
@@ -712,12 +999,13 @@ function pageCRM(){
     <div style="margin-top:14px"><button class="btn" onclick="createCRM()">新增客戶管理紀錄</button></div>
   </div>
   <div class="panel"><div class="panel-head"><h3>CRM 管線</h3><span class="hint">名單 → 提案 → 合約 → 續約</span></div>
-    <table><thead><tr><th>公司</th><th>聯絡人</th><th>階段</th><th>下次聯繫</th><th>商機金額</th><th>負責人</th><th>備註</th></tr></thead><tbody>
+    <table><thead><tr><th>公司</th><th>聯絡人</th><th>階段</th><th>下次聯繫</th><th>商機金額</th><th>負責人</th><th>備註</th><th></th></tr></thead><tbody>
       ${d.crm.map(r=>`<tr><td><b>${esc(r.company_name)}</b><div class="sub">${esc(r.marketing_need||'')}</div></td>
         <td>${esc(r.contact_name)}<div class="sub">${esc(r.contact_title||'')} · ${esc(r.contact_method||'')}</div></td>
         <td><span class="chip" style="background:var(--green-bg);color:var(--green)">${esc(r.stage)}</span><div class="sub">${esc(r.follow_up_status||'')}</div></td>
         <td>${r.next_contact_date||'—'}</td><td>${fmt(r.deal_value)}</td><td>${esc(r.owner||'')}</td>
-        <td style="font-size:12.5px;max-width:220px">${esc(r.notes||'')}</td></tr>`).join('')}
+        <td style="font-size:12.5px;max-width:220px">${esc(r.notes||'')}</td>
+        <td><button class="del-x" onclick="askDelete('crm','${r.id}','${esc(r.company_name)}')">✕</button></td></tr>`).join('')}
     </tbody></table>
   </div>`;
 }
@@ -734,12 +1022,92 @@ async function createCRM(){
   render();
 }
 
+/* =====================================================
+   模組 10：管理員（會員管理、密碼重設）
+===================================================== */
+async function loadAdminData(){
+  if(!live() || !state.me?.is_admin) return;
+  try{
+    const h2 = {headers:authHeaders()};
+    const [users, resets] = await Promise.all([
+      fetch(API_BASE+'/api/admin/users', h2).then(r=>r.json()),
+      fetch(API_BASE+'/api/admin/resets', h2).then(r=>r.json()),
+    ]);
+    state.admin = {users: Array.isArray(users)?users:[], resets: Array.isArray(resets)?resets:[]};
+  }catch(e){ toast('管理員資料載入失敗'); }
+}
+function pageAdmin(){
+  const A = state.admin || {users:[], resets:[]};
+  return `
+  <h1 class="page-title">管理員</h1>
+  <p class="page-desc">處理忘記密碼申請、管理會員帳號。重設密碼後，請手動寄 Email 通知該使用者新密碼（系統不會自動寄信）。</p>
+  ${state.adminMsg?`<div class="panel" style="border-left:4px solid var(--green)"><b style="color:var(--green)">✔ ${esc(state.adminMsg)}</b></div>`:''}
+  <div class="panel"><div class="panel-head"><h3>待處理的密碼重設申請</h3><span class="hint">使用者於登入頁按「忘記密碼」後出現在這裡</span></div>
+    ${A.resets.length?`<table><thead><tr><th>帳號</th><th>Email</th><th>申請時間</th><th></th></tr></thead><tbody>
+      ${A.resets.map(r=>`<tr><td><b>${esc(r.username)}</b></td><td>${esc(r.email)}</td><td>${esc(r.requested_at||'')}</td>
+      <td style="white-space:nowrap"><button class="btn small" onclick="adminPick('${r.user_id}','${esc(r.username)}','${esc(r.email)}')">重設密碼</button>
+      <button class="del-x" onclick="adminDismiss('${r.id}')">忽略</button></td></tr>`).join('')}
+    </tbody></table>`:'<div class="kempty">目前沒有待處理申請</div>'}
+  </div>
+  <div class="panel"><div class="panel-head"><h3>重設使用者密碼</h3><span class="hint">重設後該使用者所有裝置將被登出</span></div>
+    <div class="grid3">
+      <div class="field"><label>目標帳號</label><input id="ad_user" value="${esc(state.adminTarget?.username||'')}" readonly style="background:var(--cream-2)"></div>
+      <div class="field"><label>新密碼（至少 8 字元）</label><input id="ad_pass" type="text" placeholder="設定後請寄信告知使用者"></div>
+      <div style="display:flex;align-items:flex-end"><button class="btn" onclick="adminDoReset()">確認重設</button></div>
+    </div>
+    <input type="hidden" id="ad_uid" value="${esc(state.adminTarget?.user_id||'')}">
+    <input type="hidden" id="ad_email" value="${esc(state.adminTarget?.email||'')}">
+  </div>
+  <div class="panel"><div class="panel-head"><h3>會員列表</h3><span class="hint">共 ${A.users.length} 位</span></div>
+    <table><thead><tr><th>帳號</th><th>Email</th><th>身分</th><th>建立時間</th><th></th></tr></thead><tbody>
+      ${A.users.map(u=>`<tr><td><b>${esc(u.username)}</b></td><td>${esc(u.email)}</td>
+      <td>${u.is_admin?'<span class="chip" style="background:var(--yellow-bg);color:var(--yellow)">總管理員</span>':'一般使用者'}</td>
+      <td>${esc(u.created_at||'')}</td>
+      <td><button class="btn small ghost" onclick="adminPick('${u.id}','${esc(u.username)}','${esc(u.email)}')">重設密碼</button></td></tr>`).join('')}
+    </tbody></table>
+  </div>`;
+}
+function adminPick(user_id, username, email){
+  state.adminTarget = {user_id, username, email};
+  state.adminMsg = '';
+  render();
+}
+async function adminDismiss(id){
+  if(live()){ try{ await fetch(API_BASE+'/api/admin/resets/'+id+'/dismiss',{method:'POST',headers:authHeaders()}); }catch(e){} }
+  state.admin.resets = state.admin.resets.filter(r=>r.id!==id);
+  toast('已忽略該申請'); render();
+}
+async function adminDoReset(){
+  const user_id = $('#ad_uid').value, username = $('#ad_user').value, email = $('#ad_email').value;
+  const pw = $('#ad_pass').value;
+  if(!user_id) return toast('請先從申請或會員列表點「重設密碼」選擇對象');
+  if(pw.length < 8) return toast('新密碼至少 8 個字元');
+  if(live()){
+    try{
+      const res = await fetch(API_BASE+'/api/admin/reset-password',{method:'POST',
+        headers:{'Content-Type':'application/json',...authHeaders()},
+        body:JSON.stringify({user_id, new_password:pw})});
+      const data = await res.json();
+      if(!res.ok) return toast(data.error||'重設失敗');
+    }catch(e){ return toast('連線失敗：'+e.message); }
+  }
+  state.admin.resets = (state.admin?.resets||[]).filter(r=>r.user_id!==user_id);
+  state.adminMsg = `已重設「${username}」的密碼。請手動寄 Email 至 ${email} 通知使用者新密碼，並提醒對方登入後妥善保管。`;
+  state.adminTarget = null;
+  render();
+}
+
 /* ---------------- 渲染主控 ---------------- */
 const PAGES = {overview:pageOverview, clients:pageClients, onboarding:pageOnboarding, training:pageTraining,
-  generate:pageGenerate, campaign:pageCampaign, schedule:pageSchedule, revenue:pageRevenue, crm:pageCRM};
+  generate:pageGenerate, campaign:pageCampaign, schedule:pageSchedule, revenue:pageRevenue, crm:pageCRM, admin:pageAdmin};
 
 function render(){
-  const r = ROUTES.find(x=>x.key===state.route) || ROUTES[0];
+  let r = ROUTES.find(x=>x.key===state.route) || ROUTES[0];
+  if(r.adminOnly && !state.me?.is_admin){ r = ROUTES[0]; state.route = r.key; }
+  if(r.key==='admin' && live() && !state.adminLoaded){
+    state.adminLoaded = true;
+    loadAdminData().then(()=>{ if(state.route==='admin') { $('#app').innerHTML = PAGES.admin(); } });
+  }
   $('#tbNum').textContent = r.num; $('#tbTitle').textContent = r.title; $('#tbSub').textContent = r.sub;
   renderNav();
   $('#app').innerHTML = PAGES[r.key]();
@@ -747,8 +1115,13 @@ function render(){
 window.addEventListener('hashchange', ()=>{ state.route = location.hash.slice(1)||'overview'; render(); });
 
 (async function init(){
-  await apiLoad();
   state.route = location.hash.slice(1)||'overview';
+  if(live()){
+    if(!TOKEN){ showGate(); renderNav(); return; }
+    await apiLoad();          // 若 token 過期，apiLoad 內會自動彈出登入
+  }else{
+    showGate();               // Demo 模式：顯示閘門並提供訪客入口
+  }
   render();
 })();
 </script>

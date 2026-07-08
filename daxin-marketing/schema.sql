@@ -8,6 +8,9 @@ DROP TABLE IF EXISTS brand_profiles;
 DROP TABLE IF EXISTS content_items;
 DROP TABLE IF EXISTS campaigns;
 DROP TABLE IF EXISTS crm_pipeline;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS sessions;
+DROP TABLE IF EXISTS password_resets;
 
 -- 客戶／品牌主表（模組 2、3）
 CREATE TABLE clients (
@@ -79,6 +82,35 @@ CREATE TABLE crm_pipeline (
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 會員資料表
+CREATE TABLE users (
+  id TEXT PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  username TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,   -- PBKDF2-SHA256 雜湊，非明文
+  salt TEXT NOT NULL,
+  is_admin INTEGER DEFAULT 0,    -- 1 = 總管理員
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 忘記密碼申請表（通知管理員人工處理）
+CREATE TABLE password_resets (
+  id TEXT PRIMARY KEY,
+  user_id TEXT,
+  username TEXT,
+  email TEXT,
+  status TEXT DEFAULT 'pending',   -- pending / done / dismissed
+  requested_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  handled_at TEXT
+);
+
+-- 登入 Session 表（Token 有效 7 天）
+CREATE TABLE sessions (
+  token TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  expires_at TEXT NOT NULL
+);
+
 -- =========================================================
 -- 種子資料（真實三品牌：十全 / iOiO / 一比呀呀）
 -- =========================================================
@@ -134,3 +166,7 @@ INSERT INTO content_items (id,client_id,campaign_id,title,platform,status,conten
 
 INSERT INTO crm_pipeline (id,company_name,contact_name,contact_title,contact_method,stage,follow_up_status,next_contact_date,deal_value,marketing_need,owner,priority,notes) VALUES
 ('crm-001','十全特好食品股份有限公司','（待補聯絡人）','行銷窗口','待確認','已成交','服務中','2026-07-20',60000,'FB/IG 經營 + SEO 文章（三品牌）','待指派','高','月費 2 萬、中案。三品牌（十全/iOiO/一比呀呀）內容經營中，月費如何分攤到副品牌待確認。');
+
+-- 總管理員帳號（帳號 chelsea；密碼僅存雜湊，明文不落地）
+INSERT INTO users (id,email,username,password_hash,salt,is_admin) VALUES
+('u-admin-chelsea','admin@daxin.local','chelsea','29ef6c874c25a0ccc97bfc4fe99f4b3e42d21013743926a5320a02c3683d0ee1','defa0ee9748af225b41ffe1ef1865ed6',1);
