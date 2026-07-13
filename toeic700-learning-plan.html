@@ -453,6 +453,24 @@ input[type="password"],input[type="text"]{
 }
 input[type="password"]:focus,input[type="text"]:focus{outline:2px solid var(--accent);outline-offset:1px}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end}
+
+/* ===== QUESTION BANK ===== */
+.bank-note{
+  font-size:12px;
+  color:var(--ink3);
+  margin:-.5rem 0 1rem;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.bank-note button{
+  background:none;border:none;
+  color:var(--accent2);
+  font-size:12px;
+  cursor:pointer;
+  text-decoration:underline;
+  font-family:'Outfit',sans-serif;
+}
 </style>
 </head>
 <body>
@@ -580,6 +598,7 @@ input[type="password"]:focus,input[type="text"]:focus{outline:2px solid var(--ac
 <div id="page-quiz">
   <div id="v-setup-main" class="view">
     <div class="section-title">選擇階段進行測驗</div>
+    <div class="bank-note" id="bank-note"></div>
     <div class="phase-grid" id="quiz-phase-select"></div>
     <div id="quiz-error"></div>
   </div>
@@ -844,6 +863,7 @@ function showPage(id){
   });
   if(id==='quiz'){
     showQuizView('v-setup-main');
+    renderBankNote();
   }
 }
 
@@ -873,23 +893,96 @@ function showQuizView(id){
   });
 }
 
-async function startPhaseQuiz(num, e){
-  e&&e.stopPropagation();
-  if(!getApiKey()){
-    showPage('quiz');
-    openSettings();
+/* ---- 自建題庫（累積 AI 出過的題目，依階段分類，之後優先從這裡抽題） ---- */
+const BANK_STORAGE='toeic700_question_bank';
+const BANK_MAX=800;
+const QUIZ_COUNT=10;
+
+function loadBank(){
+  try{ return JSON.parse(localStorage.getItem(BANK_STORAGE))||[]; }
+  catch(e){ return []; }
+}
+
+function questionKey(phaseNum,q){
+  return `${phaseNum}|${q.type}|${(q.question||'').trim()}`;
+}
+
+function addToBank(phaseNum,newQuestions){
+  const bank=loadBank();
+  const seen=new Set(bank.map(q=>questionKey(q.phase,q)));
+  newQuestions.forEach(q=>{
+    const entry={...q,phase:phaseNum};
+    const key=questionKey(phaseNum,q);
+    if(!seen.has(key)){
+      bank.push(entry);
+      seen.add(key);
+    }
+  });
+  const trimmed=bank.length>BANK_MAX?bank.slice(bank.length-BANK_MAX):bank;
+  localStorage.setItem(BANK_STORAGE,JSON.stringify(trimmed));
+}
+
+function clearBank(){
+  localStorage.removeItem(BANK_STORAGE);
+  renderBankNote();
+}
+
+function shuffle(arr){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function pickFromBank(phaseNum,count){
+  const bank=loadBank().filter(q=>q.phase===phaseNum);
+  return shuffle(bank).slice(0,count);
+}
+
+function renderBankNote(){
+  const el=document.getElementById('bank-note');
+  if(!el) return;
+  const bank=loadBank();
+  if(!bank.length){
+    el.innerHTML='題庫目前是空的，出過的題目會自動存下來，之後優先從題庫抽題（不用每次都呼叫 AI）。';
     return;
   }
+  el.innerHTML=`題庫已累積 ${bank.length} 題　<button onclick="clearBank()">清空題庫</button>`;
+}
+
+async function startPhaseQuiz(num, e){
+  e&&e.stopPropagation();
   const p=PHASES.find(x=>x.num===num);
   Q.phase=p;Q.questions=[];Q.current=0;Q.answers=[];Q.answered=false;Q.sel=null;
   showPage('quiz');
+
+  const bankPicks=pickFromBank(num,QUIZ_COUNT);
+  const remaining=QUIZ_COUNT-bankPicks.length;
+
+  if(remaining<=0){
+    Q.questions=shuffle(bankPicks);
+    showQuizView('v-quiz');
+    renderQ();
+    return;
+  }
+
+  if(!getApiKey()){
+    if(bankPicks.length){
+      document.getElementById('quiz-error').innerHTML=`<div class="error-note">題庫只有 ${bankPicks.length} 題符合本階段，還需要 ${remaining} 題才夠，請設定 API Key 讓 AI 補題。</div>`;
+    }
+    openSettings();
+    return;
+  }
+
   showQuizView('v-loading');
 
   const typeMap={vocab:'詞彙填空',grammar:'文法選擇',reading:'閱讀理解',listening:'情境對話',reorder:'句子排序'};
   const diffMap={easy:'基礎（高一程度）',mixed:'基礎到中級混合',hard:'中高級進階'};
   const types=p.quizTypes.map(t=>typeMap[t]||t).join('、');
 
-  const prompt=`你是 TOEIC 英文考試專業出題老師。請依照以下條件出 10 道 TOEIC 練習題：
+  const prompt=`你是 TOEIC 英文考試專業出題老師。請依照以下條件出 ${remaining} 道 TOEIC 練習題：
 
 學習階段：第 ${p.num} 月「${p.name}」
 本階段主題：${p.topics.map(t=>t.label).join('、')}
@@ -904,7 +997,6 @@ answer 為 0-3 的正確選項索引。explanation 請用中文，1-2句。`;
 
   try{
     const apiKey=getApiKey();
-    if(!apiKey) throw new Error('尚未設定 API Key');
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{
@@ -927,7 +1019,8 @@ answer 為 0-3 的正確選項索引。explanation 請用中文，1-2句。`;
     const text=data.content.map(c=>c.type==='text'?c.text:'').join('');
     const clean=text.replace(/```json|```/g,'').trim();
     const parsed=JSON.parse(clean);
-    Q.questions=parsed.questions;
+    addToBank(num,parsed.questions);
+    Q.questions=shuffle([...bankPicks,...parsed.questions]);
     showQuizView('v-quiz');
     renderQ();
   }catch(err){
@@ -1060,6 +1153,7 @@ renderPlan();
 renderWeekly();
 renderQuizSelect();
 renderTips();
+renderBankNote();
 </script>
 </body>
 </html>
