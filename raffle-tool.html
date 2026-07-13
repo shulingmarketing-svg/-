@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>會員抽獎工具</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif; }
+  @keyframes pop { 0% { transform: scale(.6); opacity:0; } 60% { transform: scale(1.05); opacity:1; } 100% { transform: scale(1); } }
+  .winner-pop { animation: pop .35s ease-out; }
+  .rolling { font-variant-numeric: tabular-nums; }
+  ::-webkit-scrollbar { height: 8px; width: 8px; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+</style>
+</head>
+<body class="bg-slate-50 min-h-screen pb-24">
+
+  <header class="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white">
+    <div class="max-w-5xl mx-auto px-4 py-6">
+      <h1 class="text-2xl font-bold flex items-center gap-2">🎉 會員抽獎工具</h1>
+      <p class="text-indigo-100 text-sm mt-1">匯入 Excel 會員名單 → 系統自動篩選具抽獎資格的會員 → 設定獎項與條件 → 隨機抽出中獎名單</p>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 mt-6 space-y-6">
+
+    <!-- Step 1: Upload -->
+    <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <h2 class="text-lg font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-sm flex items-center justify-center">1</span> 匯入會員資料</h2>
+        <div class="flex gap-2">
+          <button id="btnSample" class="text-sm px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50">下載範例 Excel</button>
+          <button id="btnClearAll" class="text-sm px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50">清除全部重新開始</button>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <label class="block border-2 border-dashed border-slate-300 rounded-lg p-6 text-center cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/40 transition">
+          <input id="fileInput" type="file" accept=".xlsx,.xls,.csv" class="hidden">
+          <div class="text-slate-500 text-sm">
+            <span class="text-indigo-600 font-semibold">點擊選擇檔案</span> 或拖曳 Excel / CSV 檔案至此
+            <div class="text-xs text-slate-400 mt-1">支援 .xlsx / .xls / .csv，需包含「電話」「姓名」「Email」欄位</div>
+          </div>
+        </label>
+        <div id="fileName" class="text-xs text-slate-400 mt-2"></div>
+      </div>
+
+      <!-- Column mapping -->
+      <div id="mappingBox" class="hidden mt-5 border-t border-slate-100 pt-4">
+        <h3 class="text-sm font-semibold text-slate-600 mb-3">欄位對應（系統已嘗試自動辨識，請確認或手動調整）</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="text-xs text-slate-500">姓名欄位</label>
+            <select id="mapName" class="mt-1 w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm"></select>
+          </div>
+          <div>
+            <label class="text-xs text-slate-500">電話欄位</label>
+            <select id="mapPhone" class="mt-1 w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm"></select>
+          </div>
+          <div>
+            <label class="text-xs text-slate-500">Email 欄位</label>
+            <select id="mapEmail" class="mt-1 w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm"></select>
+          </div>
+        </div>
+        <button id="btnValidate" class="mt-4 px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700">套用並驗證資料</button>
+      </div>
+
+      <!-- Stats -->
+      <div id="statsBox" class="hidden mt-5 grid grid-cols-3 gap-3 text-center">
+        <div class="rounded-lg bg-slate-50 border border-slate-200 py-3">
+          <div class="text-2xl font-bold text-slate-700" id="statTotal">0</div>
+          <div class="text-xs text-slate-500">總筆數</div>
+        </div>
+        <div class="rounded-lg bg-emerald-50 border border-emerald-200 py-3">
+          <div class="text-2xl font-bold text-emerald-600" id="statValid">0</div>
+          <div class="text-xs text-emerald-600">具抽獎資格</div>
+        </div>
+        <div class="rounded-lg bg-red-50 border border-red-200 py-3">
+          <div class="text-2xl font-bold text-red-500" id="statInvalid">0</div>
+          <div class="text-xs text-red-500">資料不全（不可參加）</div>
+        </div>
+      </div>
+
+      <!-- Preview table -->
+      <div id="previewBox" class="hidden mt-4">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-semibold text-slate-600">會員名單預覽</h3>
+          <label class="text-xs text-slate-500 flex items-center gap-1">
+            <input type="checkbox" id="onlyInvalid"> 只顯示不合格資料
+          </label>
+        </div>
+        <div class="max-h-72 overflow-auto border border-slate-200 rounded-lg">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-100 sticky top-0">
+              <tr class="text-left text-slate-500">
+                <th class="px-3 py-2">會員編號</th>
+                <th class="px-3 py-2">姓名</th>
+                <th class="px-3 py-2">電話</th>
+                <th class="px-3 py-2">Email</th>
+                <th class="px-3 py-2">狀態</th>
+              </tr>
+            </thead>
+            <tbody id="previewTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 2: Prize settings -->
+    <section id="settingsSection" class="hidden bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <h2 class="text-lg font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-sm flex items-center justify-center">2</span> 抽獎設定</h2>
+        <button id="btnAddPrize" class="text-sm px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 font-semibold hover:bg-indigo-100">+ 新增獎項</button>
+      </div>
+
+      <label class="mt-4 flex items-center gap-2 text-sm text-slate-600">
+        <input type="checkbox" id="noDuplicateWinner" checked>
+        同一位會員在整場抽獎中只能中獎一次（依獎項設定順序依序抽出，已中獎者不再參加後續獎項）
+      </label>
+
+      <div id="prizeList" class="mt-4 space-y-4"></div>
+    </section>
+
+    <!-- Step 3: Draw -->
+    <section id="drawSection" class="hidden bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <h2 class="text-lg font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-sm flex items-center justify-center">3</span> 開始抽獎</h2>
+        <div class="flex gap-2">
+          <button id="btnDraw" class="px-5 py-2 rounded-lg bg-fuchsia-600 text-white font-bold hover:bg-fuchsia-700 shadow">🎲 開始抽獎</button>
+          <button id="btnExport" class="hidden px-4 py-2 rounded-lg border border-slate-300 text-sm font-semibold hover:bg-slate-50">📥 匯出中獎名單</button>
+          <button id="btnResetDraw" class="hidden px-4 py-2 rounded-lg border border-slate-300 text-sm font-semibold hover:bg-slate-50">重新抽獎</button>
+        </div>
+      </div>
+      <div id="drawWarnings" class="mt-3 text-sm text-amber-600"></div>
+      <div id="resultsBox" class="mt-5 space-y-5"></div>
+    </section>
+
+  </main>
+
+<script>
+(() => {
+  const state = {
+    headers: [],
+    rows: [],        // raw parsed rows (array of objects keyed by header)
+    members: [],      // {id, name, phone, email, eligible, reason, raw}
+    results: null,    // [{prizeName, quantity, winners:[member,...], shortDrawn:bool}]
+  };
+
+  const $ = (id) => document.getElementById(id);
+
+  // ---------- Helpers ----------
+  const EMPTY_TOKENS = new Set(['', '-', '—', '無', 'n/a', 'na', 'null', 'undefined']);
+  function isEmptyValue(v) {
+    if (v === null || v === undefined) return true;
+    const s = String(v).trim();
+    return EMPTY_TOKENS.has(s.toLowerCase());
+  }
+  function cleanStr(v) {
+    if (v === null || v === undefined) return '';
+    return String(v).trim();
+  }
+  function guessColumn(headers, keywords) {
+    const lower = headers.map(h => String(h).toLowerCase());
+    for (const kw of keywords) {
+      const idx = lower.findIndex(h => h.includes(kw));
+      if (idx !== -1) return headers[idx];
+    }
+    return '';
+  }
+  function secureRandomInt(maxExclusive) {
+    const arr = new Uint32Array(1);
+    const limit = Math.floor(0xFFFFFFFF / maxExclusive) * maxExclusive;
+    let x;
+    do { crypto.getRandomValues(arr); x = arr[0]; } while (x >= limit);
+    return x % maxExclusive;
+  }
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = secureRandomInt(i + 1);
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function pad(n, len) { return String(n).padStart(len, '0'); }
+
+  // ---------- Step 1: Upload & parse ----------
+  $('fileInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) handleFile(file);
+  });
+
+  function handleFile(file) {
+    $('fileName').textContent = `已選擇檔案：${file.name}`;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const data = new Uint8Array(evt.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+        if (!json.length) { alert('檔案內沒有資料，請確認檔案內容。'); return; }
+        state.headers = Object.keys(json[0]);
+        state.rows = json;
+        setupMapping();
+      } catch (err) {
+        alert('讀取檔案失敗，請確認檔案格式是否正確。\n' + err.message);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function setupMapping() {
+    const nameGuess = guessColumn(state.headers, ['姓名', '名字', 'name']);
+    const phoneGuess = guessColumn(state.headers, ['電話', '手機', '聯絡電話', '連絡電話', 'phone', 'tel', 'mobile']);
+    const emailGuess = guessColumn(state.headers, ['email', 'e-mail', '信箱', '電子郵件', 'mail']);
+
+    fillSelect($('mapName'), state.headers, nameGuess);
+    fillSelect($('mapPhone'), state.headers, phoneGuess);
+    fillSelect($('mapEmail'), state.headers, emailGuess);
+
+    $('mappingBox').classList.remove('hidden');
+  }
+
+  function fillSelect(select, headers, guessed) {
+    select.innerHTML = '<option value="">-- 請選擇 --</option>' +
+      headers.map(h => `<option value="${escapeAttr(h)}" ${h === guessed ? 'selected' : ''}>${escapeHtml(h)}</option>`).join('');
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+  function escapeAttr(s) { return escapeHtml(s); }
+
+  $('btnValidate').addEventListener('click', () => {
+    const nameCol = $('mapName').value, phoneCol = $('mapPhone').value, emailCol = $('mapEmail').value;
+    if (!nameCol || !phoneCol || !emailCol) { alert('請選擇姓名、電話、Email 對應的欄位。'); return; }
+
+    const idLen = Math.max(4, String(state.rows.length).length);
+    state.members = state.rows.map((row, i) => {
+      const name = cleanStr(row[nameCol]);
+      const phone = cleanStr(row[phoneCol]);
+      const email = cleanStr(row[emailCol]);
+      const missing = [];
+      if (isEmptyValue(name)) missing.push('姓名');
+      if (isEmptyValue(phone)) missing.push('電話');
+      if (isEmptyValue(email)) missing.push('Email');
+      return {
+        id: 'M' + pad(i + 1, idLen),
+        name, phone, email,
+        eligible: missing.length === 0,
+        reason: missing.length ? `缺少：${missing.join('、')}` : '',
+        raw: row,
+      };
+    });
+
+    renderPreview();
+    buildPrizeConditionColumns();
+    $('settingsSection').classList.remove('hidden');
+    $('drawSection').classList.remove('hidden');
+    if ($('prizeList').children.length === 0) addPrizeCard();
+  });
+
+  function renderPreview() {
+    const total = state.members.length;
+    const valid = state.members.filter(m => m.eligible).length;
+    $('statTotal').textContent = total;
+    $('statValid').textContent = valid;
+    $('statInvalid').textContent = total - valid;
+    $('statsBox').classList.remove('hidden');
+    $('previewBox').classList.remove('hidden');
+    renderPreviewRows();
+  }
+
+  function renderPreviewRows() {
+    const onlyInvalid = $('onlyInvalid').checked;
+    const list = onlyInvalid ? state.members.filter(m => !m.eligible) : state.members;
+    $('previewTbody').innerHTML = list.map(m => `
+      <tr class="border-t border-slate-100 ${m.eligible ? '' : 'bg-red-50'}">
+        <td class="px-3 py-1.5 font-mono text-xs">${m.id}</td>
+        <td class="px-3 py-1.5">${escapeHtml(m.name) || '<span class="text-slate-300">—</span>'}</td>
+        <td class="px-3 py-1.5">${escapeHtml(m.phone) || '<span class="text-slate-300">—</span>'}</td>
+        <td class="px-3 py-1.5">${escapeHtml(m.email) || '<span class="text-slate-300">—</span>'}</td>
+        <td class="px-3 py-1.5">${m.eligible
+          ? '<span class="text-emerald-600 font-semibold">✔ 合格</span>'
+          : `<span class="text-red-500 font-semibold">✘ ${escapeHtml(m.reason)}</span>`}</td>
+      </tr>
+    `).join('');
+  }
+  $('onlyInvalid').addEventListener('change', renderPreviewRows);
+
+  // ---------- Step 2: Prizes & conditions ----------
+  let prizeSeq = 0;
+  let conditionColumns = [];
+
+  function buildPrizeConditionColumns() {
+    // any original column can be used as a filter condition
+    conditionColumns = state.headers.slice();
+  }
+
+  function addPrizeCard() {
+    const pid = ++prizeSeq;
+    const card = document.createElement('div');
+    card.className = 'border border-slate-200 rounded-lg p-4 bg-slate-50/50';
+    card.dataset.pid = pid;
+    card.innerHTML = `
+      <div class="flex items-start justify-between gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1">
+          <div>
+            <label class="text-xs text-slate-500">獎項名稱</label>
+            <input type="text" class="prizeName mt-1 w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm" placeholder="例如：頭獎 iPhone">
+          </div>
+          <div>
+            <label class="text-xs text-slate-500">名額數量</label>
+            <input type="number" min="1" value="1" class="prizeQty mt-1 w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
+          </div>
+        </div>
+        <button class="btnRemovePrize text-red-400 hover:text-red-600 text-sm mt-5">✕ 刪除</button>
+      </div>
+      <div class="mt-3">
+        <div class="flex items-center justify-between">
+          <label class="text-xs text-slate-500">抽獎條件（可選，需符合以下所有條件才可參加此獎項抽獎）</label>
+          <button class="btnAddCondition text-xs text-indigo-600 font-semibold hover:underline">+ 新增條件</button>
+        </div>
+        <div class="conditionList mt-2 space-y-2"></div>
+      </div>
+    `;
+    card.querySelector('.btnRemovePrize').addEventListener('click', () => card.remove());
+    card.querySelector('.btnAddCondition').addEventListener('click', () => addConditionRow(card));
+    $('prizeList').appendChild(card);
+  }
+
+  function addConditionRow(card) {
+    if (!conditionColumns.length) { alert('目前無其他可用欄位設定條件。'); return; }
+    const row = document.createElement('div');
+    row.className = 'flex flex-wrap gap-2 items-center';
+    row.innerHTML = `
+      <select class="condCol border border-slate-300 rounded-lg px-2 py-1.5 text-xs">
+        ${conditionColumns.map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`).join('')}
+      </select>
+      <select class="condOp border border-slate-300 rounded-lg px-2 py-1.5 text-xs">
+        <option value="eq">等於</option>
+        <option value="neq">不等於</option>
+        <option value="contains">包含</option>
+        <option value="ncontains">不包含</option>
+        <option value="gte">大於等於（數值）</option>
+        <option value="lte">小於等於（數值）</option>
+        <option value="notempty">非空值</option>
+        <option value="empty">為空值</option>
+      </select>
+      <input type="text" class="condVal border border-slate-300 rounded-lg px-2 py-1.5 text-xs flex-1 min-w-[100px]" placeholder="條件值">
+      <button class="btnRemoveCond text-red-400 hover:text-red-600 text-xs">✕</button>
+    `;
+    const opSelect = row.querySelector('.condOp');
+    const valInput = row.querySelector('.condVal');
+    opSelect.addEventListener('change', () => {
+      const hide = opSelect.value === 'empty' || opSelect.value === 'notempty';
+      valInput.classList.toggle('hidden', hide);
+    });
+    row.querySelector('.btnRemoveCond').addEventListener('click', () => row.remove());
+    card.querySelector('.conditionList').appendChild(row);
+  }
+
+  $('btnAddPrize').addEventListener('click', addPrizeCard);
+
+  function readPrizeConfigs() {
+    const cards = [...$('prizeList').children];
+    return cards.map(card => {
+      const name = card.querySelector('.prizeName').value.trim();
+      const qty = parseInt(card.querySelector('.prizeQty').value, 10) || 0;
+      const conditions = [...card.querySelectorAll('.conditionList > div')].map(r => ({
+        col: r.querySelector('.condCol').value,
+        op: r.querySelector('.condOp').value,
+        val: r.querySelector('.condVal').value,
+      }));
+      return { name, qty, conditions };
+    });
+  }
+
+  function matchCondition(member, cond) {
+    const raw = member.raw[cond.col];
+    const strVal = cleanStr(raw);
+    const numRaw = parseFloat(raw);
+    const numCond = parseFloat(cond.val);
+    switch (cond.op) {
+      case 'eq': return strVal.toLowerCase() === cleanStr(cond.val).toLowerCase();
+      case 'neq': return strVal.toLowerCase() !== cleanStr(cond.val).toLowerCase();
+      case 'contains': return strVal.toLowerCase().includes(cleanStr(cond.val).toLowerCase());
+      case 'ncontains': return !strVal.toLowerCase().includes(cleanStr(cond.val).toLowerCase());
+      case 'gte': return !isNaN(numRaw) && !isNaN(numCond) && numRaw >= numCond;
+      case 'lte': return !isNaN(numRaw) && !isNaN(numCond) && numRaw <= numCond;
+      case 'notempty': return !isEmptyValue(raw);
+      case 'empty': return isEmptyValue(raw);
+      default: return true;
+    }
+  }
+
+  // ---------- Step 3: Draw ----------
+  $('btnDraw').addEventListener('click', runDraw);
+  $('btnResetDraw').addEventListener('click', runDraw);
+
+  function runDraw() {
+    const prizes = readPrizeConfigs();
+    const warnings = [];
+
+    if (!prizes.length) { alert('請至少新增一個獎項。'); return; }
+    for (const p of prizes) {
+      if (!p.name) { alert('請填寫所有獎項的名稱。'); return; }
+      if (!p.qty || p.qty < 1) { alert(`獎項「${p.name}」的名額數量需大於 0。`); return; }
+    }
+
+    const noDup = $('noDuplicateWinner').checked;
+    const wonIds = new Set();
+    const eligiblePool = state.members.filter(m => m.eligible);
+    const results = [];
+
+    for (const prize of prizes) {
+      let pool = eligiblePool.filter(m => prize.conditions.every(c => matchCondition(m, c)));
+      if (noDup) pool = pool.filter(m => !wonIds.has(m.id));
+
+      const shuffled = shuffle(pool);
+      const winners = shuffled.slice(0, prize.qty);
+      const shortDrawn = winners.length < prize.qty;
+      if (shortDrawn) warnings.push(`「${prize.name}」符合資格的名單僅 ${winners.length} 人，少於設定名額 ${prize.qty} 人，已全數抽出。`);
+
+      winners.forEach(w => wonIds.add(w.id));
+      results.push({ prizeName: prize.name, quantity: prize.qty, winners, shortDrawn });
+    }
+
+    state.results = results;
+    $('drawWarnings').innerHTML = warnings.map(w => `⚠️ ${escapeHtml(w)}`).join('<br>');
+    renderResultsWithAnimation(results);
+    $('btnExport').classList.remove('hidden');
+    $('btnResetDraw').classList.remove('hidden');
+  }
+
+  function renderResultsWithAnimation(results) {
+    $('resultsBox').innerHTML = results.map((r, ri) => `
+      <div class="border border-slate-200 rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-bold text-fuchsia-700">🏆 ${escapeHtml(r.prizeName)}</h3>
+          <span class="text-xs text-slate-400">名額 ${r.quantity} 人${r.shortDrawn ? '（實際抽出 ' + r.winners.length + ' 人）' : ''}</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2" id="prizeWinners-${ri}"></div>
+      </div>
+    `).join('');
+
+    results.forEach((r, ri) => {
+      const container = $(`prizeWinners-${ri}`);
+      r.winners.forEach((w, wi) => {
+        const cell = document.createElement('div');
+        cell.className = 'rolling border border-fuchsia-200 bg-fuchsia-50 rounded-lg px-3 py-2 text-center text-sm';
+        cell.textContent = '抽獎中…';
+        container.appendChild(cell);
+        const delay = 500 + ri * 150 + wi * 120;
+        setTimeout(() => {
+          cell.classList.add('winner-pop');
+          cell.innerHTML = `<div class="font-mono text-xs text-fuchsia-500">${w.id}</div><div class="font-bold text-slate-700">${escapeHtml(w.name)}</div>`;
+        }, delay);
+      });
+      if (!r.winners.length) {
+        container.innerHTML = '<div class="text-sm text-slate-400 col-span-full">目前沒有符合資格的會員可供抽出。</div>';
+      }
+    });
+  }
+
+  // ---------- Export ----------
+  $('btnExport').addEventListener('click', () => {
+    if (!state.results) return;
+    const rows = [];
+    state.results.forEach(r => {
+      r.winners.forEach(w => {
+        rows.push({ 獎項: r.prizeName, 會員編號: w.id, 姓名: w.name, 電話: w.phone, Email: w.email });
+      });
+    });
+    if (!rows.length) { alert('沒有中獎資料可匯出。'); return; }
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '中獎名單');
+    XLSX.writeFile(wb, `抽獎結果_${new Date().toISOString().slice(0,10)}.xlsx`);
+  });
+
+  // ---------- Sample template ----------
+  $('btnSample').addEventListener('click', () => {
+    const ws = XLSX.utils.json_to_sheet([
+      { 姓名: '王小明', 電話: '0912345678', Email: 'wang@example.com' },
+      { 姓名: '陳小華', 電話: '0922333444', Email: 'chen@example.com' },
+      { 姓名: '林小美', 電話: '', Email: 'lin@example.com' },
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '會員資料');
+    XLSX.writeFile(wb, '抽獎會員名單範例.xlsx');
+  });
+
+  // ---------- Reset ----------
+  $('btnClearAll').addEventListener('click', () => {
+    if (!confirm('確定要清除所有已匯入的資料與設定嗎？')) return;
+    location.reload();
+  });
+
+})();
+</script>
+</body>
+</html>
