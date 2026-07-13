@@ -12,6 +12,8 @@
 2. 貼上你的 API Key（可於 [console.anthropic.com](https://console.anthropic.com/settings/keys) 申請）
 3. Key 只會存在瀏覽器的 `localStorage`，直接從瀏覽器送往 Anthropic API，不會經過任何第三方伺服器
 
+**自建題庫（累積出過的題目）**：每次 AI 出題後，題目會自動存進瀏覽器 `localStorage` 的個人題庫。之後開始測驗時會優先從題庫抽符合條件的題目，題庫不夠才會呼叫 AI 補足並存入題庫——題庫夠大之後甚至不需要每次都呼叫 API。題庫完全存在本機瀏覽器，換裝置或清除瀏覽器資料就會重新開始累積；設定頁面可以「清空題庫」重新開始。
+
 ## ESG AI 智能成熟度診斷系統
 
 - `esg-ai-diagnostic.html` — V1.0 基礎版（純前端，可直接用瀏覽器開啟）
