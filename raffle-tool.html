@@ -198,7 +198,7 @@
     reader.onload = (evt) => {
       try {
         const data = new Uint8Array(evt.target.result);
-        const wb = XLSX.read(data, { type: 'array' });
+        const wb = XLSX.read(data, { type: 'array', cellDates: true });
         const sheet = wb.Sheets[wb.SheetNames[0]];
         const json = XLSX.utils.sheet_to_json(sheet, { defval: '' });
         if (!json.length) { alert('檔案內沒有資料，請確認檔案內容。'); return; }
@@ -324,6 +324,7 @@
           <label class="text-xs text-slate-500">抽獎條件（可選，需符合以下所有條件才可參加此獎項抽獎）</label>
           <button class="btnAddCondition text-xs text-indigo-600 font-semibold hover:underline">+ 新增條件</button>
         </div>
+        <p class="text-[11px] text-slate-400 mt-1">日期欄位（如註冊時間）可用「大於等於／小於等於」設定日期門檻，條件值請填 <code>年-月-日</code>，例如 <code>2024-01-15</code> 代表「2024年1月15日（含）之後」。</p>
         <div class="conditionList mt-2 space-y-2"></div>
       </div>
     `;
@@ -345,8 +346,8 @@
         <option value="neq">不等於</option>
         <option value="contains">包含</option>
         <option value="ncontains">不包含</option>
-        <option value="gte">大於等於（數值）</option>
-        <option value="lte">小於等於（數值）</option>
+        <option value="gte">大於等於（數值／日期）</option>
+        <option value="lte">小於等於（數值／日期）</option>
         <option value="notempty">非空值</option>
         <option value="empty">為空值</option>
       </select>
@@ -355,10 +356,13 @@
     `;
     const opSelect = row.querySelector('.condOp');
     const valInput = row.querySelector('.condVal');
-    opSelect.addEventListener('change', () => {
-      const hide = opSelect.value === 'empty' || opSelect.value === 'notempty';
-      valInput.classList.toggle('hidden', hide);
-    });
+    function syncValInput() {
+      const op = opSelect.value;
+      valInput.classList.toggle('hidden', op === 'empty' || op === 'notempty');
+      valInput.placeholder = (op === 'gte' || op === 'lte') ? '例如：100 或 2024-01-15' : '條件值';
+    }
+    opSelect.addEventListener('change', syncValInput);
+    syncValInput();
     row.querySelector('.btnRemoveCond').addEventListener('click', () => row.remove());
     card.querySelector('.conditionList').appendChild(row);
   }
@@ -379,18 +383,29 @@
     });
   }
 
+  // Converts a cell value or typed condition value into a comparable number.
+  // Handles plain numbers, Excel date cells (JS Date via cellDates:true) and
+  // typed date/date-time strings, so "大於等於/小於等於" also works for date columns.
+  function toComparable(v) {
+    if (v instanceof Date) return v.getTime();
+    if (typeof v === 'number') return v;
+    const s = cleanStr(v);
+    if (s === '') return NaN;
+    if (/^-?\d+(\.\d+)?$/.test(s)) return parseFloat(s);
+    const t = Date.parse(s.replace(/\//g, '-'));
+    return isNaN(t) ? NaN : t;
+  }
+
   function matchCondition(member, cond) {
     const raw = member.raw[cond.col];
-    const strVal = cleanStr(raw);
-    const numRaw = parseFloat(raw);
-    const numCond = parseFloat(cond.val);
+    const strVal = cleanStr(raw instanceof Date ? raw.toLocaleString() : raw);
     switch (cond.op) {
       case 'eq': return strVal.toLowerCase() === cleanStr(cond.val).toLowerCase();
       case 'neq': return strVal.toLowerCase() !== cleanStr(cond.val).toLowerCase();
       case 'contains': return strVal.toLowerCase().includes(cleanStr(cond.val).toLowerCase());
       case 'ncontains': return !strVal.toLowerCase().includes(cleanStr(cond.val).toLowerCase());
-      case 'gte': return !isNaN(numRaw) && !isNaN(numCond) && numRaw >= numCond;
-      case 'lte': return !isNaN(numRaw) && !isNaN(numCond) && numRaw <= numCond;
+      case 'gte': { const a = toComparable(raw), b = toComparable(cond.val); return !isNaN(a) && !isNaN(b) && a >= b; }
+      case 'lte': { const a = toComparable(raw), b = toComparable(cond.val); return !isNaN(a) && !isNaN(b) && a <= b; }
       case 'notempty': return !isEmptyValue(raw);
       case 'empty': return isEmptyValue(raw);
       default: return true;
