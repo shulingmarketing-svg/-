@@ -150,6 +150,7 @@
     rows: [],        // raw parsed rows (array of objects keyed by header)
     members: [],      // {id, name, phone, email, eligible, reason, raw}
     results: null,    // [{prizeName, quantity, winners:[member,...], shortDrawn:bool}]
+    winMethod: null,  // Map<memberId, 'guaranteed'|'random'>, for export only
   };
 
   const $ = (id) => document.getElementById(id);
@@ -340,6 +341,11 @@
         <p class="text-[11px] text-slate-400 mt-1">日期欄位（如註冊時間）可用「大於等於／小於等於」設定日期門檻，條件值請填 <code>年-月-日</code>，例如 <code>2024-01-15</code> 代表「2024年1月15日（含）之後」。</p>
         <div class="conditionList mt-2 space-y-2"></div>
       </div>
+      <div class="mt-3">
+        <label class="text-xs text-slate-500">指定必中名單（管理端使用，可選）</label>
+        <textarea class="guaranteedList mt-1 w-full border border-slate-300 rounded-lg px-2 py-1.5 text-xs" rows="2" placeholder="輸入會員編號、電話或 Email，多筆請以逗號或換行分隔，例如：M0002, 0912345678"></textarea>
+        <p class="text-[11px] text-slate-400 mt-1">此名單會優先於本獎項中獎，不受上方抽獎條件限制；其餘名額才依條件與隨機抽取決定。此欄位僅顯示於此設定畫面，抽獎結果畫面不會標示中獎方式。</p>
+      </div>
     `;
     card.querySelector('.btnRemovePrize').addEventListener('click', () => card.remove());
     card.querySelector('.btnAddCondition').addEventListener('click', () => addConditionRow(card));
@@ -392,8 +398,37 @@
         op: r.querySelector('.condOp').value,
         val: r.querySelector('.condVal').value,
       }));
-      return { name, qty, conditions };
+      const guaranteedRaw = card.querySelector('.guaranteedList').value;
+      return { name, qty, conditions, guaranteedRaw };
     });
+  }
+
+  function normalizePhone(s) { return String(s).replace(/\D/g, ''); }
+
+  function matchToken(token, member) {
+    const t = token.trim().toLowerCase();
+    if (!t) return false;
+    if (member.id.toLowerCase() === t) return true;
+    const tPhone = normalizePhone(token);
+    if (tPhone && member.phone && normalizePhone(member.phone) === tPhone) return true;
+    if (member.email && member.email.toLowerCase() === t) return true;
+    return false;
+  }
+
+  // Resolves a "指定必中名單" textarea value (member IDs / phones / emails,
+  // comma or newline separated) into matched member records.
+  function resolveGuaranteedMembers(raw) {
+    const tokens = [...new Set(String(raw || '').split(/[\n,，、]+/).map(t => t.trim()).filter(Boolean))];
+    const matchedMembers = [];
+    const notFoundTokens = [];
+    const ineligibleMembers = [];
+    tokens.forEach(token => {
+      const member = state.members.find(m => matchToken(token, m));
+      if (!member) { notFoundTokens.push(token); return; }
+      if (!member.eligible) { ineligibleMembers.push(member); return; }
+      if (!matchedMembers.some(m => m.id === member.id)) matchedMembers.push(member);
+    });
+    return { matchedMembers, notFoundTokens, ineligibleMembers };
   }
 
   // Converts a cell value or typed condition value into a comparable number.
@@ -441,6 +476,7 @@
 
     const noDup = $('noDuplicateWinner').checked;
     const wonIds = new Set();
+    const winMethod = new Map(); // member id -> 'guaranteed' | 'random', for export only
     const eligiblePool = state.members.filter(m => m.eligible);
     const results = [];
 
@@ -448,14 +484,36 @@
       let pool = eligiblePool.filter(m => prize.conditions.every(c => matchCondition(m, c)));
       if (noDup) pool = pool.filter(m => !wonIds.has(m.id));
 
-      const shuffled = shuffle(pool);
-      const winners = shuffled.slice(0, prize.qty);
+      const { matchedMembers, notFoundTokens, ineligibleMembers } = resolveGuaranteedMembers(prize.guaranteedRaw);
+      let guaranteed = matchedMembers;
+      if (noDup) {
+        const alreadyWon = guaranteed.filter(m => wonIds.has(m.id));
+        if (alreadyWon.length) warnings.push(`「${prize.name}」指定必中名單中有 ${alreadyWon.length} 位已於前面獎項中獎，本獎項不再重複保留：${alreadyWon.map(m => m.id).join('、')}`);
+        guaranteed = guaranteed.filter(m => !wonIds.has(m.id));
+      }
+      if (guaranteed.length > prize.qty) {
+        warnings.push(`「${prize.name}」指定必中名單（${guaranteed.length} 位）超過設定名額（${prize.qty} 位），僅保留前 ${prize.qty} 位。`);
+        guaranteed = guaranteed.slice(0, prize.qty);
+      }
+      if (notFoundTokens.length) warnings.push(`「${prize.name}」指定必中名單中有 ${notFoundTokens.length} 筆找不到對應會員，已略過：${notFoundTokens.join('、')}`);
+      if (ineligibleMembers.length) warnings.push(`「${prize.name}」指定必中名單中有 ${ineligibleMembers.length} 位資料不全（缺電話／姓名／Email），無法保留中獎資格：${ineligibleMembers.map(m => m.id).join('、')}`);
+
+      const guaranteedIds = new Set(guaranteed.map(m => m.id));
+      const randomPool = pool.filter(m => !guaranteedIds.has(m.id));
+      const remainingQty = prize.qty - guaranteed.length;
+      const randomWinners = shuffle(randomPool).slice(0, Math.max(0, remainingQty));
+
+      guaranteed.forEach(m => winMethod.set(m.id, 'guaranteed'));
+      randomWinners.forEach(m => winMethod.set(m.id, 'random'));
+
+      const winners = shuffle(guaranteed.concat(randomWinners));
       const shortDrawn = winners.length < prize.qty;
       if (shortDrawn) warnings.push(`「${prize.name}」符合資格的名單僅 ${winners.length} 人，少於設定名額 ${prize.qty} 人，已全數抽出。`);
 
       winners.forEach(w => wonIds.add(w.id));
       results.push({ prizeName: prize.name, quantity: prize.qty, winners, shortDrawn });
     }
+    state.winMethod = winMethod;
 
     state.results = results;
     $('drawWarnings').innerHTML = warnings.map(w => `⚠️ ${escapeHtml(w)}`).join('<br>');
@@ -512,7 +570,8 @@
     const rows = [];
     state.results.forEach(r => {
       r.winners.forEach(w => {
-        rows.push({ 獎項: r.prizeName, 會員編號: w.id, 姓名: w.name, 電話: w.phone, Email: w.email });
+        const method = state.winMethod && state.winMethod.get(w.id) === 'guaranteed' ? '指定保留' : '隨機抽出';
+        rows.push({ 獎項: r.prizeName, 會員編號: w.id, 姓名: w.name, 電話: w.phone, Email: w.email, 中獎方式: method });
       });
     });
     if (!rows.length) { alert('沒有中獎資料可匯出。'); return; }
