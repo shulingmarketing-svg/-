@@ -41,7 +41,7 @@
           <input id="fileInput" type="file" accept=".xlsx,.xls,.csv" class="hidden">
           <div class="text-slate-500 text-sm">
             <span class="text-indigo-600 font-semibold">點擊選擇檔案</span> 或拖曳 Excel / CSV 檔案至此
-            <div class="text-xs text-slate-400 mt-1">支援 .xlsx / .xls / .csv，需包含「電話」「姓名」「Email」欄位</div>
+            <div class="text-xs text-slate-400 mt-1">支援 .xlsx / .xls / .csv，需包含「電話」「姓名」「Email」欄位；姓名必填，電話與 Email 至少需有一項才具抽獎資格</div>
           </div>
         </label>
         <div id="fileName" class="text-xs text-slate-400 mt-2"></div>
@@ -339,14 +339,15 @@
       const name = cleanStr(row[nameCol]);
       const phone = cleanStr(row[phoneCol]);
       const email = cleanStr(row[emailCol]);
+      const nameMissing = isEmptyValue(name);
+      const contactMissing = isEmptyValue(phone) && isEmptyValue(email);
       const missing = [];
-      if (isEmptyValue(name)) missing.push('姓名');
-      if (isEmptyValue(phone)) missing.push('電話');
-      if (isEmptyValue(email)) missing.push('Email');
+      if (nameMissing) missing.push('姓名');
+      if (contactMissing) missing.push('電話與Email（至少需一項）');
       return {
         id: 'M' + pad(i + 1, idLen),
         name, phone, email,
-        eligible: missing.length === 0,
+        eligible: !nameMissing && !contactMissing,
         reason: missing.length ? `缺少：${missing.join('、')}` : '',
         raw: row,
       };
@@ -674,6 +675,7 @@
       { 姓名: '王小明', 電話: '0912345678', Email: 'wang@example.com' },
       { 姓名: '陳小華', 電話: '0922333444', Email: 'chen@example.com' },
       { 姓名: '林小美', 電話: '', Email: 'lin@example.com' },
+      { 姓名: '', 電話: '0955666777', Email: 'nobody@example.com' },
     ]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, '會員資料');
