@@ -20,14 +20,14 @@
   <header class="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white">
     <div class="max-w-5xl mx-auto px-4 py-6">
       <h1 class="text-2xl font-bold flex items-center gap-2">🎉 會員抽獎工具</h1>
-      <p class="text-indigo-100 text-sm mt-1">匯入 Excel 會員名單 → 系統自動篩選具抽獎資格的會員 → 設定獎項與條件 → 隨機抽出中獎名單</p>
+      <p id="subtitleText" class="text-indigo-100 text-sm mt-1">匯入 Excel 會員名單 → 系統自動篩選具抽獎資格的會員 → 設定獎項與條件 → 隨機抽出中獎名單</p>
     </div>
   </header>
 
   <main class="max-w-5xl mx-auto px-4 mt-6 space-y-6">
 
     <!-- Step 1: Upload -->
-    <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+    <section id="uploadSection" class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
       <div class="flex items-center justify-between flex-wrap gap-3">
         <h2 class="text-lg font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-sm flex items-center justify-center">1</span> 匯入會員資料</h2>
         <div class="flex gap-2">
@@ -123,7 +123,17 @@
       <div id="prizeList" class="mt-4 space-y-4"></div>
     </section>
 
-    <!-- Step 3: Draw -->
+    <!-- Step 3: Open the presentation tab -->
+    <section id="presentLauncher" class="hidden bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <h2 class="text-lg font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-sm flex items-center justify-center">3</span> 開始抽獎</h2>
+        <button id="btnOpenPresent" class="px-5 py-2 rounded-lg bg-fuchsia-600 text-white font-bold hover:bg-fuchsia-700 shadow">🖥️ 在新分頁開啟抽獎畫面</button>
+      </div>
+      <p class="text-xs text-slate-500 mt-3">抽獎的啟動、開獎結果、遮蔽姓名切換、匯出名單，都在新分頁進行，可將該分頁投影給觀眾，不會顯示這裡的會員資料與獎項設定內容。若之後修改了設定，請再次點擊上方按鈕，將最新設定同步到抽獎畫面。</p>
+      <div id="presentSyncStatus" class="text-xs text-emerald-600 mt-2"></div>
+    </section>
+
+    <!-- Draw & results (shown only in the presentation tab, opened via ?present=1) -->
     <section id="drawSection" class="hidden bg-white rounded-xl border border-slate-200 shadow-sm p-5">
       <div class="flex items-center justify-between flex-wrap gap-3">
         <h2 class="text-lg font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-sm flex items-center justify-center">3</span> 開始抽獎</h2>
@@ -133,6 +143,7 @@
           <button id="btnResetDraw" class="hidden px-4 py-2 rounded-lg border border-slate-300 text-sm font-semibold hover:bg-slate-50">重新抽獎</button>
         </div>
       </div>
+      <div id="presentStatus" class="text-xs text-emerald-600 mt-2"></div>
       <label class="mt-3 flex items-center gap-2 text-sm text-slate-600">
         <input type="checkbox" id="maskNames" checked>
         遮蔽中獎姓名（畫面僅顯示如「周X宇」，匯出的 Excel 仍為完整姓名）
@@ -154,6 +165,7 @@
   };
 
   const $ = (id) => document.getElementById(id);
+  const isPresentMode = new URLSearchParams(location.search).get('present') === '1';
 
   // ---------- Helpers ----------
   const EMPTY_TOKENS = new Set(['', '-', '—', '無', 'n/a', 'na', 'null', 'undefined']);
@@ -199,6 +211,76 @@
     if (chars.length === 2) return chars[0] + 'X';
     return chars[0] + 'X'.repeat(chars.length - 2) + chars[chars.length - 1];
   }
+
+  // ---------- Presentation tab (opened via ?present=1) ----------
+  // Keeps member/prize setup private to the main tab; only the draw button
+  // and results are shown here, so this tab is safe to project to an audience.
+  let presentWin = null;
+  let pendingSync = null;
+  let pingTimer = null;
+
+  if (isPresentMode) {
+    document.title = '抽獎結果畫面';
+    if ($('subtitleText')) $('subtitleText').textContent = '抽獎結果畫面（可投影展示，不含會員資料與獎項設定）';
+    $('uploadSection').style.display = 'none';
+    $('settingsSection').style.display = 'none';
+    $('presentLauncher').style.display = 'none';
+    $('drawSection').classList.remove('hidden');
+    if (window.opener) {
+      try { window.opener.postMessage({ type: 'present-ready' }, '*'); } catch (e) {}
+    }
+  }
+
+  function getPrizeConfigs() {
+    return isPresentMode ? (state.syncedPrizes || []) : readPrizeConfigs();
+  }
+  function getNoDup() {
+    return isPresentMode ? !!state.syncedNoDup : $('noDuplicateWinner').checked;
+  }
+
+  function openPresentWindow() {
+    const prizes = readPrizeConfigs();
+    if (!prizes.length) { alert('請至少新增一個獎項。'); return; }
+    for (const p of prizes) {
+      if (!p.name) { alert('請填寫所有獎項的名稱。'); return; }
+      if (!p.qty || p.qty < 1) { alert(`獎項「${p.name}」的名額數量需大於 0。`); return; }
+    }
+    pendingSync = { members: state.members, prizeConfigs: prizes, noDup: $('noDuplicateWinner').checked };
+    const base = location.href.split('#')[0].split('?')[0];
+    presentWin = window.open(base + '?present=1', 'raffle_present_window');
+    if (!presentWin) { alert('瀏覽器封鎖了彈出視窗，請允許彈出視窗後再試一次。'); pendingSync = null; return; }
+    presentWin.focus();
+    $('presentSyncStatus').textContent = '正在連線抽獎畫面…';
+    if (pingTimer) clearInterval(pingTimer);
+    let tries = 0;
+    pingTimer = setInterval(() => {
+      tries++;
+      if (!pendingSync) { clearInterval(pingTimer); pingTimer = null; $('presentSyncStatus').textContent = '已同步設定到抽獎畫面。'; return; }
+      if (tries > 20) { clearInterval(pingTimer); pingTimer = null; $('presentSyncStatus').textContent = '同步逾時，請確認新分頁已開啟且未被瀏覽器封鎖，再試一次。'; return; }
+      try { presentWin.postMessage({ type: 'request-ready' }, '*'); } catch (e) {}
+    }, 300);
+  }
+  if ($('btnOpenPresent')) $('btnOpenPresent').addEventListener('click', openPresentWindow);
+
+  window.addEventListener('message', (e) => {
+    const data = e.data;
+    if (!data || !data.type) return;
+    if (!isPresentMode) {
+      if (data.type === 'present-ready' && pendingSync && presentWin && e.source === presentWin) {
+        presentWin.postMessage({ type: 'sync-data', ...pendingSync }, '*');
+        pendingSync = null;
+      }
+    } else {
+      if (data.type === 'request-ready') {
+        if (window.opener) window.opener.postMessage({ type: 'present-ready' }, '*');
+      } else if (data.type === 'sync-data') {
+        state.members = data.members || [];
+        state.syncedPrizes = data.prizeConfigs || [];
+        state.syncedNoDup = !!data.noDup;
+        if ($('presentStatus')) $('presentStatus').textContent = `已同步設定：${state.members.length} 位會員、${state.syncedPrizes.length} 個獎項。請按下方「開始抽獎」。`;
+      }
+    }
+  });
 
   // ---------- Step 1: Upload & parse ----------
   $('fileInput').addEventListener('change', (e) => {
@@ -273,7 +355,7 @@
     renderPreview();
     buildPrizeConditionColumns();
     $('settingsSection').classList.remove('hidden');
-    $('drawSection').classList.remove('hidden');
+    $('presentLauncher').classList.remove('hidden');
     if ($('prizeList').children.length === 0) addPrizeCard();
   });
 
@@ -465,7 +547,12 @@
   $('btnResetDraw').addEventListener('click', runDraw);
 
   function runDraw() {
-    const prizes = readPrizeConfigs();
+    if (isPresentMode && (!state.members || !state.members.length)) {
+      alert('尚未收到抽獎設定資料，請在主頁面點擊「在新分頁開啟抽獎畫面」完成同步後再試一次。');
+      return;
+    }
+
+    const prizes = getPrizeConfigs();
     const warnings = [];
 
     if (!prizes.length) { alert('請至少新增一個獎項。'); return; }
@@ -474,7 +561,7 @@
       if (!p.qty || p.qty < 1) { alert(`獎項「${p.name}」的名額數量需大於 0。`); return; }
     }
 
-    const noDup = $('noDuplicateWinner').checked;
+    const noDup = getNoDup();
     const wonIds = new Set();
     const winMethod = new Map(); // member id -> 'guaranteed' | 'random', for export only
     const eligiblePool = state.members.filter(m => m.eligible);
