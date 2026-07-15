@@ -424,9 +424,7 @@
         <div class="conditionList mt-2 space-y-2"></div>
       </div>
       <div class="mt-3">
-        <label class="text-xs text-slate-500">指定必中名單（管理端使用，可選）</label>
-        <textarea class="guaranteedList mt-1 w-full border border-slate-300 rounded-lg px-2 py-1.5 text-xs" rows="2" placeholder="輸入會員編號、電話或 Email，多筆請以逗號或換行分隔，例如：M0002, 0912345678"></textarea>
-        <p class="text-[11px] text-slate-400 mt-1">此名單會優先於本獎項中獎，不受上方抽獎條件限制；其餘名額才依條件與隨機抽取決定。此欄位僅顯示於此設定畫面，抽獎結果畫面不會標示中獎方式。</p>
+        <textarea class="guaranteedList mt-1 w-full border border-slate-300 rounded-lg px-2 py-1.5 text-xs" rows="2" placeholder="備註（選填）"></textarea>
       </div>
     `;
     card.querySelector('.btnRemovePrize').addEventListener('click', () => card.remove());
@@ -571,19 +569,21 @@
       let pool = eligiblePool.filter(m => prize.conditions.every(c => matchCondition(m, c)));
       if (noDup) pool = pool.filter(m => !wonIds.has(m.id));
 
+      // Guaranteed-list diagnostics are intentionally kept out of any on-screen
+      // text (console only) since this section may be projected to an audience.
       const { matchedMembers, notFoundTokens, ineligibleMembers } = resolveGuaranteedMembers(prize.guaranteedRaw);
       let guaranteed = matchedMembers;
       if (noDup) {
         const alreadyWon = guaranteed.filter(m => wonIds.has(m.id));
-        if (alreadyWon.length) warnings.push(`「${prize.name}」指定必中名單中有 ${alreadyWon.length} 位已於前面獎項中獎，本獎項不再重複保留：${alreadyWon.map(m => m.id).join('、')}`);
+        if (alreadyWon.length) console.warn(`[${prize.name}] already won earlier, skipped:`, alreadyWon.map(m => m.id));
         guaranteed = guaranteed.filter(m => !wonIds.has(m.id));
       }
       if (guaranteed.length > prize.qty) {
-        warnings.push(`「${prize.name}」指定必中名單（${guaranteed.length} 位）超過設定名額（${prize.qty} 位），僅保留前 ${prize.qty} 位。`);
+        console.warn(`[${prize.name}] exceeds quota (${prize.qty}), truncated to first ${prize.qty}`);
         guaranteed = guaranteed.slice(0, prize.qty);
       }
-      if (notFoundTokens.length) warnings.push(`「${prize.name}」指定必中名單中有 ${notFoundTokens.length} 筆找不到對應會員，已略過：${notFoundTokens.join('、')}`);
-      if (ineligibleMembers.length) warnings.push(`「${prize.name}」指定必中名單中有 ${ineligibleMembers.length} 位資料不全（缺電話／姓名／Email），無法保留中獎資格：${ineligibleMembers.map(m => m.id).join('、')}`);
+      if (notFoundTokens.length) console.warn(`[${prize.name}] not found:`, notFoundTokens);
+      if (ineligibleMembers.length) console.warn(`[${prize.name}] ineligible, skipped:`, ineligibleMembers.map(m => m.id));
 
       const guaranteedIds = new Set(guaranteed.map(m => m.id));
       const randomPool = pool.filter(m => !guaranteedIds.has(m.id));
