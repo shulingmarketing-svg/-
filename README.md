@@ -57,3 +57,15 @@ API：
 4. 可設定「同一位會員整場只能中獎一次」，依獎項設定順序依序抽出
 5. 使用瀏覽器 `crypto.getRandomValues` 做隨機抽取，抽出的會員編號＋姓名會列在結果中，並可匯出中獎名單為 Excel
 6. 提供「下載範例 Excel」按鈕，可下載欄位格式範例
+
+## 一人公司 AI 團隊（One-Person Agency AI）
+
+來源：[atm301/one-person-agency-ai](https://github.com/atm301/one-person-agency-ai)，14 個 AI 代理角色（策略、創意、成長、數據、技術、協調），模擬一整個行銷代理商團隊。
+
+已安裝為本 repo 的 Claude Code 專案技能（`.claude/skills/`），在 Claude Code 開啟本 repo 時可直接使用斜線指令：
+
+- `/kevin`、`/hunter`、`/winnie` 等 14 個角色個別指令（策略總監、廣告投手、內容主編…）
+- `/team` — 自動判斷任務該交給誰
+- `/meeting` — 召集多個角色針對同一議題討論並整合結論
+
+其他 AI 平台（ChatGPT、Gemini、Claude Projects）的複製貼上 prompt 放在 `one-person-agency-ai/prompts/`，完整安裝與使用說明見 `one-person-agency-ai/INSTALL.md`。
