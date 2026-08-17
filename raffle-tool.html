@@ -486,26 +486,54 @@
 
   function normalizePhone(s) { return String(s).replace(/\D/g, ''); }
 
+  // Last-9-digit comparison absorbs leading-0 vs +886/886 country-code
+  // differences in Taiwan mobile numbers (0912345678 vs +886912345678).
+  function phoneSuffix(s) {
+    const d = normalizePhone(s);
+    return d.length >= 9 ? d.slice(-9) : d;
+  }
+
+  // Lenient ID match: same letter prefix + same numeric value, ignoring
+  // zero-padding (e.g. "M1" matches "M0001").
+  function idLooseMatch(token, id) {
+    const a = /^([a-z]*)0*(\d+)$/i.exec(token.trim());
+    const b = /^([a-z]*)0*(\d+)$/i.exec(id);
+    if (!a || !b) return false;
+    return a[1].toLowerCase() === b[1].toLowerCase() && a[2] === b[2];
+  }
+
   function matchToken(token, member) {
     const t = token.trim().toLowerCase();
     if (!t) return false;
     if (member.id.toLowerCase() === t) return true;
+    if (idLooseMatch(token, member.id)) return true;
     const tPhone = normalizePhone(token);
-    if (tPhone && member.phone && normalizePhone(member.phone) === tPhone) return true;
+    if (tPhone.length >= 7 && member.phone) {
+      if (normalizePhone(member.phone) === tPhone) return true;
+      const ts = phoneSuffix(token), ms = phoneSuffix(member.phone);
+      if (ts.length === 9 && ts === ms) return true;
+    }
     if (member.email && member.email.toLowerCase() === t) return true;
     return false;
   }
 
-  // Resolves a "指定必中名單" textarea value (member IDs / phones / emails,
-  // comma or newline separated) into matched member records.
+  // Resolves a "指定必中名單" textarea value (member IDs / phones / emails /
+  // exact names, comma, semicolon or newline separated) into matched member
+  // records. Falls back to an exact name match only when it is unambiguous
+  // (exactly one member has that name); ambiguous or unrecognized entries
+  // are reported as not-found rather than guessed.
   function resolveGuaranteedMembers(raw) {
-    const tokens = [...new Set(String(raw || '').split(/[\n,，、]+/).map(t => t.trim()).filter(Boolean))];
+    const tokens = [...new Set(String(raw || '').split(/[\n,，、;；]+/).map(t => t.trim()).filter(Boolean))];
     const matchedMembers = [];
     const notFoundTokens = [];
     const ineligibleMembers = [];
     tokens.forEach(token => {
-      const member = state.members.find(m => matchToken(token, m));
-      if (!member) { notFoundTokens.push(token); return; }
+      let matches = state.members.filter(m => matchToken(token, m));
+      if (!matches.length) {
+        matches = state.members.filter(m => m.name && m.name.toLowerCase() === token.toLowerCase());
+      }
+      if (matches.length !== 1) { notFoundTokens.push(token); return; }
+      const member = matches[0];
       if (!member.eligible) { ineligibleMembers.push(member); return; }
       if (!matchedMembers.some(m => m.id === member.id)) matchedMembers.push(member);
     });
