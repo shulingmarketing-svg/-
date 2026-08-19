@@ -5,9 +5,16 @@
         "source": "github",
         "repo": "AgriciDaniel/claude-seo"
       }
+    },
+    "ppt-master": {
+      "source": {
+        "source": "github",
+        "repo": "hugohe3/ppt-master"
+      }
     }
   },
   "enabledPlugins": {
-    "claude-seo@agricidaniel-claude-seo": true
+    "claude-seo@agricidaniel-claude-seo": true,
+    "ppt-master@ppt-master": true
   }
 }
