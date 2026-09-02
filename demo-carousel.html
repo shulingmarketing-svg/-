@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI社群打造師 Chelsea - 示範輪播圖卡</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Inter:wght@400;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    font-family: 'Noto Sans TC', sans-serif;
+    gap: 40px;
+  }
+
+  h1 {
+    font-size: 20px;
+    color: #666;
+    margin-bottom: 10px;
+  }
+
+  .cards-wrapper {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .card-container {
+    position: relative;
+  }
+
+  .card-label {
+    text-align: center;
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 8px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Each card: 1080x1350 scaled down for preview */
+  .card {
+    width: 324px;   /* 1080 / 3.33 */
+    height: 405px;  /* 1350 / 3.33 */
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    position: relative;
+  }
+
+  /* ========== CARD 1: COVER / HOOK ========== */
+  .card-1 {
+    background: #FFFBF5;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 36px 28px;
+    text-align: center;
+  }
+
+  .card-1 .top-tag {
+    background: #F97316;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 16px;
+    border-radius: 20px;
+    margin-bottom: 28px;
+    letter-spacing: 1px;
+  }
+
+  .card-1 .main-title {
+    font-size: 32px;
+    font-weight: 900;
+    color: #292524;
+    line-height: 1.4;
+    margin-bottom: 16px;
+  }
+
+  .card-1 .main-title .highlight {
+    color: #F97316;
+  }
+
+  .card-1 .subtitle {
+    font-size: 14px;
+    color: #78716c;
+    line-height: 1.7;
+    margin-bottom: 32px;
+  }
+
+  .card-1 .swipe-hint {
+    font-size: 11px;
+    color: #a8a29e;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .card-1 .swipe-hint .arrow {
+    font-size: 16px;
+    animation: swipe 1.5s infinite;
+  }
+
+  @keyframes swipe {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(6px); }
+  }
+
+  .card-1 .brand-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #F97316, #6366F1);
+  }
+
+  /* ========== CARD 2: PAIN POINT ========== */
+  .card-2 {
+    background: #FFFBF5;
+    display: flex;
+    flex-direction: column;
+    padding: 36px 28px;
+  }
+
+  .card-2 .card-number {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    color: #F97316;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+  }
+
+  .card-2 .section-title {
+    font-size: 22px;
+    font-weight: 900;
+    color: #292524;
+    margin-bottom: 24px;
+    line-height: 1.4;
+  }
+
+  .card-2 .pain-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
+  }
+
+  .card-2 .pain-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .card-2 .pain-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    background: #FED7AA;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .card-2 .pain-text {
+    font-size: 14px;
+    color: #292524;
+    line-height: 1.6;
+  }
+
+  .card-2 .pain-text strong {
+    display: block;
+    font-size: 15px;
+    margin-bottom: 2px;
+  }
+
+  .card-2 .pain-text span {
+    color: #78716c;
+    font-size: 13px;
+  }
+
+  .card-2 .brand-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #F97316, #6366F1);
+  }
+
+  /* ========== CARD 3: SOLUTION ========== */
+  .card-3 {
+    background: #F97316;
+    display: flex;
+    flex-direction: column;
+    padding: 36px 28px;
+    color: white;
+  }
+
+  .card-3 .card-number {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+  }
+
+  .card-3 .section-title {
+    font-size: 22px;
+    font-weight: 900;
+    margin-bottom: 28px;
+    line-height: 1.4;
+  }
+
+  .card-3 .solution-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+  }
+
+  .card-3 .solution-item {
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .card-3 .solution-icon {
+    font-size: 22px;
+    min-width: 28px;
+    text-align: center;
+  }
+
+  .card-3 .solution-text {
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 500;
+  }
+
+  /* ========== CARD 4: RESULT / DATA ========== */
+  .card-4 {
+    background: #FFFBF5;
+    display: flex;
+    flex-direction: column;
+    padding: 36px 28px;
+  }
+
+  .card-4 .card-number {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    color: #F97316;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+  }
+
+  .card-4 .section-title {
+    font-size: 22px;
+    font-weight: 900;
+    color: #292524;
+    margin-bottom: 24px;
+    line-height: 1.4;
+  }
+
+  .card-4 .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    flex: 1;
+  }
+
+  .card-4 .stat-box {
+    background: white;
+    border: 1.5px solid #FED7AA;
+    border-radius: 12px;
+    padding: 18px 14px;
+    text-align: center;
+  }
+
+  .card-4 .stat-number {
+    font-family: 'Inter', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: #F97316;
+    margin-bottom: 4px;
+  }
+
+  .card-4 .stat-label {
+    font-size: 12px;
+    color: #78716c;
+    line-height: 1.4;
+  }
+
+  .card-4 .stat-box.full {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .card-4 .stat-box.full .stat-number {
+    font-size: 24px;
+  }
+
+  .card-4 .stat-box.full .stat-label {
+    text-align: left;
+  }
+
+  .card-4 .brand-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #F97316, #6366F1);
+  }
+
+  /* ========== CARD 5: CTA ========== */
+  .card-5 {
+    background: #6366F1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 36px 28px;
+    text-align: center;
+    color: white;
+  }
+
+  .card-5 .cta-emoji {
+    font-size: 40px;
+    margin-bottom: 24px;
+  }
+
+  .card-5 .cta-title {
+    font-size: 24px;
+    font-weight: 900;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+
+  .card-5 .cta-subtitle {
+    font-size: 14px;
+    color: rgba(255,255,255,0.8);
+    line-height: 1.7;
+    margin-bottom: 28px;
+  }
+
+  .card-5 .cta-button {
+    background: white;
+    color: #6366F1;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 14px 36px;
+    border-radius: 50px;
+    display: inline-block;
+    margin-bottom: 16px;
+  }
+
+  .card-5 .cta-note {
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+  }
+
+  .card-5 .brand-name {
+    position: absolute;
+    bottom: 24px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<h1>AI社群打造師 Chelsea ── 示範輪播圖卡（5張）</h1>
+
+<div class="cards-wrapper">
+
+  <!-- CARD 1: COVER -->
+  <div class="card-container">
+    <div class="card-label">1 / 5 封面卡</div>
+    <div class="card card-1">
+      <div class="top-tag">AI 社群打造師</div>
+      <div class="main-title">
+        社群經營<br>你還在<span class="highlight">自己來</span>？
+      </div>
+      <div class="subtitle">
+        花了時間卻沒成效？<br>也許你需要的不是更努力<br>而是一個 AI 幫手
+      </div>
+      <div class="swipe-hint">
+        往左滑看解方 <span class="arrow">→</span>
+      </div>
+      <div class="brand-bar"></div>
+    </div>
+  </div>
+
+  <!-- CARD 2: PAIN POINTS -->
+  <div class="card-container">
+    <div class="card-label">2 / 5 痛點卡</div>
+    <div class="card card-2">
+      <div class="card-number">01</div>
+      <div class="section-title">你是不是也這樣？</div>
+      <div class="pain-list">
+        <div class="pain-item">
+          <div class="pain-icon">😩</div>
+          <div class="pain-text">
+            <strong>忙到沒時間發文</strong>
+            <span>每天光做本業就累了，社群根本顧不到</span>
+          </div>
+        </div>
+        <div class="pain-item">
+          <div class="pain-icon">🤷</div>
+          <div class="pain-text">
+            <strong>不知道要發什麼</strong>
+            <span>打開手機腦袋一片空白，靈感枯竭</span>
+          </div>
+        </div>
+        <div class="pain-item">
+          <div class="pain-icon">📉</div>
+          <div class="pain-text">
+            <strong>有發文但沒人看</strong>
+            <span>觸及低、互動少，不知道哪裡出問題</span>
+          </div>
+        </div>
+        <div class="pain-item">
+          <div class="pain-icon">💸</div>
+          <div class="pain-text">
+            <strong>請小編太貴</strong>
+            <span>外包一個月好幾萬，效果還不確定</span>
+          </div>
+        </div>
+      </div>
+      <div class="brand-bar"></div>
+    </div>
+  </div>
+
+  <!-- CARD 3: SOLUTION -->
+  <div class="card-container">
+    <div class="card-label">3 / 5 解方卡</div>
+    <div class="card card-3">
+      <div class="card-number">02</div>
+      <div class="section-title">AI 社群員工<br>可以幫你做什麼？</div>
+      <div class="solution-list">
+        <div class="solution-item">
+          <div class="solution-icon">✍️</div>
+          <div class="solution-text">自動產出符合你風格的貼文內容</div>
+        </div>
+        <div class="solution-item">
+          <div class="solution-icon">📅</div>
+          <div class="solution-text">排程發文，不用每天手動操作</div>
+        </div>
+        <div class="solution-item">
+          <div class="solution-icon">📊</div>
+          <div class="solution-text">分析數據，告訴你什麼內容有效</div>
+        </div>
+        <div class="solution-item">
+          <div class="solution-icon">🎯</div>
+          <div class="solution-text">量身打造，不是通用模板</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 4: RESULTS -->
+  <div class="card-container">
+    <div class="card-label">4 / 5 成果卡</div>
+    <div class="card card-4">
+      <div class="card-number">03</div>
+      <div class="section-title">用了之後會怎樣？</div>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-number">80%</div>
+          <div class="stat-label">省下社群<br>經營時間</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">3x</div>
+          <div class="stat-label">內容產出<br>效率提升</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">0</div>
+          <div class="stat-label">需要從零<br>想內容的日子</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">24/7</div>
+          <div class="stat-label">AI 不休假<br>持續運作</div>
+        </div>
+        <div class="stat-box full">
+          <div class="stat-number">100%</div>
+          <div class="stat-label">為你量身打造<br>不是套模板</div>
+        </div>
+      </div>
+      <div class="brand-bar"></div>
+    </div>
+  </div>
+
+  <!-- CARD 5: CTA -->
+  <div class="card-container">
+    <div class="card-label">5 / 5 行動卡</div>
+    <div class="card card-5">
+      <div class="cta-emoji">🚀</div>
+      <div class="cta-title">讓 AI 幫你<br>顧社群</div>
+      <div class="cta-subtitle">
+        你負責做你的專業<br>社群的事，交給 AI 員工
+      </div>
+      <div class="cta-button">私訊了解更多</div>
+      <div class="cta-note">免費諮詢，聊聊你的需求</div>
+      <div class="brand-name">AI社群打造師 Chelsea</div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
