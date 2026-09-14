@@ -5,6 +5,23 @@
  */
 const fs = require("fs");
 const path = require("path");
+
+// 每個新環境都是乾淨的 clone，node_modules 不進版控。缺套件就自己裝，不用人記。
+try {
+  require.resolve("docx");
+} catch {
+  console.log("首次執行，安裝相依套件中…");
+  try {
+    require("child_process").execFileSync(
+      "npm", ["install", "--omit=dev", "--no-audit", "--no-fund", "--silent"],
+      { cwd: __dirname, stdio: "inherit" },
+    );
+  } catch {
+    console.error("安裝失敗。請確認網路可用，或手動在 tools/ 執行 npm install。");
+    process.exit(1);
+  }
+}
+
 const {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   WidthType, AlignmentType, BorderStyle, ShadingType, PageBreak,
