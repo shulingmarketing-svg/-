@@ -130,6 +130,14 @@ a{color:var(--brand)}
 .prog{height:5px;background:var(--surface2);border-radius:999px;overflow:hidden;margin-bottom:16px}
 .prog i{display:block;height:100%;background:var(--brand);transition:width .25s}
 
+/* ---- 雲端狀態 ---- */
+.pill{display:flex;align-items:center;gap:6px;height:36px;padding:0 13px;border-radius:999px;border:1px solid var(--line2);background:#fff;font-size:12.5px;color:var(--muted);font-weight:500}
+.pill:hover{border-color:var(--brand);color:var(--brand)}
+.pill.on{background:var(--brand-soft);border-color:#bcd9cf;color:var(--brand)}
+.pill.on::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--brand)}
+.pill.busy::before{animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+
 /* ---- 圖片上傳 ---- */
 .drop{border:1.5px dashed var(--line2);border-radius:var(--radius);padding:26px 18px;text-align:center;color:var(--muted);font-size:14px;cursor:pointer;background:var(--surface2);transition:.15s}
 .drop:hover,.drop.over{border-color:var(--brand);background:var(--brand-soft);color:var(--brand)}
@@ -164,6 +172,7 @@ a{color:var(--brand)}
       <div class="mast-sub">把每天測試裡的問答，累積成自己的行銷知識資產</div>
     </div>
     <div class="mast-actions">
+      <button class="pill" id="cloud-pill" onclick="openCloud()" title="雲端同步">本機模式</button>
       <button class="icon-btn" onclick="openBackup()" title="備份 / 還原">&#128190;</button>
       <button class="icon-btn" onclick="openSettings()" title="設定">&#9881;</button>
     </div>
@@ -349,6 +358,17 @@ a{color:var(--brand)}
   </div>
 </div>
 
+<!-- ===== 雲端同步 Modal ===== -->
+<div class="modal" id="m-cloud">
+  <div class="modal-box" style="max-width:540px">
+    <div class="modal-h">雲端同步</div>
+    <div id="cloud-body"></div>
+    <div class="modal-bar">
+      <button class="btn ghost" onclick="closeModal('m-cloud')">關閉</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== 設定 Modal ===== -->
 <div class="modal" id="m-settings">
   <div class="modal-box" style="max-width:520px">
@@ -356,7 +376,7 @@ a{color:var(--brand)}
     <div class="field">
       <label class="label">Anthropic API Key（選填，用於「問 AI」與「AI 整理」）</label>
       <input id="api-key-input" type="password" placeholder="sk-ant-...">
-      <div class="hint" style="margin-top:6px">Key 只存在這台瀏覽器的 localStorage，直接送往 Anthropic API，不經過任何第三方伺服器。可於 <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a> 申請。沒有 Key 也能正常使用手動新增、匯入、搜尋與複習。</div>
+      <div class="hint" style="margin-top:6px">Key 只存在這台瀏覽器的 localStorage，直接送往 Anthropic API，不經過任何第三方伺服器。可於 <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a> 申請。<br>已登入雲端同步、且 Worker 有設定 <span class="kbd">ANTHROPIC_API_KEY</span> 的話，這裡留空即可（AI 會走後端，手機不必自備 Key）。沒有 Key 也能正常使用內建題庫、手動新增、貼上匯入、搜尋與複習。</div>
     </div>
     <div class="modal-bar">
       <button class="btn ghost" onclick="closeModal('m-settings')">關閉</button>
@@ -497,6 +517,8 @@ const STARTER_PACK = [
    ============================================================ */
 
 const KEY_ENTRIES  = 'mkb_entries_v1';      // 知識條目
+const KEY_DELETED  = 'mkb_deleted_v1';      // 已刪除的 id（讓刪除動作能同步到其他裝置）
+const KEY_CLOUD    = 'mkb_cloud_v1';        // 雲端同步設定：{base, token, username, lastSync}
 const API_KEY_STORAGE = 'anthropic_api_key';// 與本 repo 其他工具共用
 
 const CATS = ['品牌策略','市場與消費者研究','內容行銷','社群經營','廣告投放','SEO / SEM',
@@ -514,7 +536,13 @@ function loadEntries(){
 }
 function saveEntries(list){
   localStorage.setItem(KEY_ENTRIES, JSON.stringify(list));
+  if(!applyingRemote) scheduleSync();
 }
+function loadDeleted(){
+  try{ const a=JSON.parse(localStorage.getItem(KEY_DELETED)); return Array.isArray(a)?a:[]; }
+  catch(e){ return []; }
+}
+function saveDeleted(list){ localStorage.setItem(KEY_DELETED, JSON.stringify(list.slice(-2000))); }
 function getApiKey(){ return localStorage.getItem(API_KEY_STORAGE)||''; }
 
 /* ---------- 小工具 ---------- */
@@ -680,7 +708,11 @@ function toggleStar(id){
 }
 function delEntry(id){
   if(!confirm('確定刪除這一條？')) return;
-  saveEntries(loadEntries().filter(e=>e.id!==id));
+  const rest=loadEntries().filter(e=>e.id!==id);
+  const tomb=loadDeleted();
+  tomb.push({id, at:today()});
+  saveDeleted(tomb);
+  saveEntries(rest);
   renderAll();
 }
 
@@ -843,7 +875,7 @@ function clearImages(){ state.images=[]; renderThumbs(); msg('img-msg',''); }
 
 async function readImages(){
   if(!state.images.length){ msg('img-msg','還沒有圖片。','err'); return; }
-  if(!getApiKey()){ msg('img-msg','圖片辨識需要 Anthropic API Key，請先到右上角齒輪設定。','err'); openSettings(); return; }
+  if(!hasAI()){ msg('img-msg','圖片辨識需要 Anthropic API Key：可在右上角齒輪自備 Key，或登入雲端並在 Worker 設定 ANTHROPIC_API_KEY。','err'); openSettings(); return; }
   const groups=[];
   for(let i=0;i<state.images.length;i+=IMG_PER_CALL) groups.push(state.images.slice(i,i+IMG_PER_CALL));
   const all=[];
@@ -1034,9 +1066,19 @@ function importStarter(){
 /* ============================================================
    AI：呼叫 Anthropic API（瀏覽器直連，需使用者自備 Key）
    ============================================================ */
+function hasAI(){ return !!getApiKey() || (isCloud() && cloud().ai!==false); }
+
 async function callClaude(content, maxTokens){
   const apiKey=getApiKey();
-  if(!apiKey){ openSettings(); throw new Error('尚未設定 API Key'); }
+  if(!apiKey){
+    /* 沒有自備 Key：改用後端代理（Key 存在 Worker Secret，手機也能用） */
+    if(isCloud()){
+      const data=await api('/api/ai','POST',{content, max_tokens:maxTokens||3000});
+      return data.text||'';
+    }
+    openSettings();
+    throw new Error('尚未設定 API Key');
+  }
   const res=await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{
@@ -1311,6 +1353,258 @@ function endReview(){
   renderStats();
 }
 
+
+/* ============================================================
+   雲端同步（Cloudflare Worker + D1）
+   本機優先：所有操作先寫 localStorage，再非同步推到雲端；
+   衝突以 updatedAt 較新者為準。沒設定就是純本機模式。
+   ============================================================ */
+let applyingRemote=false, syncing=false, syncTimer=null;
+
+function cloud(){
+  try{ return Object.assign({base:'',token:'',username:'',lastSync:'',ai:false},
+                            JSON.parse(localStorage.getItem(KEY_CLOUD))||{}); }
+  catch(e){ return {base:'',token:'',username:'',lastSync:'',ai:false}; }
+}
+function saveCloud(c){ localStorage.setItem(KEY_CLOUD, JSON.stringify(c)); renderCloudPill(); }
+function isCloud(){ const c=cloud(); return !!(c.base&&c.token); }
+
+async function api(path, method, body){
+  const c=cloud();
+  if(!c.base) throw new Error('還沒設定雲端網址');
+  const res=await fetch(c.base.replace(/\/+$/,'')+path,{
+    method:method||'GET',
+    headers:Object.assign({'Content-Type':'application/json'},
+                          c.token?{'Authorization':'Bearer '+c.token}:{}),
+    body: body?JSON.stringify(body):undefined
+  });
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok){
+    const err=new Error(data.error||`連線失敗（HTTP ${res.status}）`);
+    err.status=res.status;
+    throw err;
+  }
+  return data;
+}
+
+function renderCloudPill(){
+  const el=document.getElementById('cloud-pill');
+  if(!el) return;
+  const c=cloud();
+  el.classList.toggle('on', isCloud());
+  el.classList.toggle('busy', syncing);
+  if(!isCloud()){ el.textContent='本機模式'; el.title='資料只存在這台瀏覽器，點此設定雲端同步'; return; }
+  el.textContent = syncing ? '同步中…' : ('雲端 · '+c.username);
+  el.title = c.lastSync ? ('最後同步：'+timeLabel(c.lastSync)) : '已連線';
+}
+function timeLabel(iso){
+  const d=new Date(iso);
+  if(isNaN(d)) return '—';
+  return `${dateLabel(iso)} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function scheduleSync(){
+  if(!isCloud()) return;
+  clearTimeout(syncTimer);
+  syncTimer=setTimeout(()=>syncNow(), 1500);
+}
+
+function normalizeEntry(e){
+  return {
+    id:e.id, q:e.q, a:e.a, cat:e.cat||'其他',
+    tags:Array.isArray(e.tags)?e.tags:[],
+    source:e.source||'', star:!!e.star,
+    createdAt:e.createdAt||today(), updatedAt:e.updatedAt||e.createdAt||today(),
+    review:Object.assign({count:0,last:null,right:0,wrong:0}, e.review||{})
+  };
+}
+
+async function syncNow(opts){
+  const silent=!(opts&&opts.loud);
+  if(!isCloud()||syncing) return;
+  syncing=true; renderCloudPill();
+  try{
+    const res=await api('/api/sync','POST',{entries:loadEntries(), deleted:loadDeleted()});
+    applyingRemote=true;
+    saveEntries((res.entries||[]).map(normalizeEntry));
+    applyingRemote=false;
+    saveDeleted([]);
+    const c=cloud();
+    c.lastSync=res.serverTime||today();
+    saveCloud(c);
+    renderAll();
+    if(!silent) msg('cloud-msg',`同步完成，雲端目前有 ${(res.entries||[]).length} 條。`,'ok');
+  }catch(e){
+    applyingRemote=false;
+    if(e.status===401){
+      const c=cloud(); c.token=''; saveCloud(c);
+      if(!silent) msg('cloud-msg','登入已過期，請重新登入。','err');
+      renderCloudBody();
+    }else if(!silent){
+      msg('cloud-msg','同步失敗：'+esc(e.message),'err');
+    }
+  }finally{
+    syncing=false; renderCloudPill();
+  }
+}
+
+/* ---------- 雲端設定視窗 ---------- */
+function openCloud(){ renderCloudBody(); openModal('m-cloud'); }
+
+function renderCloudBody(){
+  const c=cloud();
+  const el=document.getElementById('cloud-body');
+  if(!c.base){
+    el.innerHTML=`
+      <div class="hint">目前資料只存在這台瀏覽器。接上自己的 Cloudflare Worker 後，手機與電腦就能同步同一份智庫。<br>
+      部署步驟見 repo 裡的 <span class="kbd">marketing-kb/DEPLOY.md</span>。</div>
+      <div class="field" style="margin-top:14px">
+        <label class="label">Worker 網址</label>
+        <input id="cloud-base" placeholder="https://marketing-kb-api.你的帳號.workers.dev">
+      </div>
+      <button class="btn brand" onclick="connectCloud()">連線測試</button>
+      <div id="cloud-msg"></div>`;
+    return;
+  }
+  if(!c.token){
+    el.innerHTML=`
+      <div class="hint">伺服器：${esc(c.base)}　<button class="btn ghost sm" onclick="resetCloud()">換一個</button></div>
+      <div class="row" style="margin-top:14px">
+        <div class="field"><label class="label">帳號</label><input id="cloud-user" autocomplete="username"></div>
+        <div class="field"><label class="label">密碼</label><input id="cloud-pass" type="password" autocomplete="current-password"></div>
+      </div>
+      <div class="field" id="invite-field" style="display:${c.inviteRequired?'block':'none'}">
+        <label class="label">邀請碼（註冊用）</label><input id="cloud-invite">
+      </div>
+      <div class="row" style="gap:8px">
+        <button class="btn brand" style="flex:none" onclick="doLogin()">登入</button>
+        <button class="btn ghost" style="flex:none" onclick="doRegister()">註冊新帳號</button>
+      </div>
+      <div class="hint" style="margin-top:10px">第一次使用請先註冊；密碼至少 8 個字。登入狀態保留 90 天。</div>
+      <div id="cloud-msg"></div>`;
+    return;
+  }
+  el.innerHTML=`
+    <div class="stats" style="margin-bottom:14px">
+      <div class="stat"><div class="stat-n">${loadEntries().length}</div><div class="stat-l">本機條目</div></div>
+      <div class="stat"><div class="stat-n" id="cloud-count">—</div><div class="stat-l">雲端條目</div></div>
+    </div>
+    <div class="hint">
+      帳號：<strong>${esc(c.username)}</strong>　伺服器：${esc(c.base)}<br>
+      最後同步：${c.lastSync?timeLabel(c.lastSync):'尚未同步'}　
+      ${c.ai?'後端已設定 API Key，這台裝置不用自備':'後端未設定 API Key，AI 功能需自備 Key'}
+    </div>
+    <div class="hint" style="margin-top:8px">新增、編輯、刪除、複習都會自動同步；多裝置同時修改同一條時，以最後修改的為準。</div>
+    <div class="row" style="gap:8px;margin-top:14px">
+      <button class="btn brand" style="flex:none" onclick="syncNow({loud:true})">立即同步</button>
+      <button class="btn ghost" style="flex:none" onclick="doLogout()">登出（保留本機資料）</button>
+      <button class="btn ghost" style="flex:none" onclick="toggleChangePw()">修改密碼</button>
+    </div>
+    <div class="divider"></div>
+    <button class="btn danger" onclick="wipeCloud()">清空雲端資料（本機保留）</button>
+    <div id="pw-box" style="display:none;margin-top:12px">
+      <div class="row">
+        <div class="field"><label class="label">原密碼</label><input id="pw-old" type="password"></div>
+        <div class="field"><label class="label">新密碼</label><input id="pw-new" type="password"></div>
+      </div>
+      <button class="btn" onclick="doChangePw()">確認修改</button>
+      <div class="hint" style="margin-top:6px">修改後其他裝置需要重新登入。</div>
+    </div>
+    <div id="cloud-msg"></div>`;
+  api('/api/auth/me','GET').then(d=>{
+    const n=document.getElementById('cloud-count');
+    if(n) n.textContent=d.entries;
+  }).catch(()=>{});
+}
+
+async function connectCloud(){
+  const base=document.getElementById('cloud-base').value.trim().replace(/\/+$/,'');
+  if(!/^https?:\/\//.test(base)){ msg('cloud-msg','請貼上完整網址，含 https://','err'); return; }
+  msg('cloud-msg','<span class="spinner"></span>連線中…','ok');
+  try{
+    const res=await fetch(base+'/api/health');
+    const data=await res.json();
+    if(!data.ok) throw new Error('回應格式不正確，請確認網址是 Worker 的網址');
+    const c=cloud();
+    c.base=base; c.ai=!!data.ai; c.inviteRequired=!!data.inviteRequired;
+    saveCloud(c);
+    renderCloudBody();
+    msg('cloud-msg','連線成功，請登入或註冊。','ok');
+  }catch(e){
+    msg('cloud-msg','連不上：'+esc(e.message)+'　請確認網址正確且 Worker 已部署。','err');
+  }
+}
+function resetCloud(){
+  const c=cloud();
+  c.base=''; c.token=''; c.username=''; c.lastSync='';
+  saveCloud(c); renderCloudBody();
+}
+
+async function doAuth(path, body, okMsg){
+  msg('cloud-msg','<span class="spinner"></span>處理中…','ok');
+  try{
+    const data=await api(path,'POST',body);
+    const c=cloud();
+    c.token=data.token; c.username=data.username;
+    saveCloud(c);
+    msg('cloud-msg',okMsg,'ok');
+    await syncNow({loud:true});
+    renderCloudBody();
+  }catch(e){
+    msg('cloud-msg',esc(e.message),'err');
+  }
+}
+function doLogin(){
+  const u=document.getElementById('cloud-user').value.trim();
+  const p=document.getElementById('cloud-pass').value;
+  if(!u||!p){ msg('cloud-msg','帳號與密碼都要填。','err'); return; }
+  doAuth('/api/auth/login',{username:u,password:p},'登入成功，開始同步…');
+}
+function doRegister(){
+  const u=document.getElementById('cloud-user').value.trim();
+  const p=document.getElementById('cloud-pass').value;
+  const inv=(document.getElementById('cloud-invite')||{}).value||'';
+  if(u.length<3){ msg('cloud-msg','帳號至少 3 個字。','err'); return; }
+  if(p.length<8){ msg('cloud-msg','密碼至少 8 個字。','err'); return; }
+  doAuth('/api/auth/register',{username:u,password:p,inviteCode:inv},'註冊成功，本機資料正在上傳…');
+}
+async function doLogout(){
+  try{ await api('/api/auth/logout','POST',{}); }catch(e){}
+  const c=cloud();
+  c.token=''; c.username=''; c.lastSync='';
+  saveCloud(c);
+  renderCloudBody();
+  msg('cloud-msg','已登出，本機資料仍保留在這台瀏覽器。','ok');
+}
+async function wipeCloud(){
+  if(!confirm('這會刪掉雲端資料庫裡這個帳號的所有條目（本機資料保留）。確定嗎？')) return;
+  const pw=prompt('請輸入密碼確認：');
+  if(!pw) return;
+  try{
+    await api('/api/entries','DELETE',{password:pw});
+    const c=cloud(); c.lastSync=''; saveCloud(c);
+    msg('cloud-msg','雲端資料已清空。下次同步會把這台裝置的本機資料重新上傳，若不想上傳請先登出。','ok');
+    renderCloudBody();
+  }catch(e){
+    msg('cloud-msg',esc(e.message),'err');
+  }
+}
+function toggleChangePw(){
+  const b=document.getElementById('pw-box');
+  b.style.display = b.style.display==='none' ? 'block':'none';
+}
+async function doChangePw(){
+  const oldPw=document.getElementById('pw-old').value;
+  const newPw=document.getElementById('pw-new').value;
+  try{
+    await api('/api/auth/password','POST',{oldPassword:oldPw,newPassword:newPw});
+    msg('cloud-msg','密碼已更新，其他裝置需重新登入。','ok');
+    document.getElementById('pw-box').style.display='none';
+  }catch(e){
+    msg('cloud-msg',esc(e.message),'err');
+  }
+}
+
 /* ============================================================
    設定 / 備份
    ============================================================ */
@@ -1376,7 +1670,11 @@ function restoreJSON(ev){
 function wipeAll(){
   if(!confirm('這會刪掉智庫裡所有條目，且無法復原。確定要清空嗎？')) return;
   if(!confirm('再確認一次：真的要清空整個智庫？建議先匯出備份。')) return;
+  const tomb=loadDeleted();
+  loadEntries().forEach(e=>tomb.push({id:e.id, at:today()}));
+  saveDeleted(tomb);
   localStorage.removeItem(KEY_ENTRIES);
+  scheduleSync();
   closeModal('m-backup');
   renderAll();
 }
@@ -1406,6 +1704,16 @@ function initDropZone(){
   renderTabs();
   renderAll();
   initDropZone();
+  renderCloudPill();
+  if(isCloud()){
+    syncNow();
+    /* 回到分頁時若超過一分鐘沒同步就補一次 */
+    document.addEventListener('visibilitychange',()=>{
+      if(document.visibilityState!=='visible'||!isCloud()) return;
+      const last=cloud().lastSync;
+      if(!last||Date.now()-new Date(last).getTime()>60000) syncNow();
+    });
+  }
   document.querySelectorAll('.modal').forEach(m=>{
     m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('on'); });
   });
