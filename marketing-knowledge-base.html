@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>行銷知識智庫</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#fbfaf7;
+  --surface:#ffffff;
+  --surface2:#f3f1ec;
+  --ink:#241f18;
+  --text:#332d24;
+  --muted:#8b8478;
+  --line:#e4dfd4;
+  --line2:#d2ccbe;
+  --brand:#1f5f4e;
+  --brand-soft:#e6f0ec;
+  --gold:#b98a3c;
+  --gold-soft:#f8efdd;
+  --blue:#35618f;  --blue-soft:#e4ecf4;
+  --red:#a8452f;   --red-soft:#f6e5e1;
+  --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--paper);color:var(--text);min-height:100vh;font-size:15px;line-height:1.7}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line2);border-radius:8px;background:#fff;width:100%;color:var(--text)}
+textarea{resize:vertical;min-height:90px;line-height:1.7}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:1px}
+a{color:var(--brand)}
+
+.shell{max-width:940px;margin:0 auto;padding:28px 16px 80px}
+
+/* ---- 頁首 ---- */
+.masthead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding-bottom:16px;border-bottom:1px solid var(--line2);flex-wrap:wrap}
+.mast-title{font-family:'Noto Serif TC',serif;font-size:27px;font-weight:900;color:var(--ink);letter-spacing:.5px}
+.mast-sub{font-size:13px;color:var(--muted);margin-top:4px}
+.mast-actions{display:flex;gap:8px;align-items:center}
+.icon-btn{width:36px;height:36px;border-radius:9px;border:1px solid var(--line2);background:#fff;font-size:15px;display:flex;align-items:center;justify-content:center}
+.icon-btn:hover{border-color:var(--brand);color:var(--brand)}
+
+/* ---- 分頁 ---- */
+.tabs{display:flex;gap:4px;margin:18px 0 20px;flex-wrap:wrap}
+.tab{padding:8px 15px;border-radius:999px;font-size:14px;font-weight:500;color:var(--muted);border:1px solid transparent}
+.tab:hover{color:var(--ink)}
+.tab.active{background:var(--ink);color:#fff}
+.tab .dot{display:inline-block;min-width:18px;padding:0 5px;height:18px;line-height:18px;border-radius:999px;background:var(--red);color:#fff;font-size:11px;font-weight:700;margin-left:6px;text-align:center}
+
+.view{display:none}
+.view.on{display:block}
+
+/* ---- 卡片 ---- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:14px}
+.card-h{font-weight:700;font-size:15px;color:var(--ink);margin-bottom:4px}
+.card-sub{font-size:13px;color:var(--muted);margin-bottom:14px}
+
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1;min-width:150px}
+.field{margin-bottom:12px}
+.label{display:block;font-size:12.5px;font-weight:500;color:var(--muted);margin-bottom:5px}
+
+.btn{padding:9px 16px;border-radius:9px;font-size:14px;font-weight:500;background:var(--ink);color:#fff}
+.btn:hover{background:#000}
+.btn.ghost{background:#fff;border:1px solid var(--line2);color:var(--text)}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn.brand{background:var(--brand)}
+.btn.sm{padding:5px 11px;font-size:12.5px;border-radius:7px}
+.btn.danger{background:#fff;border:1px solid var(--red);color:var(--red)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ---- 統計 ---- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.stat-n{font-family:'Noto Serif TC',serif;font-size:25px;font-weight:900;color:var(--ink);line-height:1.2}
+.stat-l{font-size:12.5px;color:var(--muted);margin-top:2px}
+
+/* ---- 搜尋列 ---- */
+.searchbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.searchbar input{flex:2;min-width:200px}
+.searchbar select{flex:1;min-width:130px}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.chip{padding:4px 11px;border-radius:999px;font-size:12.5px;border:1px solid var(--line2);background:#fff;color:var(--muted)}
+.chip.on{background:var(--brand-soft);border-color:var(--brand);color:var(--brand);font-weight:500}
+
+/* ---- 知識條目 ---- */
+.entry{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:10px}
+.entry-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.entry-q{font-weight:700;font-size:15.5px;color:var(--ink);line-height:1.6;cursor:pointer;flex:1}
+.entry-q:hover{color:var(--brand)}
+.entry-a{margin-top:10px;padding-top:12px;border-top:1px dashed var(--line2);white-space:pre-wrap;font-size:14.5px;color:var(--text)}
+.entry-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:12px;color:var(--muted)}
+.tag{padding:2px 9px;border-radius:999px;background:var(--surface2);font-size:11.5px;color:var(--muted)}
+.tag.cat{background:var(--brand-soft);color:var(--brand);font-weight:500}
+.tag.src{background:var(--gold-soft);color:var(--gold)}
+.entry-tools{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.star{font-size:16px;line-height:1;color:var(--line2);background:none;padding:2px}
+.star.on{color:var(--gold)}
+
+.empty{text-align:center;padding:46px 20px;color:var(--muted);font-size:14px;background:var(--surface);border:1px dashed var(--line2);border-radius:var(--radius)}
+
+/* ---- 待整理收件匣 ---- */
+.inbox-banner{background:var(--gold-soft);border:1px solid #ecd9ae;border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.inbox-banner .t{font-weight:700;color:#7a5a1c;font-size:14.5px}
+.inbox-banner .s{font-size:13px;color:#8a6c2d}
+
+.pick{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.pick input[type=checkbox]{width:16px;height:16px;margin-top:4px;flex:none}
+.pick-q{font-weight:500;font-size:14.5px;color:var(--ink)}
+.pick-a{font-size:13.5px;color:var(--muted);margin-top:4px;white-space:pre-wrap;max-height:88px;overflow:hidden}
+.pick-src{font-size:11.5px;color:var(--gold);margin-top:6px}
+
+/* ---- 問 AI ---- */
+.answer-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;white-space:pre-wrap;font-size:14.5px;line-height:1.85}
+.ref{font-size:13px;color:var(--muted);background:var(--surface2);border-radius:8px;padding:10px 12px;margin-top:10px}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--line2);border-top-color:var(--ink);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:7px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.note{font-size:13px;color:var(--muted);margin-top:8px}
+.err{background:var(--red-soft);border:1px solid #e8c7bf;color:var(--red);border-radius:9px;padding:10px 13px;font-size:13.5px;margin-top:10px}
+.ok{background:var(--brand-soft);border:1px solid #c4ddd4;color:var(--brand);border-radius:9px;padding:10px 13px;font-size:13.5px;margin-top:10px}
+
+/* ---- 複習 ---- */
+.flash{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:26px 22px;text-align:center}
+.flash-q{font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:var(--ink);line-height:1.6;margin-bottom:6px}
+.flash-a{text-align:left;white-space:pre-wrap;font-size:14.5px;margin-top:18px;padding-top:16px;border-top:1px dashed var(--line2)}
+.flash-bar{display:flex;gap:8px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+.prog{height:5px;background:var(--surface2);border-radius:999px;overflow:hidden;margin-bottom:16px}
+.prog i{display:block;height:100%;background:var(--brand);transition:width .25s}
+
+/* ---- Modal ---- */
+.modal{display:none;position:fixed;inset:0;background:rgba(30,26,20,.45);z-index:50;align-items:center;justify-content:center;padding:18px}
+.modal.on{display:flex}
+.modal-box{background:var(--paper);border-radius:14px;padding:22px;width:100%;max-width:620px;max-height:88vh;overflow-y:auto}
+.modal-h{font-family:'Noto Serif TC',serif;font-size:19px;font-weight:900;color:var(--ink);margin-bottom:14px}
+.modal-bar{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+
+.hint{font-size:12.5px;color:var(--muted);line-height:1.75}
+.kbd{font-family:ui-monospace,monospace;background:var(--surface2);padding:1px 6px;border-radius:5px;font-size:12.5px}
+.divider{height:1px;background:var(--line);margin:18px 0}
+@media(max-width:600px){
+  .shell{padding:20px 12px 70px}
+  .mast-title{font-size:22px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="masthead">
+    <div>
+      <div class="mast-title">行銷知識智庫</div>
+      <div class="mast-sub">把每天測試裡的問答，累積成自己的行銷知識資產</div>
+    </div>
+    <div class="mast-actions">
+      <button class="icon-btn" onclick="openBackup()" title="備份 / 還原">&#128190;</button>
+      <button class="icon-btn" onclick="openSettings()" title="設定">&#9881;</button>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <!-- ===== 智庫 ===== -->
+  <div class="view on" id="v-kb">
+    <div id="inbox-banner"></div>
+    <div class="stats" id="stats"></div>
+    <div class="searchbar">
+      <input id="q-search" placeholder="搜尋問題、答案、標籤…" oninput="renderList()">
+      <select id="f-cat" onchange="renderList()"></select>
+      <select id="f-sort" onchange="renderList()">
+        <option value="new">最新加入</option>
+        <option value="old">最早加入</option>
+        <option value="star">重點優先</option>
+        <option value="least">最少複習</option>
+      </select>
+      <button class="btn" onclick="openEditor()">＋ 新增</button>
+    </div>
+    <div class="chips" id="tag-chips"></div>
+    <div id="list"></div>
+  </div>
+
+  <!-- ===== 問 AI ===== -->
+  <div class="view" id="v-ask">
+    <div class="card">
+      <div class="card-h">問 AI（會先查你的智庫，再補上專業解答）</div>
+      <div class="card-sub">回答會標示哪些內容來自你既有的智庫，滿意的話一鍵存回智庫，智庫就越問越厚。</div>
+      <div class="field">
+        <textarea id="ask-input" placeholder="例如：中小企業一個月 3 萬預算，Meta 廣告該怎麼分配？"></textarea>
+      </div>
+      <div class="row">
+        <div class="field" style="flex:2">
+          <label class="label">分類（存回智庫時使用）</label>
+          <select id="ask-cat"></select>
+        </div>
+        <div class="field" style="flex:1;display:flex;align-items:flex-end">
+          <button class="btn brand" id="ask-btn" onclick="askAI()" style="width:100%">送出提問</button>
+        </div>
+      </div>
+      <div id="ask-msg"></div>
+    </div>
+    <div id="ask-result"></div>
+  </div>
+
+  <!-- ===== 匯入補充 ===== -->
+  <div class="view" id="v-import">
+    <div class="card">
+      <div class="card-h">① 從本機其他測試工具自動抓取</div>
+      <div class="card-sub">掃描同一個瀏覽器裡其他工具（英文測驗、TOEIC 計畫、其他自建題庫…）存下的問答，挑要的加進智庫。已加過或略過的不會再出現。<br>需要與那些工具在<strong>同一個網域</strong>開啟才掃得到（例如同一個 GitHub Pages 站台，或都用本機同一個伺服器開啟）。</div>
+      <button class="btn" onclick="runScan(true)">掃描本機工具</button>
+      <span class="note" id="scan-note"></span>
+      <div id="scan-result" style="margin-top:14px"></div>
+      <div id="scan-msg"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">② 貼上／上傳今天的測試問答</div>
+      <div class="card-sub">支援 <span class="kbd">Q: / A:</span>、<span class="kbd">問：/ 答：</span>、<span class="kbd">1. 題目 …</span> 或 JSON 陣列。貼上後按「解析」先預覽再入庫。</div>
+      <div class="field">
+        <textarea id="paste-input" style="min-height:150px" placeholder="Q: 什麼是 CAC？&#10;A: 顧客獲取成本，行銷總花費 ÷ 新客數…&#10;&#10;Q: LTV 怎麼算？&#10;A: 客單價 × 回購頻率 × 平均存續期間…"></textarea>
+      </div>
+      <div class="row">
+        <div class="field" style="flex:1">
+          <label class="label">預設分類</label>
+          <select id="paste-cat"></select>
+        </div>
+        <div class="field" style="flex:1">
+          <label class="label">來源標記</label>
+          <input id="paste-src" placeholder="例如：0921 行銷考題">
+        </div>
+      </div>
+      <div class="row" style="gap:8px">
+        <button class="btn ghost" style="flex:none" onclick="document.getElementById('file-input').click()">選擇檔案</button>
+        <button class="btn ghost" style="flex:none" onclick="parsePaste()">解析預覽</button>
+        <button class="btn brand" style="flex:none" onclick="aiOrganize()">用 AI 整理成知識條目</button>
+      </div>
+      <input type="file" id="file-input" accept=".txt,.md,.json,.csv" style="display:none" onchange="loadFile(event)">
+      <div id="paste-msg"></div>
+      <div id="paste-result" style="margin-top:14px"></div>
+    </div>
+  </div>
+
+  <!-- ===== 複習 ===== -->
+  <div class="view" id="v-review">
+    <div id="review-setup">
+      <div class="card">
+        <div class="card-h">今日複習</div>
+        <div class="card-sub">把智庫變回測驗：先想答案，再翻牌確認。標「還不熟」的條目下次會優先出現。</div>
+        <div class="row">
+          <div class="field">
+            <label class="label">題數</label>
+            <select id="rv-count"><option>5</option><option selected>10</option><option>20</option><option>30</option></select>
+          </div>
+          <div class="field">
+            <label class="label">範圍</label>
+            <select id="rv-cat"></select>
+          </div>
+          <div class="field">
+            <label class="label">優先</label>
+            <select id="rv-mode">
+              <option value="weak">還不熟／少複習優先</option>
+              <option value="star">只複習重點</option>
+              <option value="random">完全隨機</option>
+              <option value="new">最近新增</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn brand" onclick="startReview()">開始複習</button>
+        <div id="rv-msg"></div>
+      </div>
+    </div>
+    <div id="review-run" style="display:none"></div>
+  </div>
+</div>
+
+<!-- ===== 編輯 Modal ===== -->
+<div class="modal" id="m-editor">
+  <div class="modal-box">
+    <div class="modal-h" id="editor-title">新增知識條目</div>
+    <div class="field">
+      <label class="label">問題 / 主題</label>
+      <textarea id="e-q" style="min-height:64px"></textarea>
+    </div>
+    <div class="field">
+      <label class="label">答案 / 重點</label>
+      <textarea id="e-a" style="min-height:150px"></textarea>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label class="label">分類</label>
+        <select id="e-cat"></select>
+      </div>
+      <div class="field">
+        <label class="label">標籤（逗號分隔）</label>
+        <input id="e-tags" placeholder="Meta廣告, 預算配置">
+      </div>
+    </div>
+    <div class="field">
+      <label class="label">來源</label>
+      <input id="e-src" placeholder="手動新增">
+    </div>
+    <div class="modal-bar">
+      <button class="btn ghost" onclick="closeModal('m-editor')">取消</button>
+      <button class="btn brand" id="e-ai" onclick="aiEnrich()">AI 補強答案</button>
+      <button class="btn" onclick="saveEditor()">儲存</button>
+    </div>
+    <div id="editor-msg"></div>
+  </div>
+</div>
+
+<!-- ===== 設定 Modal ===== -->
+<div class="modal" id="m-settings">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-h">設定</div>
+    <div class="field">
+      <label class="label">Anthropic API Key（選填，用於「問 AI」與「AI 整理」）</label>
+      <input id="api-key-input" type="password" placeholder="sk-ant-...">
+      <div class="hint" style="margin-top:6px">Key 只存在這台瀏覽器的 localStorage，直接送往 Anthropic API，不經過任何第三方伺服器。可於 <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a> 申請。沒有 Key 也能正常使用手動新增、匯入、搜尋與複習。</div>
+    </div>
+    <div class="field">
+      <label class="label">開啟頁面時自動掃描其他工具的新問答</label>
+      <select id="set-autoscan"><option value="1">是（建議）</option><option value="0">否</option></select>
+    </div>
+    <div class="modal-bar">
+      <button class="btn ghost" onclick="closeModal('m-settings')">關閉</button>
+      <button class="btn" onclick="saveSettings()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 備份 Modal ===== -->
+<div class="modal" id="m-backup">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-h">備份 / 還原</div>
+    <div class="hint">智庫存在這台瀏覽器裡，換裝置或清除瀏覽器資料就會消失，建議定期匯出 JSON 備份。</div>
+    <div class="divider"></div>
+    <div class="row" style="gap:8px">
+      <button class="btn ghost" style="flex:none" onclick="exportJSON()">匯出 JSON 備份</button>
+      <button class="btn ghost" style="flex:none" onclick="exportMD()">匯出 Markdown</button>
+      <button class="btn ghost" style="flex:none" onclick="document.getElementById('restore-input').click()">還原 JSON</button>
+    </div>
+    <input type="file" id="restore-input" accept=".json" style="display:none" onchange="restoreJSON(event)">
+    <div id="backup-msg"></div>
+    <div class="divider"></div>
+    <button class="btn danger" onclick="wipeAll()">清空整個智庫</button>
+    <div class="modal-bar">
+      <button class="btn ghost" onclick="closeModal('m-backup')">關閉</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   行銷知識智庫 — 純前端，資料存在瀏覽器 localStorage
+   ============================================================ */
+
+const KEY_ENTRIES  = 'mkb_entries_v1';      // 知識條目
+const KEY_SETTINGS = 'mkb_settings_v1';     // 設定
+const KEY_SEEN     = 'mkb_seen_v1';         // 已處理過的外部問答指紋（含略過的）
+const API_KEY_STORAGE = 'anthropic_api_key';// 與本 repo 其他工具共用
+
+const CATS = ['品牌策略','市場與消費者研究','內容行銷','社群經營','廣告投放','SEO / SEM',
+              'EDM / CRM','數據與成效分析','電商與通路','公關與活動','行銷科技 / AI','其他'];
+
+/* 已知的其他工具題庫，掃描時給它一個好看的來源名稱 */
+const KNOWN_BANKS = {
+  quiz_question_bank:    '英文測驗練習',
+  toeic700_question_bank:'TOEIC 700 計畫'
+};
+
+const state = {
+  tab:'kb', tags:[], editingId:null,
+  scan:[], paste:[], review:null, lastAnswer:null
+};
+
+/* ---------- 儲存 ---------- */
+function loadEntries(){
+  try{ const a=JSON.parse(localStorage.getItem(KEY_ENTRIES)); return Array.isArray(a)?a:[]; }
+  catch(e){ return []; }
+}
+function saveEntries(list){
+  localStorage.setItem(KEY_ENTRIES, JSON.stringify(list));
+}
+function loadSettings(){
+  try{ return Object.assign({autoscan:'1'}, JSON.parse(localStorage.getItem(KEY_SETTINGS))||{}); }
+  catch(e){ return {autoscan:'1'}; }
+}
+function saveSettingsObj(s){ localStorage.setItem(KEY_SETTINGS, JSON.stringify(s)); }
+function loadSeen(){
+  try{ const a=JSON.parse(localStorage.getItem(KEY_SEEN)); return Array.isArray(a)?a:[]; }
+  catch(e){ return []; }
+}
+function markSeen(fps){
+  const seen=new Set(loadSeen());
+  fps.forEach(f=>seen.add(f));
+  localStorage.setItem(KEY_SEEN, JSON.stringify([...seen].slice(-4000)));
+}
+function getApiKey(){ return localStorage.getItem(API_KEY_STORAGE)||''; }
+
+/* ---------- 小工具 ---------- */
+function esc(s){
+  return String(s==null?'':s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function norm(s){ return String(s||'').replace(/\s+/g,'').toLowerCase(); }
+function fp(source,q){ return norm(source)+'::'+norm(q).slice(0,120); }
+function uid(){ return 'kb_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7); }
+function today(){ return new Date().toISOString(); }
+function dateLabel(iso){
+  if(!iso) return '';
+  const d=new Date(iso);
+  if(isNaN(d)) return '';
+  return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+}
+function msg(id, html, cls){
+  const el=document.getElementById(id);
+  if(el) el.innerHTML = html ? `<div class="${cls||'ok'}">${html}</div>` : '';
+}
+function fillCats(id, opts){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const extra = opts&&opts.all ? '<option value="">全部分類</option>' : '';
+  el.innerHTML = extra + CATS.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  if(opts&&opts.value) el.value=opts.value;
+}
+
+/* ---------- 分頁 ---------- */
+const TABS=[
+  {id:'kb',    label:'智庫'},
+  {id:'ask',   label:'問 AI'},
+  {id:'import',label:'匯入補充'},
+  {id:'review',label:'複習'}
+];
+function renderTabs(){
+  const pend = state.scan.length;
+  document.getElementById('tabs').innerHTML = TABS.map(t=>`
+    <button class="tab${state.tab===t.id?' active':''}" onclick="go('${t.id}')">${t.label}${
+      t.id==='import'&&pend?`<span class="dot">${pend}</span>`:''}</button>`).join('');
+}
+function go(tab){
+  state.tab=tab;
+  TABS.forEach(t=>document.getElementById('v-'+t.id).classList.toggle('on', t.id===tab));
+  renderTabs();
+  if(tab==='kb') renderAll();
+  if(tab==='review') fillCats('rv-cat',{all:true});
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ---------- 統計 / 列表 ---------- */
+function renderAll(){ renderStats(); renderTagChips(); renderList(); renderInbox(); }
+
+function renderStats(){
+  const list=loadEntries();
+  const week=Date.now()-7*864e5;
+  const cats=new Set(list.map(e=>e.cat).filter(Boolean));
+  const reviewed=list.filter(e=>e.review&&e.review.count>0).length;
+  const data=[
+    [list.length,'知識條目'],
+    [list.filter(e=>new Date(e.createdAt).getTime()>week).length,'近 7 天新增'],
+    [cats.size,'涵蓋分類'],
+    [list.filter(e=>e.star).length,'標記重點'],
+    [reviewed,'複習過']
+  ];
+  document.getElementById('stats').innerHTML=data.map(d=>`
+    <div class="stat"><div class="stat-n">${d[0]}</div><div class="stat-l">${d[1]}</div></div>`).join('');
+}
+
+function allTags(){
+  const c={};
+  loadEntries().forEach(e=>(e.tags||[]).forEach(t=>{ c[t]=(c[t]||0)+1; }));
+  return Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,24);
+}
+function renderTagChips(){
+  const tags=allTags();
+  const el=document.getElementById('tag-chips');
+  if(!tags.length){ el.innerHTML=''; return; }
+  el.innerHTML=tags.map(([t,n])=>`
+    <button class="chip${state.tags.includes(t)?' on':''}" data-tag="${esc(t)}" onclick="toggleTag(this.dataset.tag)">${esc(t)} ${n}</button>`).join('');
+}
+function toggleTag(t){
+  const i=state.tags.indexOf(t);
+  if(i<0) state.tags.push(t); else state.tags.splice(i,1);
+  renderTagChips(); renderList();
+}
+
+function scoreEntry(e,terms){
+  if(!terms.length) return 1;
+  const hay=(e.q+' '+e.a+' '+(e.cat||'')+' '+(e.tags||[]).join(' ')).toLowerCase();
+  let s=0;
+  for(const t of terms){
+    if(!hay.includes(t)) return 0;
+    s += (e.q||'').toLowerCase().includes(t) ? 3 : 1;
+  }
+  return s;
+}
+function filtered(){
+  const kw=document.getElementById('q-search').value.trim().toLowerCase();
+  const terms=kw?kw.split(/\s+/):[];
+  const cat=document.getElementById('f-cat').value;
+  const sort=document.getElementById('f-sort').value;
+  let list=loadEntries()
+    .filter(e=>!cat||e.cat===cat)
+    .filter(e=>state.tags.every(t=>(e.tags||[]).includes(t)))
+    .map(e=>({e,s:scoreEntry(e,terms)}))
+    .filter(x=>x.s>0);
+  const by={
+    new:(a,b)=>new Date(b.e.createdAt)-new Date(a.e.createdAt),
+    old:(a,b)=>new Date(a.e.createdAt)-new Date(b.e.createdAt),
+    star:(a,b)=>(b.e.star?1:0)-(a.e.star?1:0)||new Date(b.e.createdAt)-new Date(a.e.createdAt),
+    least:(a,b)=>((a.e.review&&a.e.review.count)||0)-((b.e.review&&b.e.review.count)||0)
+  };
+  if(terms.length) list.sort((a,b)=>b.s-a.s||by.new(a,b));
+  else list.sort(by[sort]||by.new);
+  return list.map(x=>x.e);
+}
+
+function renderList(){
+  const list=filtered();
+  const total=loadEntries().length;
+  const el=document.getElementById('list');
+  if(!list.length){
+    el.innerHTML=`<div class="empty">${total
+      ? '沒有符合條件的條目，換個關鍵字或清掉篩選試試。'
+      : '智庫還是空的。可以到「匯入補充」掃描其他測試工具的問答，或直接按「＋ 新增」寫下第一條。'}</div>`;
+    return;
+  }
+  el.innerHTML=list.map(e=>`
+    <div class="entry">
+      <div class="entry-top">
+        <div class="entry-q" onclick="toggleAnswer('${e.id}')">${esc(e.q)}</div>
+        <button class="star${e.star?' on':''}" onclick="toggleStar('${e.id}')" title="標記重點">&#9733;</button>
+      </div>
+      <div class="entry-a" id="a-${e.id}" style="display:none">${esc(e.a)}</div>
+      <div class="entry-meta">
+        ${e.cat?`<span class="tag cat">${esc(e.cat)}</span>`:''}
+        ${(e.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}
+        ${e.source?`<span class="tag src">${esc(e.source)}</span>`:''}
+        <span>${dateLabel(e.createdAt)}</span>
+        ${e.review&&e.review.count?`<span>· 複習 ${e.review.count} 次</span>`:''}
+      </div>
+      <div class="entry-tools">
+        <button class="btn ghost sm" onclick="toggleAnswer('${e.id}')">展開／收合</button>
+        <button class="btn ghost sm" onclick="openEditor('${e.id}')">編輯</button>
+        <button class="btn ghost sm" onclick="askAbout('${e.id}')">延伸提問</button>
+        <button class="btn ghost sm" onclick="delEntry('${e.id}')">刪除</button>
+      </div>
+    </div>`).join('');
+}
+function toggleAnswer(id){
+  const el=document.getElementById('a-'+id);
+  if(el) el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
+function toggleStar(id){
+  const list=loadEntries();
+  const e=list.find(x=>x.id===id);
+  if(!e) return;
+  e.star=!e.star; e.updatedAt=today();
+  saveEntries(list); renderAll();
+}
+function delEntry(id){
+  if(!confirm('確定刪除這一條？')) return;
+  saveEntries(loadEntries().filter(e=>e.id!==id));
+  renderAll();
+}
+
+/* ---------- 新增／編輯 ---------- */
+function openModal(id){ document.getElementById(id).classList.add('on'); }
+function closeModal(id){ document.getElementById(id).classList.remove('on'); }
+
+function openEditor(id){
+  state.editingId=id||null;
+  const e = id ? loadEntries().find(x=>x.id===id) : null;
+  document.getElementById('editor-title').textContent = e ? '編輯知識條目' : '新增知識條目';
+  document.getElementById('e-q').value = e?e.q:'';
+  document.getElementById('e-a').value = e?e.a:'';
+  fillCats('e-cat',{value:e?e.cat:CATS[0]});
+  document.getElementById('e-tags').value = e?(e.tags||[]).join(', '):'';
+  document.getElementById('e-src').value = e?(e.source||''):'手動新增';
+  msg('editor-msg','');
+  openModal('m-editor');
+}
+function saveEditor(){
+  const q=document.getElementById('e-q').value.trim();
+  const a=document.getElementById('e-a').value.trim();
+  if(!q||!a){ msg('editor-msg','問題與答案都要填。','err'); return; }
+  const list=loadEntries();
+  const tags=document.getElementById('e-tags').value.split(/[,，、]/).map(s=>s.trim()).filter(Boolean);
+  const cat=document.getElementById('e-cat').value;
+  const source=document.getElementById('e-src').value.trim()||'手動新增';
+  if(state.editingId){
+    const e=list.find(x=>x.id===state.editingId);
+    if(e) Object.assign(e,{q,a,cat,tags,source,updatedAt:today()});
+  }else{
+    list.push(newEntry({q,a,cat,tags,source}));
+  }
+  saveEntries(list);
+  closeModal('m-editor');
+  go('kb');
+}
+function newEntry(o){
+  return {
+    id:uid(), q:o.q, a:o.a, cat:o.cat||'其他', tags:o.tags||[],
+    source:o.source||'手動新增', star:false,
+    createdAt:today(), updatedAt:today(),
+    review:{count:0,last:null,right:0,wrong:0}
+  };
+}
+/* 批次加入，回傳實際新增筆數（自動跳過重複問題） */
+function addEntries(items){
+  const list=loadEntries();
+  const seen=new Set(list.map(e=>norm(e.q)));
+  let added=0;
+  items.forEach(it=>{
+    const k=norm(it.q);
+    if(!it.q||!it.a||seen.has(k)) return;
+    seen.add(k); list.push(newEntry(it)); added++;
+  });
+  saveEntries(list);
+  return added;
+}
+
+/* ============================================================
+   匯入①：掃描同瀏覽器其他工具留下的問答
+   ============================================================ */
+
+/* 從任意物件猜出「問題」與「答案」 */
+function pickQA(o){
+  if(!o||typeof o!=='object') return null;
+  const get=(...keys)=>{
+    for(const k of keys){
+      const v=o[k];
+      if(typeof v==='string' && v.trim()) return v.trim();
+    }
+    return '';
+  };
+  const q=get('question','q','題目','問題','prompt','ask','title','topic');
+  if(!q) return null;
+
+  let a=get('answer','a','答案','explanation','解析','解答','response','reply','content','note','解釋');
+  /* 選擇題（如英文測驗題庫）：answer 是選項索引 */
+  if(Array.isArray(o.options)){
+    const idx = typeof o.answer==='number' ? o.answer
+              : (typeof o.answer==='string' && /^[0-9]+$/.test(o.answer) ? Number(o.answer) : -1);
+    const correct = idx>=0 && o.options[idx] ? String(o.options[idx]) : '';
+    const parts=[];
+    if(correct) parts.push('正解：'+correct.replace(/^[A-Da-d][.、)]\s*/,''));
+    if(o.explanation) parts.push(String(o.explanation));
+    if(o.options.length) parts.push('選項：'+o.options.join('　/　'));
+    if(parts.length) a=parts.join('\n');
+  }
+  if(!a) return null;
+
+  const DIFF={easy:'基礎',mixed:'中等',hard:'進階',medium:'中等'};
+  const tags=[];
+  ['exam','typeLabel','type','category','分類','level','difficulty'].forEach(k=>{
+    let v=o[k];
+    if(typeof v!=='string') return;
+    v=DIFF[v.trim().toLowerCase()]||v.trim();
+    if(v && v.length<=14 && !tags.includes(v)) tags.push(v);
+  });
+  return {q, a, tags:tags.slice(0,3)};
+}
+
+/* 從一個 localStorage 值裡挖出所有像問答的物件（支援陣列、或物件底下一層的陣列） */
+function harvest(value){
+  const out=[];
+  const eat=arr=>{
+    if(!Array.isArray(arr)) return;
+    arr.forEach(o=>{ const qa=pickQA(o); if(qa) out.push(qa); });
+  };
+  if(Array.isArray(value)) eat(value);
+  else if(value&&typeof value==='object'){
+    const self=pickQA(value); if(self) out.push(self);
+    Object.values(value).forEach(v=>{ if(Array.isArray(v)) eat(v); });
+  }
+  return out;
+}
+
+function runScan(showEmpty){
+  const seen=new Set(loadSeen());
+  const known=new Set(loadEntries().map(e=>norm(e.q)));
+  const found=[];
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    if(!key || key===KEY_ENTRIES || key===KEY_SEEN || key===KEY_SETTINGS || key===API_KEY_STORAGE) continue;
+    let val;
+    try{ val=JSON.parse(localStorage.getItem(key)); }catch(e){ continue; }
+    const src=KNOWN_BANKS[key]||key;
+    harvest(val).forEach(qa=>{
+      const f=fp(src,qa.q);
+      if(seen.has(f)||known.has(norm(qa.q))) return;
+      found.push(Object.assign({},qa,{source:src,_fp:f}));
+    });
+  }
+  state.scan=found;
+  renderTabs();
+  renderScan(showEmpty);
+  renderInbox();
+  return found.length;
+}
+
+function renderInbox(){
+  const el=document.getElementById('inbox-banner');
+  if(!el) return;
+  const n=state.scan.length;
+  el.innerHTML = n ? `
+    <div class="inbox-banner">
+      <div>
+        <div class="t">發現 ${n} 筆還沒整理的測試問答</div>
+        <div class="s">來自這台瀏覽器裡其他工具（${esc([...new Set(state.scan.map(s=>s.source))].slice(0,3).join('、'))}${
+          new Set(state.scan.map(s=>s.source)).size>3?'…':''}）</div>
+      </div>
+      <button class="btn" onclick="go('import')">去整理</button>
+    </div>` : '';
+}
+
+function renderScan(showEmpty){
+  const el=document.getElementById('scan-result');
+  const note=document.getElementById('scan-note');
+  if(!state.scan.length){
+    el.innerHTML='';
+    if(note) note.textContent = showEmpty ? '　目前沒有新的問答（已加入或已略過的不會重複顯示）。' : '';
+    return;
+  }
+  if(note) note.textContent='';
+  el.innerHTML=`
+    <div class="row" style="gap:8px;margin-bottom:10px">
+      <button class="btn ghost sm" style="flex:none" onclick="scanPickAll(true)">全選</button>
+      <button class="btn ghost sm" style="flex:none" onclick="scanPickAll(false)">全不選</button>
+      <span class="note" style="flex:none">共 ${state.scan.length} 筆</span>
+    </div>
+    ${state.scan.map((s,i)=>`
+      <label class="pick">
+        <input type="checkbox" class="scan-cb" data-i="${i}" checked>
+        <div>
+          <div class="pick-q">${esc(s.q)}</div>
+          <div class="pick-a">${esc(s.a)}</div>
+          <div class="pick-src">來源：${esc(s.source)}</div>
+        </div>
+      </label>`).join('')}
+    <div class="row" style="gap:8px;margin-top:12px">
+      <div class="field" style="flex:1;margin:0">
+        <label class="label">全部歸到分類</label>
+        <select id="scan-cat"></select>
+      </div>
+      <div style="flex:none;display:flex;align-items:flex-end;gap:8px">
+        <button class="btn brand" onclick="importScan()">加入智庫</button>
+        <button class="btn ghost" onclick="skipScan()">略過勾選的</button>
+      </div>
+    </div>`;
+  fillCats('scan-cat',{value:'其他'});
+}
+function scanPickAll(on){
+  document.querySelectorAll('.scan-cb').forEach(cb=>{ cb.checked=on; });
+}
+function selectedScan(){
+  return [...document.querySelectorAll('.scan-cb')]
+    .filter(cb=>cb.checked).map(cb=>state.scan[Number(cb.dataset.i)]);
+}
+function importScan(){
+  const picked=selectedScan();
+  if(!picked.length){ msg('scan-msg','還沒勾選任何一筆。','err'); return; }
+  const cat=document.getElementById('scan-cat').value;
+  const added=addEntries(picked.map(s=>({q:s.q,a:s.a,cat,tags:s.tags,source:s.source})));
+  markSeen(picked.map(s=>s._fp));
+  runScan(false);
+  msg('scan-msg',`已加入 ${added} 筆${added<picked.length?`（${picked.length-added} 筆與現有條目重複，已跳過）`:''}。`,'ok');
+  renderStats();
+}
+function skipScan(){
+  const picked=selectedScan();
+  if(!picked.length){ msg('scan-msg','還沒勾選任何一筆。','err'); return; }
+  markSeen(picked.map(s=>s._fp));
+  runScan(false);
+  msg('scan-msg',`已略過 ${picked.length} 筆，之後不會再出現。`,'ok');
+}
+
+/* ============================================================
+   匯入②：貼上／上傳問答
+   ============================================================ */
+
+function loadFile(ev){
+  const f=ev.target.files&&ev.target.files[0];
+  if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    document.getElementById('paste-input').value=String(r.result||'');
+    const src=document.getElementById('paste-src');
+    if(!src.value.trim()) src.value=f.name;
+    parsePaste();
+  };
+  r.readAsText(f);
+  ev.target.value='';
+}
+
+/* 把純文字解析成問答對 */
+function parseText(text){
+  const out=[];
+  /* 先試 JSON */
+  try{
+    const j=JSON.parse(text);
+    const got=harvest(j);
+    if(got.length) return got;
+  }catch(e){/* 不是 JSON，往下用文字規則 */}
+
+  const qMark=/^\s*(?:[Qq]\s*[\d]*\s*[:：.、]|問(?:題)?\s*[\d]*\s*[:：.、]|\d+\s*[.、)]\s*)/;
+  const aMark=/^\s*(?:[Aa]\s*[\d]*\s*[:：.、]|答(?:案)?\s*[:：.、]|解析\s*[:：]|Ans(?:wer)?\s*[:：]|[-*]\s*答\s*[:：])/;
+  const lines=text.split(/\r?\n/);
+  let cur=null;
+  const push=()=>{
+    if(cur && cur.q.trim() && cur.a.trim()) out.push({q:cur.q.trim(), a:cur.a.trim(), tags:[]});
+    cur=null;
+  };
+  const open=q=>{ push(); cur={q:q.trim(), a:'', sawA:false}; };
+  lines.forEach(raw=>{
+    const line=raw.replace(/\s+$/,'');
+    if(qMark.test(line)){
+      open(line.replace(qMark,''));
+    }else if(/^\s*#{1,6}\s+/.test(line)){
+      open(line.replace(/^\s*#{1,6}\s+/,''));
+    }else if(aMark.test(line) && cur){
+      /* 標記答案前累積到的內容，其實是問題的下一行，補回問題 */
+      if(!cur.sawA && cur.a.trim()){ cur.q += '\n'+cur.a; cur.a=''; }
+      cur.sawA=true;
+      cur.a += (cur.a?'\n':'') + line.replace(aMark,'').trim();
+    }else if(!line.trim()){
+      if(cur && cur.a.trim()) push();
+    }else if(cur){
+      cur.a += (cur.a?'\n':'') + line.trim();
+    }
+  });
+  push();
+  return out;
+}
+
+function parsePaste(){
+  const text=document.getElementById('paste-input').value;
+  if(!text.trim()){ msg('paste-msg','先貼上內容再按解析。','err'); return; }
+  const got=parseText(text);
+  if(!got.length){
+    msg('paste-msg','解析不出問答對。可以用「Q: 問題 / A: 答案」的格式，或改按「用 AI 整理成知識條目」。','err');
+    document.getElementById('paste-result').innerHTML='';
+    return;
+  }
+  msg('paste-msg','');
+  state.paste=got;
+  renderPaste();
+}
+
+function renderPaste(){
+  const el=document.getElementById('paste-result');
+  if(!state.paste.length){ el.innerHTML=''; return; }
+  el.innerHTML=`
+    <div class="row" style="gap:8px;margin-bottom:10px">
+      <button class="btn ghost sm" style="flex:none" onclick="pastePickAll(true)">全選</button>
+      <button class="btn ghost sm" style="flex:none" onclick="pastePickAll(false)">全不選</button>
+      <span class="note" style="flex:none">解析出 ${state.paste.length} 筆，確認後入庫</span>
+    </div>
+    ${state.paste.map((s,i)=>`
+      <label class="pick">
+        <input type="checkbox" class="paste-cb" data-i="${i}" checked>
+        <div>
+          <div class="pick-q">${esc(s.q)}</div>
+          <div class="pick-a">${esc(s.a)}</div>
+          ${s.cat||(s.tags&&s.tags.length)?`<div class="pick-src">${esc([s.cat,(s.tags||[]).join('、')].filter(Boolean).join(' · '))}</div>`:''}
+        </div>
+      </label>`).join('')}
+    <button class="btn brand" style="margin-top:10px" onclick="importPaste()">加入智庫</button>`;
+}
+function pastePickAll(on){ document.querySelectorAll('.paste-cb').forEach(cb=>{cb.checked=on;}); }
+function importPaste(){
+  const picked=[...document.querySelectorAll('.paste-cb')]
+    .filter(cb=>cb.checked).map(cb=>state.paste[Number(cb.dataset.i)]);
+  if(!picked.length){ msg('paste-msg','還沒勾選任何一筆。','err'); return; }
+  const defCat=document.getElementById('paste-cat').value;
+  const src=document.getElementById('paste-src').value.trim() || ('貼上匯入 '+dateLabel(today()));
+  const added=addEntries(picked.map(s=>({q:s.q,a:s.a,cat:s.cat||defCat,tags:s.tags||[],source:src})));
+  state.paste=[]; renderPaste();
+  document.getElementById('paste-input').value='';
+  msg('paste-msg',`已加入 ${added} 筆${added<picked.length?`（${picked.length-added} 筆重複，已跳過）`:''}。可到「智庫」查看。`,'ok');
+  renderStats();
+}
+
+/* ============================================================
+   AI：呼叫 Anthropic API（瀏覽器直連，需使用者自備 Key）
+   ============================================================ */
+async function callClaude(prompt, maxTokens){
+  const apiKey=getApiKey();
+  if(!apiKey){ openSettings(); throw new Error('尚未設定 API Key'); }
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':apiKey,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body:JSON.stringify({
+      model:'claude-sonnet-5',
+      max_tokens:maxTokens||3000,
+      messages:[{role:'user',content:prompt}]
+    })
+  });
+  if(!res.ok){
+    const e=await res.json().catch(()=>({}));
+    throw new Error((e&&e.error&&e.error.message)||`API 錯誤（HTTP ${res.status}）`);
+  }
+  const data=await res.json();
+  return data.content.map(c=>c.type==='text'?c.text:'').join('');
+}
+function parseJSON(text){
+  const clean=String(text).replace(/```json|```/g,'').trim();
+  try{ return JSON.parse(clean); }
+  catch(e){
+    const m=clean.match(/[\[{][\s\S]*[\]}]/);
+    if(m) return JSON.parse(m[0]);
+    throw new Error('AI 回傳格式無法解析');
+  }
+}
+
+/* 取出智庫中與問題最相關的條目當作參考資料 */
+function relevant(question, k){
+  const terms=String(question).toLowerCase().split(/[\s,，、。？?！!的是有和與]+/).filter(t=>t.length>1);
+  return loadEntries().map(e=>{
+    const hay=(e.q+' '+e.a+' '+(e.tags||[]).join(' ')+' '+(e.cat||'')).toLowerCase();
+    let s=0;
+    terms.forEach(t=>{ if(hay.includes(t)) s += (e.q||'').toLowerCase().includes(t)?2:1; });
+    return {e,s};
+  }).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,k||5).map(x=>x.e);
+}
+
+async function askAI(){
+  const q=document.getElementById('ask-input').value.trim();
+  if(!q){ msg('ask-msg','先輸入問題。','err'); return; }
+  const btn=document.getElementById('ask-btn');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>思考中…';
+  msg('ask-msg','');
+  document.getElementById('ask-result').innerHTML='';
+
+  const refs=relevant(q,5);
+  const refText=refs.length
+    ? refs.map((e,i)=>`【既有知識 ${i+1}】${e.q}\n${e.a}`).join('\n\n')
+    : '（智庫中目前沒有相關內容）';
+
+  const prompt=`你是資深行銷顧問，正在協助使用者維護一個「行銷知識智庫」。
+
+使用者的問題：
+${q}
+
+智庫中既有的相關內容：
+${refText}
+
+請回答這個問題，並遵守：
+- 用繁體中文、台灣行銷實務用語
+- 先給結論，再給可執行的做法（條列、必要時給數字或公式）
+- 若既有知識有相關，請整合並指出哪一點是既有知識已經有的；若既有知識有錯或過時，直接指出
+- 長度控制在 400 字內，重點清楚不灌水
+
+嚴格只回傳 JSON，不含任何說明或 markdown：
+{"answer":"完整回答","cat":"從這些分類挑一個：${CATS.join('、')}","tags":["標籤1","標籤2"],"usedExisting":true}`;
+
+  try{
+    const parsed=parseJSON(await callClaude(prompt,2000));
+    state.lastAnswer={q, a:parsed.answer||'', cat:parsed.cat||CATS[0], tags:parsed.tags||[]};
+    document.getElementById('ask-result').innerHTML=`
+      <div class="card">
+        <div class="card-h">AI 回答</div>
+        <div class="answer-box">${esc(state.lastAnswer.a)}</div>
+        ${refs.length?`<div class="ref">參考了智庫中 ${refs.length} 條既有知識：${refs.map(r=>esc(r.q)).join('｜')}</div>`:
+          `<div class="ref">智庫中還沒有相關內容，存回去就是新的一條。</div>`}
+        <div class="entry-tools" style="margin-top:14px">
+          <button class="btn brand sm" onclick="saveAnswer()">存入智庫</button>
+          <button class="btn ghost sm" onclick="saveAnswerEdit()">編輯後再存</button>
+        </div>
+        <div id="save-msg"></div>
+      </div>`;
+  }catch(e){
+    msg('ask-msg','提問失敗：'+esc(e.message),'err');
+  }finally{
+    btn.disabled=false; btn.textContent='送出提問';
+  }
+}
+function saveAnswer(){
+  if(!state.lastAnswer) return;
+  const cat=document.getElementById('ask-cat').value||state.lastAnswer.cat;
+  const added=addEntries([{q:state.lastAnswer.q,a:state.lastAnswer.a,cat,tags:state.lastAnswer.tags,source:'AI 問答 '+dateLabel(today())}]);
+  msg('save-msg', added?'已存入智庫。':'智庫裡已有相同問題，沒有重複新增（可到智庫編輯原本那一條）。', added?'ok':'err');
+  renderStats();
+}
+function saveAnswerEdit(){
+  if(!state.lastAnswer) return;
+  state.editingId=null;
+  document.getElementById('editor-title').textContent='新增知識條目';
+  document.getElementById('e-q').value=state.lastAnswer.q;
+  document.getElementById('e-a').value=state.lastAnswer.a;
+  fillCats('e-cat',{value:state.lastAnswer.cat});
+  document.getElementById('e-tags').value=(state.lastAnswer.tags||[]).join(', ');
+  document.getElementById('e-src').value='AI 問答 '+dateLabel(today());
+  msg('editor-msg','');
+  openModal('m-editor');
+}
+function askAbout(id){
+  const e=loadEntries().find(x=>x.id===id);
+  if(!e) return;
+  go('ask');
+  document.getElementById('ask-input').value='針對「'+e.q+'」，請再補充實務做法與常見錯誤。';
+  fillCats('ask-cat',{value:e.cat||CATS[0]});
+}
+
+/* AI 把一段雜亂的測試紀錄整理成知識條目 */
+async function aiOrganize(){
+  const text=document.getElementById('paste-input').value.trim();
+  if(!text){ msg('paste-msg','先貼上今天測試的內容。','err'); return; }
+  msg('paste-msg','<span class="spinner"></span>AI 整理中…','ok');
+  const prompt=`以下是使用者今天做測試／練習留下的內容（可能包含題目、答案、筆記，格式很亂）。
+請整理成可長期收藏的行銷知識條目。
+
+原始內容：
+"""
+${text.slice(0,12000)}
+"""
+
+要求：
+- 每個條目一個清楚的問題（問題要能獨立看懂，不要出現「本題」「上述」這種指涉）
+- 答案要補足脈絡，寫成看得懂的行銷知識重點，必要時補充實務應用
+- 用繁體中文
+- 最多 20 條，沒有可整理的內容就回傳空陣列
+
+嚴格只回傳 JSON，不含任何說明或 markdown：
+{"items":[{"q":"問題","a":"答案重點","cat":"從這些挑一個：${CATS.join('、')}","tags":["標籤"]}]}`;
+  try{
+    const parsed=parseJSON(await callClaude(prompt,4000));
+    const items=(parsed.items||[]).filter(x=>x&&x.q&&x.a);
+    if(!items.length){ msg('paste-msg','AI 沒有整理出可收錄的條目。','err'); return; }
+    state.paste=items;
+    renderPaste();
+    msg('paste-msg',`AI 整理出 ${items.length} 條，確認後按「加入智庫」。`,'ok');
+  }catch(e){
+    msg('paste-msg','整理失敗：'+esc(e.message),'err');
+  }
+}
+
+/* AI 補強單一條目的答案 */
+async function aiEnrich(){
+  const q=document.getElementById('e-q').value.trim();
+  const a=document.getElementById('e-a').value.trim();
+  if(!q){ msg('editor-msg','先填問題。','err'); return; }
+  const btn=document.getElementById('e-ai');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>補強中…';
+  const prompt=`你是資深行銷顧問。請把以下知識條目的答案補強得更完整實用。
+
+問題：${q}
+目前的答案：${a||'（還沒有內容）'}
+
+要求：保留原本正確的內容，補上定義、計算方式或實務做法、常見錯誤；繁體中文、台灣行銷用語；400 字內；條列為主。
+
+嚴格只回傳 JSON：{"a":"補強後的答案","cat":"從這些挑一個：${CATS.join('、')}","tags":["標籤1","標籤2"]}`;
+  try{
+    const parsed=parseJSON(await callClaude(prompt,2000));
+    if(parsed.a) document.getElementById('e-a').value=parsed.a;
+    if(parsed.cat && CATS.includes(parsed.cat)) document.getElementById('e-cat').value=parsed.cat;
+    if(Array.isArray(parsed.tags)&&parsed.tags.length){
+      const cur=document.getElementById('e-tags').value.split(/[,，、]/).map(s=>s.trim()).filter(Boolean);
+      document.getElementById('e-tags').value=[...new Set([...cur,...parsed.tags])].join(', ');
+    }
+    msg('editor-msg','已補強，確認後按儲存。','ok');
+  }catch(e){
+    msg('editor-msg','補強失敗：'+esc(e.message),'err');
+  }finally{
+    btn.disabled=false; btn.textContent='AI 補強答案';
+  }
+}
+
+/* ============================================================
+   複習：把智庫變回測驗
+   ============================================================ */
+function shuffle(arr){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function startReview(){
+  const n=Number(document.getElementById('rv-count').value);
+  const cat=document.getElementById('rv-cat').value;
+  const mode=document.getElementById('rv-mode').value;
+  let pool=loadEntries().filter(e=>!cat||e.cat===cat);
+  if(mode==='star') pool=pool.filter(e=>e.star);
+  if(!pool.length){ msg('rv-msg','這個範圍還沒有條目可以複習。','err'); return; }
+  msg('rv-msg','');
+  if(mode==='weak'){
+    pool.sort((a,b)=>{
+      const ra=a.review||{}, rb=b.review||{};
+      return ((rb.wrong||0)-(ra.wrong||0)) || ((ra.count||0)-(rb.count||0));
+    });
+    pool=pool.slice(0,Math.max(n*2,n));
+    pool=shuffle(pool);
+  }else if(mode==='new'){
+    pool.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  }else{
+    pool=shuffle(pool);
+  }
+  state.review={items:pool.slice(0,n), i:0, shown:false, right:0, wrong:0};
+  document.getElementById('review-setup').style.display='none';
+  document.getElementById('review-run').style.display='block';
+  renderReview();
+}
+function renderReview(){
+  const r=state.review;
+  const el=document.getElementById('review-run');
+  if(r.i>=r.items.length){
+    el.innerHTML=`
+      <div class="card" style="text-align:center">
+        <div class="card-h">複習完成</div>
+        <div style="font-family:'Noto Serif TC',serif;font-size:32px;font-weight:900;color:var(--ink);margin:10px 0">
+          ${r.right} / ${r.items.length}
+        </div>
+        <div class="card-sub">記得 ${r.right} 條、還不熟 ${r.wrong} 條。標記「還不熟」的下次會優先出現。</div>
+        <div class="flash-bar">
+          <button class="btn brand" onclick="endReview()">再來一輪</button>
+          <button class="btn ghost" onclick="go('kb')">回智庫</button>
+        </div>
+      </div>`;
+    return;
+  }
+  const e=r.items[r.i];
+  const pct=Math.round(r.i/r.items.length*100);
+  el.innerHTML=`
+    <div class="prog"><i style="width:${pct}%"></i></div>
+    <div class="flash">
+      <div class="card-sub">第 ${r.i+1} / ${r.items.length} 題${e.cat?'　·　'+esc(e.cat):''}</div>
+      <div class="flash-q">${esc(e.q)}</div>
+      ${r.shown?`<div class="flash-a">${esc(e.a)}</div>`:'<div class="note">先在心裡回想答案，再翻牌。</div>'}
+      <div class="flash-bar">
+        ${r.shown
+          ? `<button class="btn brand" onclick="gradeReview(true)">記得</button>
+             <button class="btn ghost" onclick="gradeReview(false)">還不熟</button>`
+          : `<button class="btn" onclick="revealReview()">看答案</button>`}
+        <button class="btn ghost" onclick="endReview()">結束</button>
+      </div>
+    </div>`;
+}
+function revealReview(){ state.review.shown=true; renderReview(); }
+function gradeReview(ok){
+  const r=state.review, cur=r.items[r.i];
+  const list=loadEntries();
+  const e=list.find(x=>x.id===cur.id);
+  if(e){
+    e.review=e.review||{count:0,right:0,wrong:0,last:null};
+    e.review.count++;
+    e.review.last=today();
+    if(ok) e.review.right++; else e.review.wrong++;
+    saveEntries(list);
+  }
+  if(ok) r.right++; else r.wrong++;
+  r.i++; r.shown=false;
+  renderReview();
+}
+function endReview(){
+  state.review=null;
+  document.getElementById('review-run').style.display='none';
+  document.getElementById('review-setup').style.display='block';
+  renderStats();
+}
+
+/* ============================================================
+   設定 / 備份
+   ============================================================ */
+function openSettings(){
+  document.getElementById('api-key-input').value=getApiKey();
+  document.getElementById('set-autoscan').value=loadSettings().autoscan;
+  openModal('m-settings');
+}
+function saveSettings(){
+  const key=document.getElementById('api-key-input').value.trim();
+  if(key) localStorage.setItem(API_KEY_STORAGE,key);
+  else localStorage.removeItem(API_KEY_STORAGE);
+  const s=loadSettings();
+  s.autoscan=document.getElementById('set-autoscan').value;
+  saveSettingsObj(s);
+  closeModal('m-settings');
+}
+function openBackup(){ msg('backup-msg',''); openModal('m-backup'); }
+
+function download(name, content, type){
+  const blob=new Blob([content],{type:type||'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=name; a.click();
+  URL.revokeObjectURL(url);
+}
+function stamp(){
+  const d=new Date();
+  return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+}
+function exportJSON(){
+  const data={type:'marketing-knowledge-base',version:1,exportedAt:today(),entries:loadEntries()};
+  download(`行銷知識智庫_${stamp()}.json`, JSON.stringify(data,null,2), 'application/json');
+}
+function exportMD(){
+  const list=loadEntries();
+  const byCat={};
+  list.forEach(e=>{ (byCat[e.cat||'其他']=byCat[e.cat||'其他']||[]).push(e); });
+  let md=`# 行銷知識智庫\n\n匯出時間：${dateLabel(today())}　共 ${list.length} 條\n`;
+  Object.keys(byCat).sort().forEach(cat=>{
+    md+=`\n## ${cat}\n`;
+    byCat[cat].forEach(e=>{
+      md+=`\n### ${e.q}\n\n${e.a}\n\n> ${[e.source,(e.tags||[]).join('、'),dateLabel(e.createdAt)].filter(Boolean).join('　·　')}\n`;
+    });
+  });
+  download(`行銷知識智庫_${stamp()}.md`, md, 'text/markdown;charset=utf-8');
+}
+function restoreJSON(ev){
+  const f=ev.target.files&&ev.target.files[0];
+  if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const data=JSON.parse(String(r.result));
+      const items=Array.isArray(data)?data:(data.entries||[]);
+      if(!items.length) throw new Error('檔案裡沒有條目');
+      const added=addEntries(items.map(e=>({q:e.q,a:e.a,cat:e.cat,tags:e.tags,source:e.source||'還原匯入'})));
+      msg('backup-msg',`已還原 ${added} 條（重複的自動跳過）。`,'ok');
+      renderAll();
+    }catch(e){
+      msg('backup-msg','還原失敗：'+esc(e.message),'err');
+    }
+  };
+  r.readAsText(f);
+  ev.target.value='';
+}
+function wipeAll(){
+  if(!confirm('這會刪掉智庫裡所有條目，且無法復原。確定要清空嗎？')) return;
+  if(!confirm('再確認一次：真的要清空整個智庫？建議先匯出備份。')) return;
+  localStorage.removeItem(KEY_ENTRIES);
+  localStorage.removeItem(KEY_SEEN);
+  closeModal('m-backup');
+  renderAll();
+  runScan(false);
+}
+
+/* ============================================================
+   啟動
+   ============================================================ */
+(function init(){
+  fillCats('f-cat',{all:true});
+  fillCats('ask-cat',{value:CATS[0]});
+  fillCats('paste-cat',{value:'其他'});
+  fillCats('rv-cat',{all:true});
+  renderTabs();
+  renderAll();
+  if(loadSettings().autoscan==='1') runScan(false);
+  document.querySelectorAll('.modal').forEach(m=>{
+    m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('on'); });
+  });
+  document.addEventListener('keydown',ev=>{
+    if(ev.key==='Escape') document.querySelectorAll('.modal.on').forEach(m=>m.classList.remove('on'));
+  });
+})();
+</script>
+</body>
+</html>
