@@ -130,6 +130,15 @@ a{color:var(--brand)}
 .prog{height:5px;background:var(--surface2);border-radius:999px;overflow:hidden;margin-bottom:16px}
 .prog i{display:block;height:100%;background:var(--brand);transition:width .25s}
 
+/* ---- 圖片上傳 ---- */
+.drop{border:1.5px dashed var(--line2);border-radius:var(--radius);padding:26px 18px;text-align:center;color:var(--muted);font-size:14px;cursor:pointer;background:var(--surface2);transition:.15s}
+.drop:hover,.drop.over{border-color:var(--brand);background:var(--brand-soft);color:var(--brand)}
+.drop-icon{font-size:24px;margin-bottom:6px}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.thumb{position:relative;width:88px;height:88px;border-radius:9px;overflow:hidden;border:1px solid var(--line2);background:#fff}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb button{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:20px;text-align:center;padding:0}
+
 /* ---- Modal ---- */
 .modal{display:none;position:fixed;inset:0;background:rgba(30,26,20,.45);z-index:50;align-items:center;justify-content:center;padding:18px}
 .modal.on{display:flex}
@@ -164,7 +173,6 @@ a{color:var(--brand)}
 
   <!-- ===== 智庫 ===== -->
   <div class="view on" id="v-kb">
-    <div id="inbox-banner"></div>
     <div class="stats" id="stats"></div>
     <div class="searchbar">
       <input id="q-search" placeholder="搜尋問題、答案、標籤…" oninput="renderList()">
@@ -206,29 +214,27 @@ a{color:var(--brand)}
   <!-- ===== 匯入補充 ===== -->
   <div class="view" id="v-import">
     <div class="card">
-      <div class="card-h">① 從本機其他測試工具自動抓取</div>
-      <div class="card-sub">掃描同一個瀏覽器裡其他工具（英文測驗、TOEIC 計畫、其他自建題庫…）存下的問答，挑要的加進智庫。已加過或略過的不會再出現。<br>需要與那些工具在<strong>同一個網域</strong>開啟才掃得到（例如同一個 GitHub Pages 站台，或都用本機同一個伺服器開啟）。</div>
-      <button class="btn" onclick="runScan(true)">掃描本機工具</button>
-      <span class="note" id="scan-note"></span>
-      <div id="scan-result" style="margin-top:14px"></div>
-      <div id="scan-msg"></div>
+      <div class="card-h">① 上傳今天的測試問答圖片</div>
+      <div class="card-sub">截圖、拍照都可以，一次可多張。AI 會讀出題目與答案，整理成看得懂的知識條目（支援 JPG / PNG / WebP / GIF，需設定 API Key）。</div>
+      <div class="drop" id="drop" onclick="document.getElementById('img-input').click()">
+        <div class="drop-icon">&#128247;</div>
+        <div>點這裡選擇圖片，或把圖片拖進來</div>
+        <div class="hint">圖片只會送到 Anthropic API 做辨識，不會存到任何伺服器</div>
+      </div>
+      <input type="file" id="img-input" accept="image/*" multiple style="display:none" onchange="addImages(event.target.files)">
+      <div class="thumbs" id="img-thumbs"></div>
+      <div class="row" style="gap:8px;margin-top:12px" id="img-actions" style="display:none">
+        <button class="btn brand" style="flex:none" onclick="readImages()">AI 辨識圖片問答</button>
+        <button class="btn ghost" style="flex:none" onclick="clearImages()">清除圖片</button>
+      </div>
+      <div id="img-msg"></div>
     </div>
 
     <div class="card">
-      <div class="card-h">② 貼上／上傳今天的測試問答</div>
-      <div class="card-sub">支援 <span class="kbd">Q: / A:</span>、<span class="kbd">問：/ 答：</span>、<span class="kbd">1. 題目 …</span> 或 JSON 陣列。貼上後按「解析」先預覽再入庫。</div>
+      <div class="card-h">② 貼上或上傳文字</div>
+      <div class="card-sub">支援 <span class="kbd">Q: / A:</span>、<span class="kbd">問：/ 答：</span>、<span class="kbd">1. 題目 …</span>、Markdown 標題或 JSON 陣列。格式太亂就交給 AI 整理。</div>
       <div class="field">
-        <textarea id="paste-input" style="min-height:150px" placeholder="Q: 什麼是 CAC？&#10;A: 顧客獲取成本，行銷總花費 ÷ 新客數…&#10;&#10;Q: LTV 怎麼算？&#10;A: 客單價 × 回購頻率 × 平均存續期間…"></textarea>
-      </div>
-      <div class="row">
-        <div class="field" style="flex:1">
-          <label class="label">預設分類</label>
-          <select id="paste-cat"></select>
-        </div>
-        <div class="field" style="flex:1">
-          <label class="label">來源標記</label>
-          <input id="paste-src" placeholder="例如：0921 行銷考題">
-        </div>
+        <textarea id="paste-input" style="min-height:130px" placeholder="Q: 什麼是 CAC？&#10;A: 顧客獲取成本，行銷總花費 ÷ 新客數…&#10;&#10;Q: LTV 怎麼算？&#10;A: 客單價 × 回購頻率 × 平均存續期間…"></textarea>
       </div>
       <div class="row" style="gap:8px">
         <button class="btn ghost" style="flex:none" onclick="document.getElementById('file-input').click()">選擇檔案</button>
@@ -237,7 +243,41 @@ a{color:var(--brand)}
       </div>
       <input type="file" id="file-input" accept=".txt,.md,.json,.csv" style="display:none" onchange="loadFile(event)">
       <div id="paste-msg"></div>
-      <div id="paste-result" style="margin-top:14px"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">③ 內建行銷基礎題庫</div>
+      <div class="card-sub" id="starter-sub">行銷人該有的基礎知識，涵蓋品牌、市場研究、內容、社群、廣告、SEO、CRM、數據、電商、公關與 MarTech，一鍵打底，之後再用每天的測試問答往上疊。</div>
+      <div class="row" style="gap:8px">
+        <button class="btn brand" style="flex:none" onclick="importStarter()">全部匯入</button>
+        <button class="btn ghost" style="flex:none" onclick="previewStarter()">先預覽挑選</button>
+      </div>
+      <div id="starter-msg"></div>
+    </div>
+
+    <div class="card" id="pending-card" style="display:none">
+      <div class="card-h">待確認條目</div>
+      <div class="card-sub" id="pending-count"></div>
+      <div class="row" style="gap:8px;margin-bottom:10px">
+        <button class="btn ghost sm" style="flex:none" onclick="pendingPickAll(true)">全選</button>
+        <button class="btn ghost sm" style="flex:none" onclick="pendingPickAll(false)">全不選</button>
+      </div>
+      <div id="pending-list"></div>
+      <div class="row" style="margin-top:12px">
+        <div class="field" style="flex:1">
+          <label class="label">分類（條目本身沒帶分類時套用）</label>
+          <select id="pending-cat"></select>
+        </div>
+        <div class="field" style="flex:1">
+          <label class="label">來源標記</label>
+          <input id="pending-src" placeholder="例如：0921 行銷考題">
+        </div>
+      </div>
+      <div class="row" style="gap:8px">
+        <button class="btn brand" style="flex:none" onclick="importPending()">加入智庫</button>
+        <button class="btn ghost" style="flex:none" onclick="clearPending()">取消</button>
+      </div>
+      <div id="pending-msg"></div>
     </div>
   </div>
 
@@ -318,10 +358,6 @@ a{color:var(--brand)}
       <input id="api-key-input" type="password" placeholder="sk-ant-...">
       <div class="hint" style="margin-top:6px">Key 只存在這台瀏覽器的 localStorage，直接送往 Anthropic API，不經過任何第三方伺服器。可於 <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a> 申請。沒有 Key 也能正常使用手動新增、匯入、搜尋與複習。</div>
     </div>
-    <div class="field">
-      <label class="label">開啟頁面時自動掃描其他工具的新問答</label>
-      <select id="set-autoscan"><option value="1">是（建議）</option><option value="0">否</option></select>
-    </div>
     <div class="modal-bar">
       <button class="btn ghost" onclick="closeModal('m-settings')">關閉</button>
       <button class="btn" onclick="saveSettings()">儲存</button>
@@ -350,28 +386,125 @@ a{color:var(--brand)}
   </div>
 </div>
 
+<!-- ===== 內建行銷基礎題庫 ===== -->
+<script>
+/* 常見的行銷基礎知識，可在「匯入補充」一鍵收進智庫 */
+const STARTER_PACK = [
+  {"q": "品牌定位（Positioning）是什麼？一句定位敘述怎麼寫？", "a": "定位是讓品牌在目標客群心中佔住一個位置，不是你想說什麼，而是對方記得什麼。\n・常用句型：對【目標客群】而言，【品牌】是【品類】中唯一【差異點】的選擇，因為【支持理由 RTB】。\n・好的定位三個條件：對 TA 有意義、和競品有差異、自己做得到且能被驗證。\n・定位一旦決定，視覺、文案、通路、價格都要跟著對齊，不能每檔活動換一個說法。", "cat": "品牌策略", "tags": ["定位", "STP", "品牌基礎"]},
+  {"q": "USP 和 RTB 有什麼不同？", "a": "・USP（獨特銷售主張）：對消費者講的那一句差異點，例如「24 小時到貨」。\n・RTB（Reason to Believe）：支撐這句話的證據，例如自建物流中心、出貨數據、第三方認證、專利、客戶案例。\n・只有 USP 沒有 RTB，消費者不會信；只有 RTB 沒有 USP，訊息沒有記憶點。文案通常是「USP 當標題、RTB 當內文」。", "cat": "品牌策略", "tags": ["USP", "RTB", "文案"]},
+  {"q": "品牌識別（CIS）包含哪些內容？", "a": "・MI 理念識別：品牌使命、願景、核心價值。\n・BI 行為識別：服務流程、員工應對、客訴處理等對外行為。\n・VI 視覺識別：Logo、標準色、字體、版型、攝影風格、包裝。\n實務上會整理成品牌手冊（Brand Guideline），讓內部與外部廠商產出的素材維持一致。", "cat": "品牌策略", "tags": ["CIS", "VI", "品牌手冊"]},
+  {"q": "品牌資產（Brand Equity）怎麼衡量？", "a": "Aaker 的四大構面：知名度、品牌聯想、認知品質、忠誠度。\n實務上可追蹤的指標：\n・無提示／有提示品牌知名度（問卷）\n・品牌關鍵字搜尋量、直接流量佔比\n・NPS 淨推薦值、回購率\n・價格溢價能力（同規格能比競品貴多少還賣得掉）\n品牌資產強的品牌，廣告效率會比較好，CAC 通常較低。", "cat": "品牌策略", "tags": ["品牌資產", "NPS", "品牌指標"]},
+  {"q": "品牌語調（Tone of Voice）怎麼定義？", "a": "先用 3-5 個形容詞定調（例如：專業但不高冷、親切、有主見），再轉成可執行的規則：\n・我們會這樣說 / 我們不會這樣說（各舉 3 個例句）\n・稱呼方式（你／您／大家）、要不要用表情符號、要不要用流行語\n・句子長度與段落節奏、專有名詞要不要解釋\n寫成一頁對照表，發包給小編或外部寫手時直接附上，一致性最容易維持。", "cat": "品牌策略", "tags": ["TOV", "語調", "文案規範"]},
+  {"q": "品牌延伸有什麼風險？什麼情況適合做？", "a": "・適合：新產品與原品牌的核心聯想一致，能共用既有信任（例如做運動鞋的品牌延伸到運動服）。\n・風險：延伸太遠會稀釋原本的品牌聯想，甚至傷害主力產品；低價延伸容易拉低品牌認知價值。\n・判斷方法：問 TA「這個品牌來做這件事，你覺得合理嗎？」若需要解釋很久才合理，就用副品牌或新品牌。", "cat": "品牌策略", "tags": ["品牌延伸", "副品牌"]},
+  {"q": "品牌和行銷的差別是什麼？", "a": "・品牌：長期的認知與信任累積，回答「你是誰、為什麼選你」，效果慢但會複利。\n・行銷：短期的需求開發與轉換，回答「現在為什麼要買」，效果快但停掉就沒了。\n・健康的配比常見做法是長短期並行（業界常引用的參考是品牌建立約 6 成、成效活動約 4 成），只做成效會越做越貴，只做品牌則現金流撐不住。", "cat": "品牌策略", "tags": ["品牌", "成效行銷", "預算配置"]},
+  {"q": "Slogan 和 Tagline 有什麼不同？", "a": "・Tagline：跟著品牌長期使用，講的是品牌主張，例如企業識別下方那一句。\n・Slogan：跟著單一活動或產品線使用，可以隨檔期更換。\n寫法上兩者都要短、好念、有記憶點，並盡量帶到差異點或利益點，避免只是形容詞堆疊。", "cat": "品牌策略", "tags": ["Slogan", "Tagline"]},
+  {"q": "STP 是什麼？實際怎麼操作？", "a": "・S 市場區隔（Segmentation）：用人口、地理、行為、心理等變數把市場切開。\n・T 目標市場選擇（Targeting）：評估各區隔的規模、成長性、競爭程度與自身能力，挑出主攻的一到兩個。\n・P 定位（Positioning）：在選定的客群心中建立差異化位置。\nSTP 是所有行銷規劃的起點，沒有做 STP，後面的 4P 和廣告受眾設定都只能用猜的。", "cat": "市場與消費者研究", "tags": ["STP", "市場區隔", "定位"]},
+  {"q": "市場區隔常用哪些變數？", "a": "・人口統計：年齡、性別、收入、職業、家庭週期。\n・地理：地區、城鄉、氣候、商圈。\n・心理：價值觀、生活型態、個性、興趣。\n・行為：購買時機、使用頻率、追求的利益、忠誠度、價格敏感度。\n實務上行為變數最能預測購買，人口變數最好操作投放，通常會混用。", "cat": "市場與消費者研究", "tags": ["市場區隔", "TA"]},
+  {"q": "Persona（人物誌）該包含哪些欄位？", "a": "・基本輪廓：年齡、職業、所在地、收入、家庭狀況。\n・情境：一天的生活動線、常用平台與使用時段。\n・痛點與任務（Jobs to be done）：他想解決什麼問題。\n・購買決策：資訊來源、考慮因素、預算、誰是決策者與影響者。\n・拒絕理由：什麼原因會讓他不買。\nPersona 要來自訪談與數據，不是憑空想像；一個品牌通常 2-3 個就夠用。", "cat": "市場與消費者研究", "tags": ["Persona", "TA", "消費者洞察"]},
+  {"q": "SWOT 分析怎麼做才不會流於形式？", "a": "列完 S/W/O/T 之後一定要交叉成策略：\n・SO：用優勢抓機會（最該加碼的）\n・ST：用優勢抵禦威脅\n・WO：補弱點才能吃到機會\n・WT：風險控管或直接不做\n另外 S/W 是內部可控、O/T 是外部環境，不要把「競爭對手很強」寫進 W，那是 T。每一項都要附證據或數字，避免形容詞。", "cat": "市場與消費者研究", "tags": ["SWOT", "策略分析"]},
+  {"q": "PESTEL 分析在看什麼？", "a": "掃描外部大環境：政治（P）、經濟（E）、社會（S）、科技（T）、環境（E）、法律（L）。\n行銷上常用來預判：法規變動（如個資、食品標示、醫療廣告限制）、平台政策（如 Cookie 退場）、消費信心與匯率、人口結構變化、ESG 要求。\n用途是提早調整策略，不是寫報告湊篇幅，每一項都要問「所以我們要做什麼？」。", "cat": "市場與消費者研究", "tags": ["PESTEL", "外部環境"]},
+  {"q": "波特五力分析是哪五力？", "a": "・既有競爭者的競爭強度\n・潛在進入者的威脅（進入門檻高不高）\n・替代品的威脅\n・供應商的議價能力\n・購買者的議價能力\n用來判斷一個市場賺不賺得到錢。五力都很強的市場，即使規模大也容易做成紅海，行銷要投入的成本會明顯拉高。", "cat": "市場與消費者研究", "tags": ["五力分析", "產業分析"]},
+  {"q": "消費者決策旅程（AIDA 與 5A）怎麼用？", "a": "・AIDA：注意 → 興趣 → 慾望 → 行動，適合單向溝通的傳統廣告。\n・5A（Kotler）：認知 Aware → 訴求 Appeal → 詢問 Ask → 行動 Act → 倡導 Advocate，多了「主動查詢」與「推薦擴散」，更貼近社群時代。\n實務用法：把每個階段對應到內容類型、投放目標與指標，看哪一段流失最多就補哪一段。", "cat": "市場與消費者研究", "tags": ["消費者旅程", "AIDA", "5A"]},
+  {"q": "質化研究與量化研究差在哪？各適合什麼？", "a": "・質化（深度訪談、焦點團體、田野觀察）：樣本少，回答「為什麼」，適合探索需求、找洞察、發想概念。\n・量化（問卷、數據分析、A/B 測試）：樣本多，回答「有多少、差多少」，適合驗證假設、排優先順序。\n常見流程是先質化找出假設，再用量化驗證，不要用 10 個人的訪談就宣稱市場比例。", "cat": "市場與消費者研究", "tags": ["質化研究", "量化研究", "問卷"]},
+  {"q": "問卷要回收多少份才有代表性？", "a": "在母體夠大的情況下，95% 信心水準、±5% 誤差大約需要 385 份有效樣本；±3% 則約需 1,067 份。\n比份數更重要的是樣本來源：只在自己粉絲頁發問卷，得到的是既有顧客的意見，不能代表潛在市場。\n另外要注意題目不要誘導（如「您認為本產品哪裡最好？」），並設計反向題檢查亂填。", "cat": "市場與消費者研究", "tags": ["問卷", "樣本數", "市調"]},
+  {"q": "競品分析應該看哪些面向？", "a": "・產品與定價：規格、價格帶、促銷手法、組合包。\n・通路：官網、電商平台、實體、社群導購。\n・溝通：主打訊息、素材風格、投放平台、合作 KOL。\n・成效線索：社群互動率、評論內容、SEO 關鍵字排名、廣告素材曝光時間長短（長期在跑的素材通常是有效的）。\n・顧客聲音：評論與客訴裡的抱怨，往往就是你的切入點。\n輸出要是「我們要做什麼」，不是競品簡介。", "cat": "市場與消費者研究", "tags": ["競品分析", "市場情報"]},
+  {"q": "內容行銷和廣告有什麼不同？", "a": "・廣告是租來的注意力，停止付費就沒有流量；內容行銷是自己累積的資產，長期會持續帶來流量與信任。\n・內容行銷先給價值（解決問題、提供資訊、帶來共鳴），再談成交，所以轉換路徑較長但成本會逐步下降。\n・兩者互補：用內容養信任與 SEO 流量，用廣告加速好內容的擴散與再行銷。", "cat": "內容行銷", "tags": ["內容行銷", "策略"]},
+  {"q": "內容漏斗 TOFU / MOFU / BOFU 各要產什麼內容？", "a": "・TOFU 認知層：短影音、話題貼文、知識懶人包、SEO 資訊文，目標是觸及與訂閱。\n・MOFU 考慮層：比較文、選購指南、案例分享、電子書、直播講座，目標是留資料與加入名單。\n・BOFU 轉換層：產品實測、評價與見證、FAQ、報價與試用、限時優惠，目標是成交。\n常見錯誤是全部內容都在 BOFU 叫人買，導致新客進不來。", "cat": "內容行銷", "tags": ["內容漏斗", "TOFU", "BOFU"]},
+  {"q": "Pillar-Cluster（支柱與叢集）內容架構是什麼？", "a": "・Pillar：一篇涵蓋大主題的完整長文（例如「新手電商開店全攻略」）。\n・Cluster：圍繞該主題的多篇細節文（金流、物流、選品、拍照…），每篇都連回 Pillar，Pillar 也連出去。\n好處是把同一主題的內部連結織成網，幫助搜尋引擎理解主題權威性，也讓讀者一路看下去，提升停留時間與轉換。", "cat": "內容行銷", "tags": ["SEO", "內容架構", "內部連結"]},
+  {"q": "內容日曆怎麼排？", "a": "・先定骨架：每月主題（對應檔期或產品線）→ 每週子題 → 每篇內容形式與平台。\n・固定欄目降低生產成本：例如週一知識、週三案例、週五幕後。\n・預留 20% 機動版位給時事與熱點。\n・每篇要標註目標（觸及／名單／轉換）與負責人、截稿日、素材需求。\n・月底回顧成效，把表現好的形式加碼、差的淘汰。", "cat": "內容行銷", "tags": ["內容日曆", "內容排程"]},
+  {"q": "UGC 是什麼？怎麼鼓勵顧客產出？", "a": "UGC（User Generated Content）是顧客自發產出的內容，如開箱、評論、使用照，可信度高於品牌自製素材，也能當廣告素材使用（需取得授權）。\n鼓勵做法：包裝內附拍照引導卡與主題標籤、曬單回饋（購物金／抽獎）、社群轉發顧客貼文、評論回饋機制、設計適合拍照的產品或空間。\n使用前務必取得明確授權，避免肖像權與著作權爭議。", "cat": "內容行銷", "tags": ["UGC", "社群", "素材"]},
+  {"q": "一篇 SEO 部落格文章的基本結構是什麼？", "a": "・標題：含主關鍵字，長度約 30 字內，帶利益點或數字。\n・前言：3-5 行內說清楚這篇能解決什麼問題（降低跳出率）。\n・H2/H3 分段：每段回答一個搜尋意圖，善用表格、清單、圖片。\n・內部連結與外部權威引用。\n・結論＋CTA：下一步要讀者做什麼。\n・Meta Description 約 80 字內，寫給人看而不是塞關鍵字。", "cat": "內容行銷", "tags": ["SEO", "文章結構", "部落格"]},
+  {"q": "什麼是內容再利用（Content Repurposing）？", "a": "把一份核心內容拆解、改寫成多種形式，在不同平台重複發揮價值。\n例如一場 60 分鐘直播可產出：一篇部落格逐字整理、5 支短影音、10 則社群圖文、一封 EDM、一份 FAQ、一組廣告素材。\n好處是產能翻倍、訊息一致，也讓同一主題在不同平台重複觸及，加深記憶。做內容規劃時就該先想好怎麼拆。", "cat": "內容行銷", "tags": ["內容再利用", "產能"]},
+  {"q": "短影音的前三秒該怎麼寫？", "a": "前 1-3 秒決定要不要滑掉，常用開場法：\n・直接講結果或反差（「這支廣告花 3 千卻賣了 60 萬」）\n・點名 TA（「開店第一年的老闆注意」）\n・提問或戳痛點（「為什麼你的貼文都沒人看？」）\n・視覺衝擊或動作起手式\n另外要在畫面上打字幕（多數人靜音觀看），並把重點放在畫面中央安全區，避免被 UI 擋住。", "cat": "內容行銷", "tags": ["短影音", "腳本", "留存率"]},
+  {"q": "內容成效該看哪些指標？", "a": "依目的分層看：\n・觸及層：曝光、觸及、播放數、3 秒／完播率。\n・互動層：互動率、留言、分享、收藏（收藏與分享比按讚更能代表價值）。\n・流量層：進站量、停留時間、跳出率、頁面瀏覽深度。\n・轉換層：名單數、加入購物車、成交、內容輔助轉換（GA4 歸因路徑）。\n單看按讚數容易誤判，要對應內容當初設定的漏斗層級。", "cat": "內容行銷", "tags": ["內容成效", "KPI"]},
+  {"q": "社群互動率怎麼算？多少算好？", "a": "常見算法：互動數（讚＋留言＋分享＋收藏）÷ 觸及數 × 100%，也有用粉絲數當分母的（數字會比較低）。\n・用觸及當分母較能反映內容品質，用粉絲數當分母較能反映經營體質，報表要標註用哪一種。\n・一般而言 IG 貼文用觸及計算約 3-6% 屬中上，但會因產業、粉絲規模、內容形式差很多，重點是跟自己過去比、跟同產業比。", "cat": "社群經營", "tags": ["互動率", "社群指標"]},
+  {"q": "主要社群平台的受眾與內容特性差在哪？", "a": "・Facebook：年齡層偏成熟，社團與在地經營強，長文與活動導流佳。\n・Instagram：視覺優先，限動互動高，Reels 是觸及主力。\n・LINE：台灣滲透率最高，適合會員經營與再行銷，但推播有成本。\n・YouTube：長影音與搜尋流量，適合教學、開箱、品牌故事。\n・TikTok：演算法推薦為主，新帳號也可能爆紅，節奏快、娛樂性高。\n・Threads：文字話題與互動討論，適合品牌人格化經營。\n不要一套內容原封不動全平台複製，至少要調整開頭、比例與字數。", "cat": "社群經營", "tags": ["平台特性", "內容策略"]},
+  {"q": "社群演算法大致看哪些訊號？", "a": "各平台細節不同，但共同邏輯是「預測使用者會不會有興趣」，主要訊號包括：\n・互動品質：留言、分享、收藏、私訊的權重通常高於按讚。\n・停留與完播：內容能不能留住人。\n・關係親密度：使用者過去是否常互動。\n・發布後初期表現：前一小時的互動會影響後續分發。\n所以經營重點是做「會被收藏和分享」的內容，而不是單純衝發文數量。", "cat": "社群經營", "tags": ["演算法", "觸及"]},
+  {"q": "社群經營的 KPI 該怎麼設？", "a": "依經營目的分層，不要只設粉絲數：\n・成長：新增追蹤數、觸及人數、非粉絲觸及比例。\n・互動：互動率、收藏與分享數、留言回覆率與回覆時間。\n・轉換：導流點擊、名單數、社群輔助的成交金額。\n・經營效率：每則內容平均產出成本、素材再利用率。\n建議每月只盯 3 個主 KPI，其餘當觀察指標，才不會失焦。", "cat": "社群經營", "tags": ["KPI", "社群指標"]},
+  {"q": "KOL 和 KOC 怎麼分？怎麼挑合作對象？", "a": "・KOL：粉絲數大、觸及廣，適合打知名度與背書。\n・KOC：粉絲數小但貼近同溫層，單價低、可信度高，適合大量鋪評價與真實體驗。\n挑選重點不是粉絲數，而是：受眾重疊度、互動率是否合理（過低可能買粉）、過去業配的內容品質與頻率、過往合作品牌是否衝突、留言是否是真人。\n合作前先小額測試，用成效決定是否加碼與長期合作。", "cat": "社群經營", "tags": ["KOL", "KOC", "網紅行銷"]},
+  {"q": "業配合作要注意哪些事？", "a": "・揭露：依規範標示合作關係（如 #廣告 #合作），醫療、保健、金融類還有法規限制。\n・授權：事先談好素材二次使用範圍（可否投放廣告、使用期限、平台）。\n・成效追蹤：給專屬短網址、折扣碼或 UTM，才能算得出效益。\n・內容審稿：尊重創作者語感，只審事實與法規，不要改成品牌文案，否則效果會掉。\n・合約：載明交付內容、上架時間、下架條件與違約處理。", "cat": "社群經營", "tags": ["業配", "合作", "法規"]},
+  {"q": "社群出現負面留言或危機時怎麼處理？", "a": "・分類：一般抱怨、誤解、惡意攻擊、法律風險，處理方式不同。\n・原則：快速回應（黃金時間內先表達收到與處理中）、公開道歉但細節私訊處理、統一對外口徑、不刪留言不吵架（涉及人身攻擊或不實資訊才依規範處理）。\n・內部：先確認事實再發聲，準備 Q&A 給第一線人員。\n・事後：公布改善作為並追蹤後續聲量，把危機轉成信任。", "cat": "社群經營", "tags": ["危機處理", "社群客服"]},
+  {"q": "發文頻率與時間怎麼決定？", "a": "・頻率：以能穩定產出的品質為上限，寧願一週 3 篇高品質，也不要每天發湊數；平台需要一致的節奏來累積分發。\n・時間：看自家後台的粉絲活躍時段，而不是照搬網路上的通用時段表。\n・實測：同類型內容在不同時段各測 4-6 次再比較，避免用單一貼文下結論。", "cat": "社群經營", "tags": ["發文頻率", "最佳時間"]},
+  {"q": "Hashtag 該怎麼用？", "a": "・組合使用：大標籤（高流量但競爭大）、中標籤（精準）、小標籤與品牌專屬標籤（自有社群資產）。\n・數量：IG 可用到 30 個但過多顯得雜亂，實務上 5-15 個並依貼文主題調整。\n・避免：與內容無關的熱門標籤（會被判斷為濫用）、每篇完全一樣的罐頭標籤。\n・品牌標籤要固定並在包裝、官網、限動上引導顧客使用，方便蒐集 UGC。", "cat": "社群經營", "tags": ["Hashtag", "IG"]},
+  {"q": "CPC、CPM、CPA、CPL、CTR 分別是什麼？", "a": "・CPM：每千次曝光成本 = 花費 ÷ 曝光數 × 1000，反映版位競爭程度。\n・CPC：每次點擊成本 = 花費 ÷ 點擊數。\n・CTR：點擊率 = 點擊數 ÷ 曝光數，反映素材與受眾的契合度。\n・CPA：每次行動（轉換）成本 = 花費 ÷ 轉換數。\n・CPL：每筆名單成本 = 花費 ÷ 名單數。\n關係是 CPC ≈ CPM ÷ (CTR × 1000)，所以 CTR 提升會直接壓低 CPC。", "cat": "廣告投放", "tags": ["廣告指標", "CPC", "CPA"]},
+  {"q": "ROAS 怎麼算？多少才算合格？", "a": "ROAS = 廣告帶來的營收 ÷ 廣告花費。\n合格線不是固定數字，要用毛利算：損益兩平 ROAS ≈ 1 ÷ 毛利率。例如毛利率 40%，ROAS 要大於 2.5 才回本（還沒算人事與雜支）。\n另外要區分：\n・平台回報 ROAS（含歸因期內的輔助轉換，通常較樂觀）\n・實際總營收 ÷ 總廣告花費（MER，較保守也較貼近現金流）\n兩個都要看，只看平台數字容易高估。", "cat": "廣告投放", "tags": ["ROAS", "毛利", "MER"]},
+  {"q": "廣告漏斗三層各自的目標與指標是什麼？", "a": "・上層（認知）：目標是觸及新受眾，看 CPM、觸及、影片 3 秒／完播率、加入再行銷名單的人數。\n・中層（考慮）：目標是互動與留資，看 CTR、著陸頁停留、加入購物車、名單成本 CPL。\n・下層（轉換）：目標是成交，看 CPA、ROAS、轉換率。\n只做下層會越打越貴（名單打光），只做上層則現金流看不到成效，三層預算要同時配置。", "cat": "廣告投放", "tags": ["廣告漏斗", "預算配置"]},
+  {"q": "Meta 廣告的受眾類型有哪些？怎麼用？", "a": "・核心／廣泛受眾：靠演算法找人，適合大預算與擴量，素材是關鍵。\n・類似受眾（Lookalike）：用既有名單（購買者、高價值客戶）生成相似的人，來源名單品質越高效果越好。\n・再行銷（自訂受眾）：網站互動、影片觀看、互動過粉專、上傳名單，適合收尾轉換。\n常見結構：上層廣泛／類似找新客，下層再行銷收單，並排除已購買者避免浪費。", "cat": "廣告投放", "tags": ["Meta廣告", "受眾", "再行銷"]},
+  {"q": "什麼是學習期（Learning Phase）？該注意什麼？", "a": "廣告組剛啟動或大幅修改後，系統需要累積足夠轉換事件來穩定投放，這段期間成效波動大。\n注意事項：\n・學習期間不要頻繁改預算、受眾、出價或素材，每次重大修改都可能重新學習。\n・轉換事件太少會卡在「學習受限」，可改用較上層的事件（如加入購物車）當優化目標，或合併廣告組增加事件量。\n・評估成效至少等學習期結束再下判斷，不要看兩天就關掉。", "cat": "廣告投放", "tags": ["學習期", "Meta廣告", "優化"]},
+  {"q": "怎麼判斷廣告素材疲乏了？", "a": "典型訊號：\n・頻率（Frequency）持續上升（同一人看太多次）\n・CTR 逐步下滑、CPM 與 CPA 同步上升\n・轉換率沒變但流量品質變差\n處理方式：換素材角度（不只是換顏色）、擴大受眾或換受眾、暫停表現差的版位。\n預防做法是建立素材產線，固定每週或每兩週補新素材，並保留 2-3 組表現穩定的常青素材輪播。", "cat": "廣告投放", "tags": ["素材疲乏", "Frequency", "優化"]},
+  {"q": "廣告 A/B 測試怎麼做才有效？", "a": "・一次只測一個變因（素材、受眾、著陸頁、出價擇一）。\n・兩組預算、時間、版位條件要一致，並使用平台的分組測試功能避免受眾重疊。\n・跑滿足夠樣本與時間（至少一個完整週期、每組有足夠轉換數）再下結論。\n・看的指標要對應測試目的：測素材看 CTR／CPA，測著陸頁看轉換率。\n・記錄結果建立自己的測試資料庫，避免重複測相同假設。", "cat": "廣告投放", "tags": ["A/B測試", "實驗設計"]},
+  {"q": "常見的歸因模式有哪些？怎麼選？", "a": "・最終點擊：所有功勞給最後一次點擊，低估上層貢獻。\n・首次點擊：功勞給第一次接觸，低估收尾。\n・線性／時間衰減／位置基準：功勞分配給路徑上的多個接觸點。\n・數據驅動（GA4 預設）：用模型分配權重。\n選擇原則：跨渠道比較時要用同一套歸因，且要知道各平台各自回報會重複計算（Meta 與 Google 加總常超過實際營收），最終還是要用總營收／總花費（MER）對帳。", "cat": "廣告投放", "tags": ["歸因", "GA4", "MER"]},
+  {"q": "Google 搜尋廣告和 Meta 廣告最大的差別是什麼？", "a": "・Google 搜尋廣告是「需求捕捉」：使用者主動搜尋，意圖明確，轉換率高但流量上限受搜尋量限制。\n・Meta 廣告是「需求創造」：使用者本來在滑動態，要靠素材抓注意力，適合新品與衝量，但需要更強的素材與更長的教育路徑。\n實務上兩者搭配：用 Meta 擴大認知與創造需求，用 Google 搜尋與再行銷承接被激起的需求。", "cat": "廣告投放", "tags": ["Google廣告", "Meta廣告", "媒體組合"]},
+  {"q": "廣告預算怎麼分配才合理？", "a": "・先分層：認知／考慮／轉換三層，新品牌上層比重高，成熟品牌可提高再行銷比例。\n・測試與放大：常見做法是抓 10-20% 預算做新素材與新受眾測試，其餘投在已驗證的組合。\n・以 CPA 或 ROAS 目標為準逐步調整，單次調整幅度建議 20-30% 以內，避免打亂學習。\n・保留檔期彈性：大檔期前先養再行銷名單，檔期間再集中火力收單。", "cat": "廣告投放", "tags": ["預算配置", "測試", "放大"]},
+  {"q": "廣告頻率（Frequency）多少算合理？", "a": "頻率 = 曝光數 ÷ 觸及人數，代表平均每人看了幾次。\n・再行銷：頻率較高是正常的，但同一素材連續多次曝光仍會造成反感。\n・開發新客：頻率若在短期內快速攀升，代表受眾太窄，該擴大受眾或補素材。\n沒有絕對標準值，實務做法是觀察「頻率上升時 CPA 是否同步惡化」，惡化就是該換素材或換受眾的訊號。", "cat": "廣告投放", "tags": ["Frequency", "受眾規模"]},
+  {"q": "轉換追蹤（Pixel 與 CAPI）在做什麼？為什麼要裝？", "a": "・Pixel／標籤是瀏覽器端回傳事件，會受瀏覽器限制、廣告阻擋與 Cookie 政策影響而漏資料。\n・CAPI（轉換 API）是伺服器端回傳，補回瀏覽器漏掉的事件，資料更完整。\n・兩者並用並設定事件去重（event_id），可提升歸因準確度與演算法優化品質。\n沒有正確的轉換追蹤，廣告系統就無法學習誰會買，成效會明顯變差。", "cat": "廣告投放", "tags": ["Pixel", "CAPI", "轉換追蹤"]},
+  {"q": "再行銷名單應該怎麼分層？", "a": "依互動深度與時間分層，出價與訊息都不同：\n・高意圖：加入購物車／結帳未完成（1-7 天），用限時優惠或運費補貼收單。\n・中意圖：瀏覽商品頁、看完影片 75%（7-30 天），用評價、比較、FAQ 消除疑慮。\n・低意圖：互動過粉專、看過首頁（30-180 天），用品牌內容或新品資訊喚醒。\n・已購買：排除在開發廣告之外，另做回購與加購溝通。", "cat": "廣告投放", "tags": ["再行銷", "受眾分層"]},
+  {"q": "SEO 分成哪三大面向？", "a": "・技術面：網站可被爬取與索引、網站速度、行動裝置友善、結構化資料、網址結構、無重複內容。\n・內容面：搜尋意圖對應、關鍵字布局、標題與段落結構、內容深度與更新頻率。\n・外部面：外部連結（反向連結）的數量與品質、品牌提及、在地商家資訊。\n三者缺一不可：技術有問題內容再好也爬不到，內容不好再多外連也留不住人。", "cat": "SEO / SEM", "tags": ["SEO", "技術SEO", "內容SEO"]},
+  {"q": "關鍵字研究怎麼做？", "a": "・發想種子字：產品名、問題、使用情境、競品字。\n・擴充：用關鍵字規劃工具、搜尋建議、相關搜尋、問答網站、站內搜尋紀錄。\n・評估：搜尋量、競爭度、商業意圖（資訊型／導航型／交易型）。\n・分群：同一搜尋意圖的字放同一篇，不要每個字寫一篇造成自我競爭。\n・排序：先做「搜尋量中等、競爭度低、意圖接近成交」的長尾字，較快看到成效。", "cat": "SEO / SEM", "tags": ["關鍵字研究", "搜尋意圖"]},
+  {"q": "Title 和 Meta Description 怎麼寫？", "a": "・Title：約 30 字內（避免被截斷），主關鍵字盡量放前面，加上差異點或數字，每頁不重複。\n・Meta Description：約 80 字內，寫清楚這頁能解決什麼問題並帶行動提示，雖不直接影響排名，但影響點擊率。\n・兩者都要對應該頁真實內容，誤導會提高跳出率反而傷排名。", "cat": "SEO / SEM", "tags": ["Title", "Meta", "SEO"]},
+  {"q": "內部連結有什麼作用？", "a": "・幫助搜尋引擎發現頁面並理解網站架構與主題關聯。\n・把權重從高流量頁面導向重要的轉換頁或新頁。\n・延長使用者停留與瀏覽深度。\n做法：用有描述性的錨點文字（不要一律寫「請點此」），把相關文章互相連結，重要頁面盡量在 3 次點擊內可達，並定期檢查失效連結。", "cat": "SEO / SEM", "tags": ["內部連結", "網站架構"]},
+  {"q": "E-E-A-T 是什麼？為什麼重要？", "a": "Google 品質評估指南中的概念：經驗（Experience）、專業（Expertise）、權威（Authoritativeness）、可信度（Trustworthiness）。\n對於健康、金融、法律等影響重大的主題（YMYL）特別重要。\n實務做法：署名作者並附上經歷、引用可信來源、標示更新日期、提供真實案例與實測、完整的公司資訊與聯絡方式、累積第三方評價與媒體報導。", "cat": "SEO / SEM", "tags": ["E-E-A-T", "內容品質", "YMYL"]},
+  {"q": "Core Web Vitals 包含哪些指標？", "a": "・LCP（最大內容繪製）：主要內容載入速度，建議 2.5 秒內。\n・INP（互動至下次繪製）：互動反應速度，建議 200 毫秒內（已取代舊的 FID）。\n・CLS（累計版面配置位移）：版面跳動程度，建議 0.1 以下。\n常見改善：壓縮與延遲載入圖片、減少第三方腳本、使用快取與 CDN、為圖片與廣告預留尺寸避免位移。", "cat": "SEO / SEM", "tags": ["Core Web Vitals", "網站速度"]},
+  {"q": "SEO 和 SEM 有什麼不同？怎麼搭配？", "a": "・SEO：自然排名，不需付點擊費，見效慢（通常 3-6 個月起）但長期成本低。\n・SEM／付費搜尋：買排名，立即有流量，停掉就沒有，適合測試與檔期。\n搭配方式：用 SEM 快速測出哪些關鍵字會轉換，再把資源投入這些字做 SEO；品牌字通常同時保留少量付費廣告防守競品；SEO 未到位的新頁面先用 SEM 補流量。", "cat": "SEO / SEM", "tags": ["SEO", "SEM", "媒體組合"]},
+  {"q": "Google Ads 的品質分數影響什麼？", "a": "品質分數綜合預估點擊率、廣告相關性、到達網頁體驗，分數高可以用較低的出價取得較好的排名。\n提升方法：廣告文案與關鍵字高度相關、關鍵字分群細一點、到達頁內容與廣告承諾一致且載入快、使用相關的廣告額外資訊（延伸資訊）、定期清掉低分低量的關鍵字。", "cat": "SEO / SEM", "tags": ["品質分數", "Google廣告"]},
+  {"q": "為什麼要經營長尾關鍵字？", "a": "長尾字搜尋量小但字數長、意圖明確、競爭低，轉換率通常高於大字。\n例如「跑鞋」競爭激烈且意圖模糊，「扁平足 慢跑鞋 推薦 2024」則接近購買決策。\n策略上：用大量長尾內容累積流量與權威，再帶動主要大字排名，對資源有限的中小品牌尤其有效。", "cat": "SEO / SEM", "tags": ["長尾關鍵字", "SEO策略"]},
+  {"q": "EDM 的開信率、點擊率、CTOR 怎麼算？", "a": "・開信率 = 開信數 ÷ 送達數。\n・點擊率（CTR）= 點擊數 ÷ 送達數。\n・CTOR = 點擊數 ÷ 開信數，反映內容與 CTA 的吸引力，是比 CTR 更能看出內容品質的指標。\n注意 Apple 等隱私政策會讓開信率虛高，因此現在更應以點擊與後續轉換為主要判準。", "cat": "EDM / CRM", "tags": ["EDM", "開信率", "CTOR"]},
+  {"q": "名單經營（List Building）要注意什麼？", "a": "・取得方式要合法且明示用途，最好用雙重確認（Double Opt-in），名單品質遠比數量重要。\n・提供足夠誘因：電子書、優惠碼、試用、專屬資訊。\n・定期清理：長期未開信的休眠名單先做喚回，無效就移除，可降低被判為垃圾信的風險。\n・退訂連結要清楚可用，退訂率長期高於 0.5% 就該檢討內容與發送頻率。", "cat": "EDM / CRM", "tags": ["名單", "Opt-in", "退訂率"]},
+  {"q": "RFM 分析是什麼？怎麼用？", "a": "用三個維度給顧客分群：\n・R 最近一次購買時間（Recency）\n・F 購買頻率（Frequency）\n・M 消費金額（Monetary）\n各維度分級後組合成群，例如高 R 高 F 高 M 是主力客（給專屬待遇與新品優先），低 R 高 F 是流失風險客（優先喚回），高 M 低 F 是大單偶發客（做回購誘因）。\n重點是每一群搭配不同的溝通與優惠，而不是全部發同一封信。", "cat": "EDM / CRM", "tags": ["RFM", "顧客分群", "CRM"]},
+  {"q": "行銷自動化常見的流程有哪些？", "a": "・歡迎信序列：註冊後 3-5 封，介紹品牌、熱銷品、首購優惠。\n・棄單提醒：加入購物車未結帳後 1 小時／24 小時／72 小時分階段提醒。\n・回購提醒：依消耗週期推播（如保養品 45 天）。\n・喚回流程：休眠 60/90 天觸發專屬優惠。\n・生日與會員升級通知。\n這些流程一次設定後長期運作，通常是投報率最高的 CRM 工作。", "cat": "EDM / CRM", "tags": ["行銷自動化", "棄單", "回購"]},
+  {"q": "會員分級與點數制度怎麼設計？", "a": "・分級門檻用年度消費金額或次數，級距要讓多數人覺得「再多買一點就升級」。\n・權益要有感且成本可控：免運、專屬折扣、優先購買、生日禮、專人服務。\n・點數：設定明確的兌換率與有效期限（有效期限能促進回購，但過短會引發反感）。\n・成本控管：先估算每一級的毛利與權益成本，避免最高等級反而虧錢。\n・上線前先模擬既有顧客會落在哪一級，確認分布合理。", "cat": "EDM / CRM", "tags": ["會員制度", "點數", "忠誠度"]},
+  {"q": "LINE 官方帳號經營要注意什麼？", "a": "・訊息有成本：依方案計算推播則數，群發全名單很燒錢，應善用分眾標籤只推給相關的人。\n・善用免費工具：圖文選單、自動回覆、關鍵字回覆、集點卡、優惠券。\n・加好友誘因與封鎖率要一起看，封鎖率高通常是推播太頻繁或內容不相關。\n・串接會員資料後可做行為觸發的一對一訊息，效果遠優於群發。", "cat": "EDM / CRM", "tags": ["LINE", "分眾", "推播"]},
+  {"q": "怎麼做顧客流失預警與喚回？", "a": "・先定義流失：用平均購買週期推算，例如平均 60 天回購，超過 90 天未購即列為流失風險。\n・預警訊號：開信率下降、登入頻率下降、客訴未解決、只在打折時購買。\n・喚回手法分階段：先提醒價值與新品（不打折），無反應再給專屬優惠，最後一次強力誘因，仍無反應則移出高頻溝通名單。\n・喚回成本通常低於開發新客，但要避免養成「等折扣才買」的習慣。", "cat": "EDM / CRM", "tags": ["流失預警", "喚回", "顧客留存"]},
+  {"q": "GA4 和舊版 UA 最大的差別是什麼？", "a": "・資料模型改成事件導向：所有互動都是事件（event）與參數，不再是工作階段與網頁瀏覽為主。\n・跨平台（網站＋App）整合在同一資源。\n・預設使用數據驅動歸因與較長的探索報表彈性。\n・強調使用者隱私，部分數據會經過模型推估。\n實務上要重新規劃事件與轉換設定，不能照搬 UA 的目標結構。", "cat": "數據與成效分析", "tags": ["GA4", "數據分析"]},
+  {"q": "UTM 參數怎麼設才不會亂掉？", "a": "五個參數：utm_source（來源，如 facebook）、utm_medium（媒介，如 cpc／email）、utm_campaign（活動名稱）、utm_content（素材或版位）、utm_term（關鍵字）。\n規範建議：全部小寫、用底線或連字號不要空格、medium 使用固定字彙表（cpc／social／email／referral）、campaign 用「年月_活動_目的」格式。\n最重要的是全公司共用一份命名規則表與產生器，否則報表會出現 Facebook／facebook／FB 三個來源。", "cat": "數據與成效分析", "tags": ["UTM", "追蹤", "報表"]},
+  {"q": "轉換率怎麼算？發現轉換率低該怎麼拆解？", "a": "轉換率 = 轉換數 ÷ 流量（或工作階段）× 100%。\n拆解順序：\n・流量品質：來源、受眾、關鍵字意圖是否對。\n・著陸頁：速度、首屏訊息是否與廣告一致、行動版體驗。\n・商品頁：資訊是否完整、評價、規格、疑慮排除。\n・結帳流程：步驟數、是否強制註冊、金流物流選項、運費揭露時機。\n用漏斗報表找出流失最嚴重的一步，先修那一步，而不是一次全改。", "cat": "數據與成效分析", "tags": ["轉換率", "漏斗分析"]},
+  {"q": "CAC（顧客獲取成本）怎麼算？", "a": "CAC = 該期間為了獲取新客花的行銷與銷售費用 ÷ 新客數。\n注意事項：\n・分子應包含廣告費、行銷人事、工具、通路佣金等，只算廣告費會低估。\n・分母只算「新客」，把回購訂單算進去會讓 CAC 看起來很漂亮但失真。\n・要分渠道看 CAC，才知道該加碼哪一條線。\n・CAC 要和 LTV 一起看才有意義。", "cat": "數據與成效分析", "tags": ["CAC", "單位經濟"]},
+  {"q": "LTV（顧客終身價值）怎麼算？", "a": "簡易版：LTV = 平均客單價 × 毛利率 × 平均購買次數（或購買頻率 × 平均存續期間）。\n進階版會加入折現率與流失率：LTV = 每期毛利 ÷ 流失率。\n實務建議：\n・用毛利而不是營收計算，才是真正能拿來獲客的錢。\n・依取得渠道與首購商品分群計算，不同來源的 LTV 差異常常很大。\n・新品牌資料不足時，先用 6 個月或 12 個月的實際回購數據當作評估基準。", "cat": "數據與成效分析", "tags": ["LTV", "顧客價值"]},
+  {"q": "LTV / CAC 的健康值是多少？", "a": "・常見參考：LTV ÷ CAC 大於 3 代表單位經濟健康；接近 1 代表賺不到錢；長期高於 5 有可能是投入太保守、錯過成長機會。\n・同時要看 CAC 回收期（Payback Period）：多久能把獲客成本賺回來，現金流吃緊的公司通常要求 6-12 個月內。\n・這兩個數字是決定「要不要加碼廣告」最重要的依據，比單次 ROAS 更能反映長期。", "cat": "數據與成效分析", "tags": ["LTV", "CAC", "單位經濟"]},
+  {"q": "AARRR 海盜指標是哪五個階段？", "a": "・Acquisition 獲取：使用者從哪來、CAC 多少。\n・Activation 啟用：第一次體驗是否順利（註冊完成率、首次使用關鍵動作）。\n・Retention 留存：多久回來一次，是最重要的一環。\n・Revenue 營收：客單價、付費轉換率、LTV。\n・Referral 推薦：NPS、推薦帶來的新客。\n用途是找出目前最大的瓶頸階段，集中資源改善，而不是每一層都平均用力。", "cat": "數據與成效分析", "tags": ["AARRR", "成長框架"]},
+  {"q": "北極星指標（North Star Metric）是什麼？怎麼挑？", "a": "一個能代表「顧客獲得價值」且與營收長期相關的核心指標，用來對齊整個團隊。\n挑選原則：反映顧客價值、可被團隊影響、領先於營收（而非落後指標）。\n例如電商可用「每月完成回購的活躍顧客數」，內容平台可用「每週閱讀超過 X 篇的使用者數」。\n注意不要選虛榮指標（如總註冊數），並搭配護欄指標（如退貨率、客訴率）避免為衝指標而傷害體驗。", "cat": "數據與成效分析", "tags": ["北極星指標", "KPI"]},
+  {"q": "Cohort（同期群）留存分析在看什麼？", "a": "把同一期間取得的顧客分為一組，追蹤他們在第 1、2、3…個月的回購或活躍比例。\n可以回答：\n・留存曲線會不會走平（走平代表有穩定的核心顧客，商業模式成立）。\n・新的改版或新客來源，留存是否比舊的好。\n・不同渠道來的顧客，長期價值差多少。\n只看整體平均會被新客稀釋，Cohort 才能看出真實的顧客品質變化。", "cat": "數據與成效分析", "tags": ["Cohort", "留存分析"]},
+  {"q": "A/B 測試怎麼判斷結果可信？", "a": "・事前算樣本數：依現有轉換率與想偵測的提升幅度估算，不要邊跑邊偷看就喊贏。\n・跑滿完整週期（至少 1-2 週，涵蓋平日與假日）。\n・看統計顯著性（常用 p < 0.05）與信賴區間，並確認兩組流量來源一致。\n・一次只改一個變因；多變因要用多變量測試或依序測。\n・記得看次要指標與護欄指標，避免點擊上升但退貨率也上升。", "cat": "數據與成效分析", "tags": ["A/B測試", "統計顯著", "實驗"]},
+  {"q": "為什麼廣告平台回報的轉換數和 GA4 對不起來？", "a": "常見原因：\n・歸因模式不同：平台用曝光／點擊後的歸因視窗（會認列瀏覽後轉換），GA4 多以點擊為主。\n・歸因期間不同：平台常用 7 天點擊＋1 天瀏覽，GA4 預設不同。\n・重複計算：Meta 與 Google 各自認領同一筆訂單。\n・技術落差：擋追蹤、跨裝置、Cookie 限制。\n處理方式：平台數字用來做投放內部優化，實際成效以後台訂單與 MER（總營收 ÷ 總花費）對帳為準。", "cat": "數據與成效分析", "tags": ["歸因", "數據落差", "MER"]},
+  {"q": "AOV（平均客單價）怎麼提升？", "a": "AOV = 總營收 ÷ 訂單數。常見手法：\n・滿額門檻：免運或折扣門檻設在目前客單價的 1.2-1.4 倍。\n・加價購與組合包：搭配互補品，讓消費者覺得划算。\n・向上銷售：在商品頁推薦更高階版本並說明差異。\n・交叉銷售：購物車頁推薦常一起買的品項。\n・分期或會員價：降低高單價的心理門檻。\n提升 AOV 通常比拉新客便宜，是最容易改善獲利的一環。", "cat": "電商與通路", "tags": ["AOV", "客單價", "加購"]},
+  {"q": "購物車棄單率怎麼改善？", "a": "棄單常見原因：運費太高或太晚揭露、強制註冊、結帳步驟太多、付款方式不足、對安全性存疑、只是先放著比價。\n改善做法：\n・提早揭露運費與到貨時間、提供免運門檻。\n・支援訪客結帳與常用支付（信用卡、行動支付、貨到付款、分期）。\n・簡化欄位、顯示進度條、放上安全標章與退換貨政策。\n・設定棄單提醒（站內、EDM、LINE、再行銷廣告）分階段追回。", "cat": "電商與通路", "tags": ["棄單", "結帳流程", "轉換率"]},
+  {"q": "電商轉換漏斗要檢查哪些環節？", "a": "・進站：流量來源品質與著陸頁一致性。\n・商品瀏覽：分類與搜尋是否好用、商品圖與資訊是否充足。\n・加入購物車：價格、規格、庫存、評價、到貨時間。\n・結帳：步驟、付款方式、運費、優惠碼欄位（有時反而促使離站比價）。\n・付款完成：金流失敗率、行動版體驗。\n每一層算出轉換率，和自己的歷史與同業基準比，找最弱的一環優先改。", "cat": "電商與通路", "tags": ["漏斗", "電商", "轉換率"]},
+  {"q": "D2C 模式有什麼優缺點？", "a": "・優點：掌握第一方數據與顧客關係、毛利較高、品牌體驗可完全控制、可快速測試新品。\n・缺點：流量要自己買（CAC 高）、金物流與客服都要自建、初期規模小議價力低。\n・實務建議：D2C 與平台通路並行，用平台吃曝光與新客、用官網做會員經營與回購，並設計把平台顧客導回官網的誘因（保固登錄、專屬售後、補充包）。", "cat": "電商與通路", "tags": ["D2C", "通路策略"]},
+  {"q": "電商檔期節奏怎麼規劃？", "a": "・年度盤點大檔（雙 11、618、黑五、年中慶、母親節、週年慶）與自家品牌日。\n・檔期前 3-4 週：養再行銷名單、預熱內容、名單收集與預購。\n・檔期中：集中預算收單，主推組合與滿額，控好庫存與出貨量能。\n・檔期後：新客回購流程啟動（7-30 天內轉為會員），並做成效檢討。\n・避免長期靠折扣，中間要有不打折的價值溝通期，否則會養壞價格認知。", "cat": "電商與通路", "tags": ["檔期", "促銷", "節奏"]},
+  {"q": "通路組合（官網／電商平台／實體／社群）怎麼分工？", "a": "・電商平台：吃現成流量與新客，但抽成高、顧客資料有限。\n・品牌官網：毛利與數據最好，需自行導流，適合會員經營與新品首發。\n・實體通路：體驗與即時取得，也是品牌信任來源。\n・社群導購／直播：衝動購買與話題性強，適合限量與組合。\n重點是定價與組合要有策略（避免自己打自己），並讓各通路承擔不同角色而非互相殺價。", "cat": "電商與通路", "tags": ["通路策略", "OMO"]},
+  {"q": "行銷費用率抓多少合理？", "a": "行銷費用率 = 行銷費用 ÷ 營收。合理值高度依產業與階段而定：\n・毛利率決定上限，毛利 30% 的生意，行銷費用率就不可能長期超過 30%。\n・新品牌開拓期可容忍較高費用率（換取市佔與名單），成熟期應下降並提高回購佔比。\n・實務上會同時看 MER（總營收 ÷ 總廣告花費）與新客 CAC，並確認回購貢獻的營收比例是否逐月提升。", "cat": "電商與通路", "tags": ["行銷費用率", "毛利", "財務"]},
+  {"q": "新聞稿怎麼寫才會被採用？", "a": "・標題與第一段就講完 5W1H，記者常只看前 100 字。\n・要有新聞點：首創、數據、趨勢、在地連結、公益、人物故事，單純「我們很棒」不是新聞。\n・附上可引用的數據與高層或專家的一句話引述。\n・提供高解析圖片與素材連結、聯絡窗口。\n・長度控制在 1 頁內，用倒金字塔結構，方便編輯直接刪減。", "cat": "公關與活動", "tags": ["新聞稿", "媒體公關"]},
+  {"q": "媒體關係怎麼經營？", "a": "・先做功課：了解每位記者的路線與近期報導，投其所需而不是亂槍打鳥。\n・提供價值：獨家數據、專訪機會、產業觀點，不只在有活動時才聯絡。\n・尊重截稿時間與回覆效率，臨時提供資料要快。\n・建立媒體名單與聯繫紀錄，追蹤刊登成果。\n・出現負面報導時不要對立，提供事實與改善作為。", "cat": "公關與活動", "tags": ["媒體關係", "公關"]},
+  {"q": "活動行銷的 KPI 該怎麼設？", "a": "分階段設：\n・前期：報名數、報名成本、名單品質（是否為 TA）。\n・現場：到場率（報名轉出席）、停留時間、互動參與率、現場成交或留資數。\n・後期：媒體與社群聲量、UGC 數量、活動後 30 天的轉換與回購、單位獲客成本。\n很多活動只算來了多少人，卻沒追後續轉換，導致無法證明效益。", "cat": "公關與活動", "tags": ["活動行銷", "KPI"]},
+  {"q": "危機溝通的基本原則是什麼？", "a": "・速度：第一時間表態已知悉並處理中，沉默會讓謠言填空。\n・統一窗口與口徑：避免各說各話。\n・誠實：不確定的事不要猜測或否認，用已確認的事實說明。\n・同理：先處理情緒再處理事情，對受影響者表達關心與具體補償。\n・行動：公布具體改善措施與時程，並在期限內回報進度。\n・事後：檢討流程並更新危機手冊與模擬演練。", "cat": "公關與活動", "tags": ["危機溝通", "公關"]},
+  {"q": "異業合作要怎麼談才會成功？", "a": "・找互補而非競爭：TA 重疊但產品不衝突。\n・價值對等：雙方投入的資源（名單、通路、預算、曝光）要能量化比較。\n・合作形式：聯名商品、贈品交換、名單互換（須符合個資規範）、共同活動、通路互推。\n・事前談好：分潤或費用、素材審核、使用期限與範圍、成效追蹤方式、爭議處理。\n・小規模試水溫再擴大，並在結束後交換成效數據以利下次合作。", "cat": "公關與活動", "tags": ["異業合作", "聯名"]},
+  {"q": "體驗行銷或快閃店的價值在哪？", "a": "・讓消費者親身感受產品，縮短信任建立時間，特別適合質感、氣味、操作感難用圖文傳達的商品。\n・創造可拍照分享的場景，帶動 UGC 與社群聲量。\n・蒐集第一方數據（現場留資、會員註冊）與即時的顧客回饋。\n・成效評估不要只看現場營業額，要加上聲量、名單、後續線上轉換與媒體露出價值。", "cat": "公關與活動", "tags": ["體驗行銷", "快閃店"]},
+  {"q": "MarTech 堆疊大致分哪幾類工具？", "a": "・數據類：GA4、CDP、BI 報表、標籤管理（GTM）。\n・獲客類：廣告平台、SEO 工具、社群管理與排程。\n・轉換類：網站／電商平台、A/B 測試、客服與聊天機器人。\n・經營類：CRM、EDM／LINE 行銷、行銷自動化、會員系統。\n・協作類：專案管理、素材庫（DAM）、內容協作。\n選工具的原則是先確認流程與數據需求，再挑工具，並確認彼此能串接，避免資料孤島。", "cat": "行銷科技 / AI", "tags": ["MarTech", "工具"]},
+  {"q": "CDP、CRM、DMP 有什麼不同？", "a": "・CRM：管理已知顧客的關係與互動紀錄（客戶資料、訂單、客服），以銷售與服務為核心。\n・CDP：整合各來源的第一方數據，建立統一的顧客輪廓，供行銷分眾與自動化使用。\n・DMP：主要處理第三方匿名受眾資料用於廣告投放，在 Cookie 退場後角色弱化。\n趨勢是以第一方數據為核心的 CDP＋CRM 組合，DMP 的重要性下降。", "cat": "行銷科技 / AI", "tags": ["CDP", "CRM", "數據"]},
+  {"q": "第三方 Cookie 退場對行銷有什麼影響？該怎麼因應？", "a": "影響：跨站追蹤與精準再行銷變難、歸因準確度下降、第三方受眾包失效。\n因應方式：\n・強化第一方數據蒐集（會員、名單、問卷、互動紀錄）。\n・導入伺服器端追蹤（如 CAPI）與同意管理（CMP）。\n・提高內容與 SEO、社群、EDM 等自有渠道比重。\n・以模型化歸因與增量測試（如地理對照實驗）取代單一 Cookie 歸因。", "cat": "行銷科技 / AI", "tags": ["Cookie", "隱私", "第一方數據"]},
+  {"q": "第一方數據要怎麼累積？", "a": "・提供有價值的交換：電子書、優惠、會員權益、售後服務、保固登錄。\n・把互動點都設計成資料蒐集點：問卷、測驗、購物偏好設定、客服對話。\n・跨通路整合：官網、LINE、實體門市的顧客資料要能串到同一個 ID。\n・務必取得合法同意並清楚說明用途，提供修改與刪除管道。\n・資料要定期清理與去重，否則分眾與自動化會失準。", "cat": "行銷科技 / AI", "tags": ["第一方數據", "名單", "個資"]},
+  {"q": "AI 在行銷上有哪些常見應用？", "a": "・內容生產：文案初稿、標題發想、素材變體、翻譯與在地化、影音字幕與剪輯輔助。\n・數據分析：報表摘要、異常偵測、分群與預測（流失預警、回購預測）。\n・投放優化：素材自動組合、受眾擴展、出價策略。\n・顧客服務：客服機器人、常見問題自動回覆、對話摘要。\n・研究：訪談逐字稿整理、評論情緒分析、競品內容盤點。\n重點是把 AI 放在「量大重複」與「初稿」的環節，最後的判斷與品牌語感仍需人來把關。", "cat": "行銷科技 / AI", "tags": ["AI行銷", "應用"]},
+  {"q": "用 AI 產生行銷內容要注意什麼？", "a": "・事實查核：數據、法規、產品規格、獎項一律人工確認，AI 會產生看似合理的錯誤。\n・品牌語感：先給品牌語調規範與範例，再讓 AI 改寫，避免產出千篇一律的樣板文。\n・法規：醫療、保健食品、金融、化妝品等有廣告用詞限制，不可直接照用。\n・原創性與版權：避免照抄他人內容，圖片素材要確認授權。\n・不要把客戶個資或未公開的機密資料貼進公開工具。", "cat": "行銷科技 / AI", "tags": ["AI", "內容品質", "法規"]},
+  {"q": "行銷人在個資與隱私上要注意哪些事？", "a": "・蒐集時要告知目的與範圍並取得同意，不同用途（例如行銷推播）要分開勾選。\n・提供退訂與資料查詢、更正、刪除的管道。\n・名單不得任意提供給第三方，異業合作交換名單風險高，應改以雙方各自推播的方式進行。\n・網站要有隱私權政策與 Cookie 同意機制。\n・內部要控管存取權限，離職與外包人員的權限要即時回收。\n（涉及法律細節時仍應諮詢法務或專業意見。）", "cat": "行銷科技 / AI", "tags": ["個資", "隱私", "合規"]},
+  {"q": "行銷人怎麼寫一份好的工作簡報（Brief）？", "a": "一份能讓設計、文案、投放都看得懂的 Brief 至少要有：\n・背景與目的：為什麼做這件事，要解決什麼問題。\n・目標與成功指標：具體數字與期限。\n・TA：是誰、現在怎麼想、希望他改變什麼想法或行為。\n・核心訊息與必要元素（法規標示、Logo、價格）。\n・限制：預算、時程、通路規格。\n・參考範例與禁忌。\nBrief 寫得好，來回修改次數會大幅減少。", "cat": "行銷科技 / AI", "tags": ["Brief", "協作", "專案管理"]},
+  {"q": "行銷提案或月報該怎麼組織才有說服力？", "a": "・結論先行：這個月成效如何、下一步要做什麼、需要什麼決策。\n・數據對照：與目標比、與上期比、與同業基準比，只給單一數字沒有意義。\n・因果解釋：成效變化的原因（素材、預算、季節、競品、站上異動）。\n・行動方案：具體到誰、做什麼、何時、預期影響。\n・附錄放細節數據，正文保持精簡。\n避免只報「做了什麼」，要報「造成什麼結果、接下來怎麼調整」。", "cat": "行銷科技 / AI", "tags": ["提案", "月報", "溝通"]}
+];
+</script>
+
 <script>
 /* ============================================================
    行銷知識智庫 — 純前端，資料存在瀏覽器 localStorage
    ============================================================ */
 
 const KEY_ENTRIES  = 'mkb_entries_v1';      // 知識條目
-const KEY_SETTINGS = 'mkb_settings_v1';     // 設定
-const KEY_SEEN     = 'mkb_seen_v1';         // 已處理過的外部問答指紋（含略過的）
 const API_KEY_STORAGE = 'anthropic_api_key';// 與本 repo 其他工具共用
 
 const CATS = ['品牌策略','市場與消費者研究','內容行銷','社群經營','廣告投放','SEO / SEM',
               'EDM / CRM','數據與成效分析','電商與通路','公關與活動','行銷科技 / AI','其他'];
 
-/* 已知的其他工具題庫，掃描時給它一個好看的來源名稱 */
-const KNOWN_BANKS = {
-  quiz_question_bank:    '英文測驗練習',
-  toeic700_question_bank:'TOEIC 700 計畫'
-};
-
 const state = {
   tab:'kb', tags:[], editingId:null,
-  scan:[], paste:[], review:null, lastAnswer:null
+  images:[], pending:[], review:null, lastAnswer:null
 };
 
 /* ---------- 儲存 ---------- */
@@ -381,20 +514,6 @@ function loadEntries(){
 }
 function saveEntries(list){
   localStorage.setItem(KEY_ENTRIES, JSON.stringify(list));
-}
-function loadSettings(){
-  try{ return Object.assign({autoscan:'1'}, JSON.parse(localStorage.getItem(KEY_SETTINGS))||{}); }
-  catch(e){ return {autoscan:'1'}; }
-}
-function saveSettingsObj(s){ localStorage.setItem(KEY_SETTINGS, JSON.stringify(s)); }
-function loadSeen(){
-  try{ const a=JSON.parse(localStorage.getItem(KEY_SEEN)); return Array.isArray(a)?a:[]; }
-  catch(e){ return []; }
-}
-function markSeen(fps){
-  const seen=new Set(loadSeen());
-  fps.forEach(f=>seen.add(f));
-  localStorage.setItem(KEY_SEEN, JSON.stringify([...seen].slice(-4000)));
 }
 function getApiKey(){ return localStorage.getItem(API_KEY_STORAGE)||''; }
 
@@ -434,7 +553,7 @@ const TABS=[
   {id:'review',label:'複習'}
 ];
 function renderTabs(){
-  const pend = state.scan.length;
+  const pend = state.pending.length;
   document.getElementById('tabs').innerHTML = TABS.map(t=>`
     <button class="tab${state.tab===t.id?' active':''}" onclick="go('${t.id}')">${t.label}${
       t.id==='import'&&pend?`<span class="dot">${pend}</span>`:''}</button>`).join('');
@@ -449,7 +568,7 @@ function go(tab){
 }
 
 /* ---------- 統計 / 列表 ---------- */
-function renderAll(){ renderStats(); renderTagChips(); renderList(); renderInbox(); }
+function renderAll(){ renderStats(); renderTagChips(); renderList(); renderStarterNote(); }
 
 function renderStats(){
   const list=loadEntries();
@@ -622,7 +741,7 @@ function addEntries(items){
 }
 
 /* ============================================================
-   匯入①：掃描同瀏覽器其他工具留下的問答
+   匯入①：上傳測試問答圖片，交給 AI 辨識
    ============================================================ */
 
 /* 從任意物件猜出「問題」與「答案」 */
@@ -678,104 +797,87 @@ function harvest(value){
   return out;
 }
 
-function runScan(showEmpty){
-  const seen=new Set(loadSeen());
-  const known=new Set(loadEntries().map(e=>norm(e.q)));
-  const found=[];
-  for(let i=0;i<localStorage.length;i++){
-    const key=localStorage.key(i);
-    if(!key || key===KEY_ENTRIES || key===KEY_SEEN || key===KEY_SETTINGS || key===API_KEY_STORAGE) continue;
-    let val;
-    try{ val=JSON.parse(localStorage.getItem(key)); }catch(e){ continue; }
-    const src=KNOWN_BANKS[key]||key;
-    harvest(val).forEach(qa=>{
-      const f=fp(src,qa.q);
-      if(seen.has(f)||known.has(norm(qa.q))) return;
-      found.push(Object.assign({},qa,{source:src,_fp:f}));
-    });
+const IMG_MAX_EDGE=1568;   /* 送出前縮圖，省 token 也避開檔案大小限制 */
+const IMG_PER_CALL=4;      /* 每次請求最多幾張 */
+const IMG_MAX=20;
+
+function addImages(files){
+  const list=[...files].filter(f=>/^image\//.test(f.type));
+  if(!list.length){ msg('img-msg','請選擇圖片檔（JPG / PNG / WebP / GIF）。','err'); return; }
+  msg('img-msg','');
+  let pending=list.length;
+  list.forEach(f=>{
+    if(state.images.length>=IMG_MAX){ pending--; return; }
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        const scale=Math.min(1, IMG_MAX_EDGE/Math.max(img.width,img.height));
+        const cv=document.createElement('canvas');
+        cv.width=Math.round(img.width*scale);
+        cv.height=Math.round(img.height*scale);
+        cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+        const dataUrl=cv.toDataURL('image/jpeg',0.85);
+        state.images.push({name:f.name, data:dataUrl.split(',')[1], url:dataUrl});
+        if(--pending<=0) renderThumbs();
+        else renderThumbs();
+      };
+      img.onerror=()=>{ pending--; msg('img-msg','有圖片讀不出來（'+esc(f.name)+'），請換一張試試。','err'); };
+      img.src=String(reader.result);
+    };
+    reader.readAsDataURL(f);
+  });
+  if(list.length>IMG_MAX) msg('img-msg',`一次最多 ${IMG_MAX} 張，多出來的請分批上傳。`,'err');
+}
+function renderThumbs(){
+  const el=document.getElementById('img-thumbs');
+  el.innerHTML=state.images.map((im,i)=>`
+    <div class="thumb">
+      <img src="${im.url}" alt="${esc(im.name)}">
+      <button onclick="removeImage(${i})" title="移除">&times;</button>
+    </div>`).join('');
+  document.getElementById('img-actions').style.display=state.images.length?'flex':'none';
+}
+function removeImage(i){ state.images.splice(i,1); renderThumbs(); }
+function clearImages(){ state.images=[]; renderThumbs(); msg('img-msg',''); }
+
+async function readImages(){
+  if(!state.images.length){ msg('img-msg','還沒有圖片。','err'); return; }
+  if(!getApiKey()){ msg('img-msg','圖片辨識需要 Anthropic API Key，請先到右上角齒輪設定。','err'); openSettings(); return; }
+  const groups=[];
+  for(let i=0;i<state.images.length;i+=IMG_PER_CALL) groups.push(state.images.slice(i,i+IMG_PER_CALL));
+  const all=[];
+  for(let g=0;g<groups.length;g++){
+    msg('img-msg',`<span class="spinner"></span>辨識中… 第 ${g+1} / ${groups.length} 批（共 ${state.images.length} 張）`,'ok');
+    const content=groups[g].map(im=>({
+      type:'image', source:{type:'base64', media_type:'image/jpeg', data:im.data}
+    }));
+    content.push({type:'text', text:IMAGE_PROMPT});
+    try{
+      const parsed=parseJSON(await callClaude(content,4000));
+      (parsed.items||[]).forEach(it=>{ if(it&&it.q&&it.a) all.push(it); });
+    }catch(e){
+      msg('img-msg',`第 ${g+1} 批辨識失敗：${esc(e.message)}`,'err');
+      if(!all.length) return;
+    }
   }
-  state.scan=found;
-  renderTabs();
-  renderScan(showEmpty);
-  renderInbox();
-  return found.length;
+  if(!all.length){ msg('img-msg','圖片裡沒有讀到可收錄的問答，可以改用「貼上文字」或確認圖片是否清楚。','err'); return; }
+  msg('img-msg',`辨識出 ${all.length} 條，確認後按「加入智庫」。`,'ok');
+  setPending(all, '圖片匯入 '+dateLabel(today()));
 }
 
-function renderInbox(){
-  const el=document.getElementById('inbox-banner');
-  if(!el) return;
-  const n=state.scan.length;
-  el.innerHTML = n ? `
-    <div class="inbox-banner">
-      <div>
-        <div class="t">發現 ${n} 筆還沒整理的測試問答</div>
-        <div class="s">來自這台瀏覽器裡其他工具（${esc([...new Set(state.scan.map(s=>s.source))].slice(0,3).join('、'))}${
-          new Set(state.scan.map(s=>s.source)).size>3?'…':''}）</div>
-      </div>
-      <button class="btn" onclick="go('import')">去整理</button>
-    </div>` : '';
-}
+const IMAGE_PROMPT=`這些圖片是使用者做測試／練習的畫面（可能是選擇題、問答、批改結果或筆記）。
+請把裡面的題目與答案讀出來，整理成可以長期收藏的知識條目。
 
-function renderScan(showEmpty){
-  const el=document.getElementById('scan-result');
-  const note=document.getElementById('scan-note');
-  if(!state.scan.length){
-    el.innerHTML='';
-    if(note) note.textContent = showEmpty ? '　目前沒有新的問答（已加入或已略過的不會重複顯示）。' : '';
-    return;
-  }
-  if(note) note.textContent='';
-  el.innerHTML=`
-    <div class="row" style="gap:8px;margin-bottom:10px">
-      <button class="btn ghost sm" style="flex:none" onclick="scanPickAll(true)">全選</button>
-      <button class="btn ghost sm" style="flex:none" onclick="scanPickAll(false)">全不選</button>
-      <span class="note" style="flex:none">共 ${state.scan.length} 筆</span>
-    </div>
-    ${state.scan.map((s,i)=>`
-      <label class="pick">
-        <input type="checkbox" class="scan-cb" data-i="${i}" checked>
-        <div>
-          <div class="pick-q">${esc(s.q)}</div>
-          <div class="pick-a">${esc(s.a)}</div>
-          <div class="pick-src">來源：${esc(s.source)}</div>
-        </div>
-      </label>`).join('')}
-    <div class="row" style="gap:8px;margin-top:12px">
-      <div class="field" style="flex:1;margin:0">
-        <label class="label">全部歸到分類</label>
-        <select id="scan-cat"></select>
-      </div>
-      <div style="flex:none;display:flex;align-items:flex-end;gap:8px">
-        <button class="btn brand" onclick="importScan()">加入智庫</button>
-        <button class="btn ghost" onclick="skipScan()">略過勾選的</button>
-      </div>
-    </div>`;
-  fillCats('scan-cat',{value:'其他'});
-}
-function scanPickAll(on){
-  document.querySelectorAll('.scan-cb').forEach(cb=>{ cb.checked=on; });
-}
-function selectedScan(){
-  return [...document.querySelectorAll('.scan-cb')]
-    .filter(cb=>cb.checked).map(cb=>state.scan[Number(cb.dataset.i)]);
-}
-function importScan(){
-  const picked=selectedScan();
-  if(!picked.length){ msg('scan-msg','還沒勾選任何一筆。','err'); return; }
-  const cat=document.getElementById('scan-cat').value;
-  const added=addEntries(picked.map(s=>({q:s.q,a:s.a,cat,tags:s.tags,source:s.source})));
-  markSeen(picked.map(s=>s._fp));
-  runScan(false);
-  msg('scan-msg',`已加入 ${added} 筆${added<picked.length?`（${picked.length-added} 筆與現有條目重複，已跳過）`:''}。`,'ok');
-  renderStats();
-}
-function skipScan(){
-  const picked=selectedScan();
-  if(!picked.length){ msg('scan-msg','還沒勾選任何一筆。','err'); return; }
-  markSeen(picked.map(s=>s._fp));
-  runScan(false);
-  msg('scan-msg',`已略過 ${picked.length} 筆，之後不會再出現。`,'ok');
-}
+要求：
+- 問題要能獨立看懂，不要出現「本題」「上圖」「如下」這類指涉，也不要寫成「第 3 題」
+- 若是選擇題，答案要寫出正確選項的內容與原因，不要只寫「B」
+- 圖片中若有解析或批改說明，整合進答案；若答案不完整，用你的專業補足
+- 用繁體中文、台灣行銷實務用語；每條答案 200 字內
+- 讀不出來或與知識無關的畫面就略過，沒有可收錄內容就回傳空陣列
+
+嚴格只回傳 JSON，不含任何說明或 markdown：
+{"items":[{"q":"問題","a":"答案重點","cat":"從這些挑一個：${CATS.join('、')}","tags":["標籤"]}]}`;
 
 /* ============================================================
    匯入②：貼上／上傳問答
@@ -841,52 +943,98 @@ function parsePaste(){
   const got=parseText(text);
   if(!got.length){
     msg('paste-msg','解析不出問答對。可以用「Q: 問題 / A: 答案」的格式，或改按「用 AI 整理成知識條目」。','err');
-    document.getElementById('paste-result').innerHTML='';
     return;
   }
-  msg('paste-msg','');
-  state.paste=got;
-  renderPaste();
+  msg('paste-msg',`解析出 ${got.length} 條，請在下方確認。`,'ok');
+  setPending(got, '貼上匯入 '+dateLabel(today()));
 }
 
-function renderPaste(){
-  const el=document.getElementById('paste-result');
-  if(!state.paste.length){ el.innerHTML=''; return; }
-  el.innerHTML=`
-    <div class="row" style="gap:8px;margin-bottom:10px">
-      <button class="btn ghost sm" style="flex:none" onclick="pastePickAll(true)">全選</button>
-      <button class="btn ghost sm" style="flex:none" onclick="pastePickAll(false)">全不選</button>
-      <span class="note" style="flex:none">解析出 ${state.paste.length} 筆，確認後入庫</span>
-    </div>
-    ${state.paste.map((s,i)=>`
-      <label class="pick">
-        <input type="checkbox" class="paste-cb" data-i="${i}" checked>
-        <div>
-          <div class="pick-q">${esc(s.q)}</div>
-          <div class="pick-a">${esc(s.a)}</div>
-          ${s.cat||(s.tags&&s.tags.length)?`<div class="pick-src">${esc([s.cat,(s.tags||[]).join('、')].filter(Boolean).join(' · '))}</div>`:''}
-        </div>
-      </label>`).join('')}
-    <button class="btn brand" style="margin-top:10px" onclick="importPaste()">加入智庫</button>`;
+/* ============================================================
+   待確認清單（圖片辨識、貼上解析、內建題庫共用）
+   ============================================================ */
+function setPending(items, defaultSource){
+  state.pending=items;
+  const srcEl=document.getElementById('pending-src');
+  if(defaultSource!==undefined) srcEl.value=defaultSource;
+  renderPending();
+  renderTabs();
+  document.getElementById('pending-card').scrollIntoView({behavior:'smooth',block:'start'});
 }
-function pastePickAll(on){ document.querySelectorAll('.paste-cb').forEach(cb=>{cb.checked=on;}); }
-function importPaste(){
-  const picked=[...document.querySelectorAll('.paste-cb')]
-    .filter(cb=>cb.checked).map(cb=>state.paste[Number(cb.dataset.i)]);
-  if(!picked.length){ msg('paste-msg','還沒勾選任何一筆。','err'); return; }
-  const defCat=document.getElementById('paste-cat').value;
-  const src=document.getElementById('paste-src').value.trim() || ('貼上匯入 '+dateLabel(today()));
-  const added=addEntries(picked.map(s=>({q:s.q,a:s.a,cat:s.cat||defCat,tags:s.tags||[],source:src})));
-  state.paste=[]; renderPaste();
+function renderPending(){
+  const card=document.getElementById('pending-card');
+  if(!state.pending.length){ card.style.display='none'; return; }
+  card.style.display='block';
+  document.getElementById('pending-count').textContent=`共 ${state.pending.length} 條，取消勾選就不會收進智庫。與現有條目重複的問題會自動跳過。`;
+  document.getElementById('pending-list').innerHTML=state.pending.map((s,i)=>`
+    <label class="pick">
+      <input type="checkbox" class="pending-cb" data-i="${i}" checked>
+      <div>
+        <div class="pick-q">${esc(s.q)}</div>
+        <div class="pick-a">${esc(s.a)}</div>
+        ${s.cat||(s.tags&&s.tags.length)?`<div class="pick-src">${esc([s.cat,(s.tags||[]).join('、')].filter(Boolean).join(' · '))}</div>`:''}
+      </div>
+    </label>`).join('');
+  fillCats('pending-cat',{value:document.getElementById('pending-cat').value||'其他'});
+}
+function pendingPickAll(on){ document.querySelectorAll('.pending-cb').forEach(cb=>{cb.checked=on;}); }
+function clearPending(){ state.pending=[]; renderPending(); renderTabs(); }
+function importPending(){
+  const picked=[...document.querySelectorAll('.pending-cb')]
+    .filter(cb=>cb.checked).map(cb=>state.pending[Number(cb.dataset.i)]);
+  if(!picked.length){ msg('pending-msg','還沒勾選任何一條。','err'); return; }
+  const defCat=document.getElementById('pending-cat').value;
+  const src=document.getElementById('pending-src').value.trim() || ('匯入 '+dateLabel(today()));
+  const added=addEntries(picked.map(s=>({
+    q:s.q, a:s.a,
+    cat:(s.cat&&CATS.includes(s.cat))?s.cat:defCat,
+    tags:s.tags||[], source:s.source||src
+  })));
+  state.pending=[]; renderPending(); renderTabs();
   document.getElementById('paste-input').value='';
-  msg('paste-msg',`已加入 ${added} 筆${added<picked.length?`（${picked.length-added} 筆重複，已跳過）`:''}。可到「智庫」查看。`,'ok');
+  clearImages();
+  msg('pending-msg','');
+  msg('img-msg','');
+  msg('paste-msg','');
+  msg('starter-msg',`已加入 ${added} 條${added<picked.length?`（${picked.length-added} 條與現有條目重複，已跳過）`:''}，可到「智庫」查看。`,'ok');
   renderStats();
+}
+
+/* ============================================================
+   內建行銷基礎題庫
+   ============================================================ */
+function starterPack(){ return (typeof STARTER_PACK!=='undefined'&&Array.isArray(STARTER_PACK))?STARTER_PACK:[]; }
+function starterLeft(){
+  const have=new Set(loadEntries().map(e=>norm(e.q)));
+  return starterPack().filter(x=>!have.has(norm(x.q)));
+}
+function renderStarterNote(){
+  const el=document.getElementById('starter-sub');
+  if(!el) return;
+  const left=starterLeft().length, total=starterPack().length;
+  el.innerHTML=`行銷人該有的基礎知識共 <strong>${total}</strong> 條，涵蓋品牌、市場研究、內容、社群、廣告、SEO、CRM、數據、電商、公關與 MarTech，一鍵打底，之後再用每天的測試問答往上疊。`
+    + (left===0
+        ? '<br>已全部收進智庫。'
+        : (left<total?`<br>目前還有 <strong>${left}</strong> 條沒收進智庫（已收錄的不會重複加入）。`:''));
+}
+function previewStarter(){
+  const left=starterLeft();
+  if(!left.length){ msg('starter-msg','內建題庫已經全部收進智庫了。','ok'); return; }
+  msg('starter-msg','');
+  setPending(left.map(x=>Object.assign({},x,{source:'內建基礎題庫'})), '內建基礎題庫');
+}
+function importStarter(){
+  const left=starterLeft();
+  if(!left.length){ msg('starter-msg','內建題庫已經全部收進智庫了。','ok'); return; }
+  const added=addEntries(left.map(x=>({q:x.q,a:x.a,cat:x.cat,tags:x.tags,source:'內建基礎題庫'})));
+  state.pending=[]; renderPending(); renderTabs();
+  msg('starter-msg',`已匯入 ${added} 條基礎知識，可到「智庫」查看。`,'ok');
+  renderStats(); renderStarterNote();
 }
 
 /* ============================================================
    AI：呼叫 Anthropic API（瀏覽器直連，需使用者自備 Key）
    ============================================================ */
-async function callClaude(prompt, maxTokens){
+async function callClaude(content, maxTokens){
   const apiKey=getApiKey();
   if(!apiKey){ openSettings(); throw new Error('尚未設定 API Key'); }
   const res=await fetch('https://api.anthropic.com/v1/messages',{
@@ -900,7 +1048,7 @@ async function callClaude(prompt, maxTokens){
     body:JSON.stringify({
       model:'claude-sonnet-5',
       max_tokens:maxTokens||3000,
-      messages:[{role:'user',content:prompt}]
+      messages:[{role:'user',content:content}]
     })
   });
   if(!res.ok){
@@ -1034,9 +1182,8 @@ ${text.slice(0,12000)}
     const parsed=parseJSON(await callClaude(prompt,4000));
     const items=(parsed.items||[]).filter(x=>x&&x.q&&x.a);
     if(!items.length){ msg('paste-msg','AI 沒有整理出可收錄的條目。','err'); return; }
-    state.paste=items;
-    renderPaste();
-    msg('paste-msg',`AI 整理出 ${items.length} 條，確認後按「加入智庫」。`,'ok');
+    msg('paste-msg',`AI 整理出 ${items.length} 條，請在下方確認。`,'ok');
+    setPending(items, '貼上匯入 '+dateLabel(today()));
   }catch(e){
     msg('paste-msg','整理失敗：'+esc(e.message),'err');
   }
@@ -1169,16 +1316,12 @@ function endReview(){
    ============================================================ */
 function openSettings(){
   document.getElementById('api-key-input').value=getApiKey();
-  document.getElementById('set-autoscan').value=loadSettings().autoscan;
   openModal('m-settings');
 }
 function saveSettings(){
   const key=document.getElementById('api-key-input').value.trim();
   if(key) localStorage.setItem(API_KEY_STORAGE,key);
   else localStorage.removeItem(API_KEY_STORAGE);
-  const s=loadSettings();
-  s.autoscan=document.getElementById('set-autoscan').value;
-  saveSettingsObj(s);
   closeModal('m-settings');
 }
 function openBackup(){ msg('backup-msg',''); openModal('m-backup'); }
@@ -1234,10 +1377,22 @@ function wipeAll(){
   if(!confirm('這會刪掉智庫裡所有條目，且無法復原。確定要清空嗎？')) return;
   if(!confirm('再確認一次：真的要清空整個智庫？建議先匯出備份。')) return;
   localStorage.removeItem(KEY_ENTRIES);
-  localStorage.removeItem(KEY_SEEN);
   closeModal('m-backup');
   renderAll();
-  runScan(false);
+}
+
+function initDropZone(){
+  const dz=document.getElementById('drop');
+  if(!dz) return;
+  ['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{
+    e.preventDefault(); dz.classList.add('over');
+  }));
+  ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{
+    e.preventDefault(); dz.classList.remove('over');
+  }));
+  dz.addEventListener('drop',e=>{
+    if(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files.length) addImages(e.dataTransfer.files);
+  });
 }
 
 /* ============================================================
@@ -1246,11 +1401,11 @@ function wipeAll(){
 (function init(){
   fillCats('f-cat',{all:true});
   fillCats('ask-cat',{value:CATS[0]});
-  fillCats('paste-cat',{value:'其他'});
+  fillCats('pending-cat',{value:'其他'});
   fillCats('rv-cat',{all:true});
   renderTabs();
   renderAll();
-  if(loadSettings().autoscan==='1') runScan(false);
+  initDropZone();
   document.querySelectorAll('.modal').forEach(m=>{
     m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('on'); });
   });
