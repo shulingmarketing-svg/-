@@ -1,0 +1,349 @@
+<title>淨養好好生活</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap">
+<style>
+/* Layout: single column, calendar-page rhythm. The five sense glyphs carry the visual weight; no photography required. */
+:root{
+  --bg:#F6F8F6;
+  --surface:#FFFFFF;
+  --ink:#232D27;
+  --muted:#667068;
+  --line:#D9E0DA;
+  --accent:#3F7A55;
+  --accent-soft:#EAF1EC;
+  --warm:#B5763A;
+  --display:"Noto Serif TC",Georgia,"Songti TC",serif;
+  --body:"Noto Sans TC",-apple-system,"Helvetica Neue",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#131815;
+    --surface:#1C2320;
+    --ink:#E7EDE8;
+    --muted:#95A29A;
+    --line:#2C3832;
+    --accent:#86C09C;
+    --accent-soft:#1F2C25;
+    --warm:#D9A273;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131815;
+  --surface:#1C2320;
+  --ink:#E7EDE8;
+  --muted:#95A29A;
+  --line:#2C3832;
+  --accent:#86C09C;
+  --accent-soft:#1F2C25;
+  --warm:#D9A273;
+  color-scheme:dark;
+}
+
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--body);
+  font-weight:300;
+  line-height:1.9;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{
+  max-width:680px;
+  margin-inline:auto;
+  padding-inline:22px;
+  padding-block:0;
+}
+section{padding-block:68px;border-top:1px solid var(--line)}
+section:first-of-type{border-top:0}
+
+.eyebrow{
+  font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--muted);font-weight:500;margin:0 0 18px;
+}
+h1,h2,h3{font-family:var(--display);font-weight:500;text-wrap:balance;margin:0}
+h1{font-size:clamp(34px,8vw,52px);line-height:1.3;letter-spacing:.04em}
+h2{font-size:clamp(22px,5vw,27px);line-height:1.5;margin-bottom:20px}
+h3{font-size:19px;line-height:1.6}
+p{margin:0 0 18px}
+p:last-child{margin-bottom:0}
+.lead{font-size:17px;color:var(--ink)}
+.sub{color:var(--muted);font-size:15px}
+
+/* ---- hero ---- */
+.hero{padding-block:76px 64px}
+.brandmark{
+  font-family:var(--display);font-size:13px;letter-spacing:.42em;
+  color:var(--accent);font-weight:500;margin:0 0 28px;
+}
+.senses{
+  display:grid;grid-template-columns:repeat(5,1fr);
+  gap:0;margin:40px 0 34px;
+  border-block:1px solid var(--line);
+}
+.senses span{
+  font-family:var(--display);
+  font-size:clamp(26px,7.5vw,40px);
+  text-align:center;padding-block:20px;
+  border-left:1px solid var(--line);
+  color:var(--ink);
+}
+.senses span:first-child{border-left:0}
+.tagline{
+  font-family:var(--display);font-size:16px;
+  color:var(--muted);letter-spacing:.05em;margin:0;
+}
+
+/* ---- month card ---- */
+.month{
+  background:var(--surface);
+  border:1px solid var(--line);
+  padding:30px 26px;
+  margin-bottom:22px;
+}
+.month-head{
+  display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+  margin-bottom:6px;
+}
+.term{font-family:var(--display);font-size:32px;font-weight:500;letter-spacing:.08em}
+.when{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.feel{
+  font-family:var(--display);font-size:17px;color:var(--accent);
+  margin:0 0 24px;line-height:1.7;
+}
+.rows{display:grid;gap:0;margin-bottom:24px}
+.row{
+  display:grid;grid-template-columns:42px 1fr;gap:14px;
+  align-items:start;padding-block:13px;
+  border-top:1px solid var(--line);
+}
+.row:first-child{border-top:0;padding-top:0}
+.glyph{
+  font-family:var(--display);font-size:21px;line-height:1.5;
+  color:var(--accent);text-align:center;
+}
+.row p{margin:0;font-size:15px;line-height:1.75;min-width:0}
+.settle{
+  background:var(--accent-soft);padding:16px 18px;
+  font-size:14.5px;line-height:1.8;
+}
+.settle strong{font-weight:500;letter-spacing:.08em;display:block;margin-bottom:4px;font-size:12px;color:var(--muted)}
+
+/* ---- terms list ---- */
+.terms{
+  display:flex;flex-wrap:wrap;gap:8px;margin:24px 0 0;padding:0;list-style:none;
+}
+.terms li{
+  font-family:var(--display);font-size:15px;letter-spacing:.06em;
+  border:1px solid var(--line);padding:5px 13px;color:var(--muted);
+}
+
+/* ---- visual slot ---- */
+.slot{
+  border:1px dashed var(--line);
+  padding:40px 24px;text-align:center;
+  color:var(--muted);font-size:13.5px;line-height:1.8;
+}
+.slot b{display:block;font-weight:500;color:var(--ink);margin-bottom:6px;font-size:14px}
+
+/* ---- form ---- */
+.signup{background:var(--surface);border:1px solid var(--line);padding:32px 26px}
+.field{display:flex;flex-direction:column;gap:9px;margin-bottom:16px}
+label{font-size:13px;letter-spacing:.1em;color:var(--muted);font-weight:500}
+input[type=email]{
+  font-family:var(--body);font-size:16px;padding:13px 14px;
+  border:1px solid var(--line);background:var(--bg);color:var(--ink);
+  border-radius:0;width:100%;box-sizing:border-box;
+}
+input[type=email]:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+button{
+  font-family:var(--body);font-size:15.5px;font-weight:500;letter-spacing:.06em;
+  background:var(--accent);color:var(--bg);border:0;border-radius:0;
+  padding:15px 20px;width:100%;cursor:pointer;transition:opacity .18s;
+}
+button:hover{opacity:.87}
+button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.note{font-size:13px;color:var(--muted);margin:14px 0 0;line-height:1.75}
+.done{
+  background:var(--accent-soft);border:1px solid var(--accent);
+  padding:26px 24px;
+}
+.done h3{color:var(--accent);margin-bottom:12px}
+.done p{font-size:14.5px;line-height:1.85}
+
+/* ---- timeline ---- */
+.when-list{display:grid;gap:0;margin:0;padding:0;list-style:none}
+.when-list li{
+  display:grid;grid-template-columns:86px 1fr;gap:16px;
+  padding-block:15px;border-top:1px solid var(--line);font-size:15px;
+}
+.when-list li:first-child{border-top:0}
+.when-list b{font-weight:500;color:var(--accent);font-variant-numeric:tabular-nums}
+.when-list span{min-width:0}
+
+/* ---- team appendix ---- */
+.appendix{
+  border:1px solid var(--warm);background:var(--surface);
+  padding:28px 24px;margin-block:0 72px;
+}
+.appendix .eyebrow{color:var(--warm)}
+.appendix h3{font-size:17px;margin-bottom:14px}
+.appendix ul{margin:0 0 20px;padding-left:20px;font-size:14px;line-height:1.95;color:var(--muted)}
+.appendix ul:last-child{margin-bottom:0}
+.appendix li strong{color:var(--ink);font-weight:500}
+
+@media (max-width:420px){
+  .row{grid-template-columns:34px 1fr;gap:11px}
+  .when-list li{grid-template-columns:70px 1fr;gap:12px}
+  section{padding-block:54px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+
+<div class="wrap">
+
+  <section class="hero">
+    <p class="brandmark">淨養 ・ 好好生活</p>
+    <h1>2027 節氣月曆</h1>
+    <div class="senses" aria-label="五感：視、聽、嗅、味、觸">
+      <span>視</span><span>聽</span><span>嗅</span><span>味</span><span>觸</span>
+    </div>
+    <p class="tagline">一起用心，讓好好生活，成為每一天的日常。</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">這是什麼</p>
+    <h2>一本翻得慢的月曆</h2>
+    <p class="lead">十二個月、十二個節氣。每一頁除了日期，還有五件當月可以做的小事，視、聽、嗅、味、觸各一件，全部在家或辦公室就能完成。</p>
+    <p class="sub">不講養生功效，也不談食補。只是提醒你，這個季節正在發生什麼，而你可以怎麼接住它。</p>
+    <ul class="terms">
+      <li>大寒</li><li>雨水</li><li>春分</li><li>清明</li><li>立夏</li><li>夏至</li>
+      <li>大暑</li><li>立秋</li><li>秋分</li><li>寒露</li><li>立冬</li><li>冬至</li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="eyebrow">內頁試讀</p>
+    <h2>最冷和最熱的那兩個月</h2>
+
+    <article class="month">
+      <div class="month-head">
+        <span class="term">大寒</span>
+        <span class="when">1 月 ・ 2027/1/20（週三）</span>
+      </div>
+      <p class="feel">最冷的時候，天地反而安靜下來了。</p>
+      <div class="rows">
+        <div class="row"><span class="glyph">視</span><p>看窗上結的霧氣，用指尖畫一個記號</p></div>
+        <div class="row"><span class="glyph">聽</span><p>聽熱水壺燒開的聲音，那是冬天最溫柔的背景音</p></div>
+        <div class="row"><span class="glyph">嗅</span><p>煮一鍋薑湯，讓廚房的熱氣先暖了鼻子</p></div>
+        <div class="row"><span class="glyph">味</span><p>喝一碗熱甜湯，慢慢地喝，不要趕</p></div>
+        <div class="row"><span class="glyph">觸</span><p>把手掌貼在溫熱的馬克杯上，停留三十秒</p></div>
+      </div>
+      <div class="settle"><strong>身心安頓</strong>最冷的時候，也是快要回暖的時候。不用急著變好。</div>
+    </article>
+
+    <article class="month">
+      <div class="month-head">
+        <span class="term">大暑</span>
+        <span class="when">7 月 ・ 2027/7/23（週五）</span>
+      </div>
+      <p class="feel">一年裡最熱的時候，連空氣都慢下來了。</p>
+      <div class="rows">
+        <div class="row"><span class="glyph">視</span><p>把家裡的燈光調暗一點，減少視覺的燥熱感</p></div>
+        <div class="row"><span class="glyph">聽</span><p>找一段雨聲或流水聲，靜靜聽 5 分鐘</p></div>
+        <div class="row"><span class="glyph">嗅</span><p>打開冰箱門，站在那裡聞一下冷空氣的味道</p></div>
+        <div class="row"><span class="glyph">味</span><p>喝一杯冰鎮酸梅湯，讓味覺降溫</p></div>
+        <div class="row"><span class="glyph">觸</span><p>泡腳或用冷毛巾敷頸後，讓身體降溫</p></div>
+      </div>
+      <div class="settle"><strong>身心安頓</strong>允許自己在最熱的午後，什麼都不做。</div>
+    </article>
+
+    <p class="sub">另外十個月份，等你收到實體再慢慢翻。</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">內容物</p>
+    <h2>月曆、底座，和一隻陪你過完一年的角色</h2>
+    <p>十二頁節氣內頁，附專用底座，放在桌上或層架都站得住。主題吉祥物會換上十二套節氣裝扮，一個月見一次。</p>
+    <div class="slot">
+      <b>主視覺與吉祥物圖待置入</b>
+      設計完稿後換上。正式版此處為月曆實拍與十二節氣角色圖。
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">登記候補</p>
+    <h2>開賣的時候，第一個通知你</h2>
+    <p>今年只印 <b>300 本</b>，賣完就沒有了。留下信箱，開賣當天會先寄給候補名單，也會附上候補專屬的早鳥價。</p>
+    <p class="sub">實體月曆正在印製，拍好的第一時間會寄照片給你，不用一直回來看。</p>
+
+    <form class="signup" id="waitlist-form">
+      <div class="field">
+        <label for="email-input">電子信箱</label>
+        <input type="email" id="email-input" name="email" required placeholder="you@example.com" autocomplete="email">
+      </div>
+      <button type="submit">開賣第一個通知我</button>
+      <p class="note">只收信箱，不收姓名和電話。開賣前最多寄兩封信，隨時可以退訂。</p>
+    </form>
+
+    <div class="done" id="done-state" hidden>
+      <h3>收到了，謝謝你</h3>
+      <p>我們已經把你加進候補名單。</p>
+      <p>下一封信會在 <b>實體月曆拍好的時候</b> 寄出，大約十一月。開賣當天會再寄一封，附上候補專屬早鳥價和購買連結。</p>
+      <p class="sub">在那之前，可以先追蹤我們的社群，看看十二個節氣長什麼樣子。</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">時間表</p>
+    <h2>接下來會發生什麼</h2>
+    <ul class="when-list">
+      <li><b>10 月</b><span>內頁校稿完成，進排版</span></li>
+      <li><b>10 月底</b><span>印刷打樣，確認顏色與紙質</span></li>
+      <li><b>11 月</b><span>實體拍攝，候補名單收到照片</span></li>
+      <li><b>11 月</b><span>預購開賣，候補名單優先</span></li>
+      <li><b>12 月</b><span>陸續出貨，趕在跨年前送到</span></li>
+    </ul>
+    <p class="note">印刷品的時程可能有幾天浮動，有變動會在信裡說明。</p>
+  </section>
+
+  <div class="appendix">
+    <p class="eyebrow">內部備註 ・ 不會出現在正式頁面</p>
+    <h3>交給布蕾的製作說明</h3>
+    <ul>
+      <li><strong>這是原型，不是上線版。</strong>表單目前只有前端，沒有真的收信箱。正式版請在開店平台（Shopline／Cyberbiz）建一個「候補登記」免費商品，用平台的會員名單收。</li>
+      <li><strong>價格刻意沒寫數字。</strong>早鳥 620 仍是草案，成本涵蓋範圍未確認。頁面只說「候補專屬早鳥價」，確定後再補。先公布再改價會傷信任。</li>
+      <li><strong>兩處要等素材。</strong>吉祥物圖（腿毛已完成，可直接換上）、月曆實拍（要等打樣）。中段那個虛線框就是位置。</li>
+    </ul>
+    <h3>目標數字</h3>
+    <ul>
+      <li>候補名單 <strong>300 組</strong> → 轉換抓三成 → 早鳥約 90 單</li>
+      <li>下印安全線 <strong>130 單</strong>（早鳥 620 計算），達標才下印，不自掏腰包</li>
+      <li>兩平點 117 本（正式價 690），佔印量 39%</li>
+    </ul>
+    <h3>還沒解的</h3>
+    <ul>
+      <li><strong>校稿仍未指定人</strong>，9/15 到期。這頁寫的「10 月校稿完成」目前沒有人負責。</li>
+      <li><strong>300 本能不能追印</strong>、前置多久、成本多少，要先問小波媽。賣太好跟賣太差一樣糟。</li>
+    </ul>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var form = document.getElementById('waitlist-form');
+  var done = document.getElementById('done-state');
+  if(!form || !done) return;
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var input = document.getElementById('email-input');
+    if(!input.value || !input.checkValidity()) { input.reportValidity(); return; }
+    form.hidden = true;
+    done.hidden = false;
+    done.setAttribute('tabindex','-1');
+    done.focus();
+  });
+})();
+</script>
