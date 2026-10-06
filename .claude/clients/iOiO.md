@@ -148,6 +148,94 @@
 - 果汁含量 <10%，規格 150g (5.3oz)／包
 - 目前盤點的三個口味賣點文案都是氣味／口感／成分事實敘述（無糖、無麩質、茶香、果香），**沒有出現美容或療效類宣稱**，風險相對前兩條產品線低，但仍建議上稿前照既有流程複核（尤其若之後這條線也要在台灣上市）
 
+#### 📊 營養標示與成分（2026-10-06 自實體包裝建檔，三款共通）
+
+**營養標示**（每份 50 公克，每包 150 公克分 3 份）
+
+| 項目 | 數值 |
+|---|---|
+| 熱量 | **0 大卡** |
+| 脂肪 | 0 公克（飽和 0、反式 0） |
+| 膽固醇 | 0 毫克 |
+| 鈉 | 45 毫克（2% DV） |
+| 碳水化合物 | 低於 1 公克 |
+| **膳食纖維** | **低於 1 公克** |
+| 糖 | **0 公克**（添加糖 0 公克） |
+| 蛋白質 | 0 公克 |
+| 鉀 | 蜜桃／百香果 70 毫克，荔枝 60 毫克 |
+
+**成分**
+
+| 口味 | 成分（依標示順序） |
+|---|---|
+| 蜜桃烏龍 | 水、烏龍茶萃取、**蜜桃濃縮汁**、香料、鹿角菜膠、檸檬酸、檸檬酸鈉、檸檬酸鉀、刺槐豆膠、三仙膠、**醋磺內酯鉀**、洋菜、**蔗糖素**、蒟蒻膠 |
+| 荔枝紅茶 | 水、紅茶萃取、**荔枝汁**、香料、檸檬酸、鹿角菜膠、檸檬酸鈉、檸檬酸鉀、刺槐豆膠、三仙膠、**醋磺內酯鉀**、洋菜、**蔗糖素**、蒟蒻膠 |
+| 百香果綠茶 | 水、綠茶萃取、香料、鹿角菜膠、**百香果濃縮汁**、檸檬酸、檸檬酸鈉、檸檬酸鉀、刺槐豆膠、三仙膠、**醋磺內酯鉀**、洋菜、**蔗糖素**、蒟蒻膠 |
+
+其他標示：不添加防腐劑｜Product of Taiwan｜製造商 十全特好食品（新竹縣竹北市）
+食用說明：開封即飲，冰鎮風味更佳。**請慢慢咀嚼避免噎到，孩童與長者需有人陪同。**
+
+#### ⚖️ 這條線的宣稱界線
+
+| ✅ 成立 | 依據 |
+|---|---|
+| **無糖 / Sugar Free / Zero Sugar** | 標示 Total Sugars **0g**。台灣門檻 ≤0.5g/100mL、美國 <0.5g/份，**兩邊都過** |
+| **0 大卡** | 標示 Calories 0。**這是整條線最強的賣點，應放最前面** |
+| 0 脂肪、0 膽固醇 | 標示皆為 0。膽固醇保留供搜尋曝光（使用者決定）|
+| 無麩質 GLUTEN FREE | 包裝標示 |
+| 不添加防腐劑 | 包裝標示 |
+
+| ⚠️ 不成立或要小心 | 原因 |
+|---|---|
+| **富含膳食纖維 / enriched with dietary fiber** | **標示 <1g/份**，整包 <3g。台灣富含需 6g/100g、來源需 3g/100g；美國 good source 需 2.5g/份、rich in 需 5g/份。**連最寬鬆的門檻都不到**。詳見下方待確認 |
+| **增加飽足感 / enhance satiety** | 機制建立在纖維含量上，纖維不足即講不出來 |
+| **天然果香 / natural fruit** | 成分含**香料（Flavoring）**，果汁為**濃縮還原**。不可寫「天然果汁」，CLAUDE.md 的 Real Fruit 紅線同樣適用 |
+| 甜味來源的說法 | 甜味來自**醋磺內酯鉀與蔗糖素**，**不可寫「甜味來自水果本身」** |
+
+> 🚨 **與超口感蒟蒻的關鍵差異**：超口感主打「**不添加人工甜味劑**」，**這條線用了醋磺內酯鉀與蔗糖素**。兩條線的訴求絕對不可互換。
+
+> ⚠️ **荔枝的標示寫 `Lychee Juice` 不是 concentrate**，與蜜桃、百香果的 Concentrate 不一致。使用者表示果汁為濃縮還原，發布前需確認荔枝該怎麼寫。
+
+#### 📄 產品頁文案（2026-10-06 定稿）
+
+> 📌 **本產品僅供出口販售，台灣地區不販售。**（此行須保留在頁面上）
+>
+> **iOiO 無糖果茶蒟蒻是以台灣茶萃取搭配濃縮還原果汁製成的蒟蒻凍飲，共有蜜桃烏龍、荔枝紅茶、百香果綠茶三種口味。每包 150 公克分為 3 份，每份 50 公克、0 大卡、0 脂肪、0 膽固醇、糖 0 公克，不添加防腐劑。**
+>
+> 「無糖果茶」是茶與果的組合，而且糖含量為零。三種口味各用一種台灣茶萃取搭配一種水果：烏龍配蜜桃、紅茶配荔枝、綠茶配百香果。入口先是茶香，果香隨後上來。蒟蒻保留咀嚼口感，所以一包同時喝得到茶，也咬得到蒟蒻。
+>
+> 三種口味的差別在茶種與搭配的水果，風味走向也不一樣。
+>
+> | | **PEACH OOLONG TEA**<br>蜜桃烏龍茶蒟蒻 | **LYCHEE BLACK TEA**<br>荔枝紅茶蒟蒻 | **PASSION FRUIT GREEN TEA**<br>百香果綠茶蒟蒻 |
+> |---|---|---|---|
+> | **茶種** | 台灣烏龍茶萃取 | 台灣紅茶萃取 | 台灣綠茶萃取 |
+> | **搭配水果** | 蜜桃（濃縮還原） | 荔枝 | 百香果（濃縮還原） |
+> | **風味** | 茶香溫潤，蜜桃甜香明顯 | 紅茶厚實，荔枝香氣濃 | 綠茶清爽，百香果酸度最明顯 |
+> | **適合** | 喜歡溫和回甘 | 喜歡香氣濃郁 | 喜歡酸甜明亮 |
+>
+> **食用與保存**：開封即可飲用，冰鎮風味更佳。不添加防腐劑，開封後請勿久置。
+> ⚠️ **請慢慢咀嚼，避免噎到。孩童與長者食用時請有人陪同。**
+
+**English（出口市場用）**
+
+> 📌 **For export sale only. Not sold in Taiwan.**
+>
+> **iOiO Sugar Free Tea Konjac Jelly is a konjac jelly drink made with Taiwanese tea extract and fruit juice from concentrate, available in three flavors: Peach Oolong, Lychee Black Tea, and Passion Fruit Green Tea. Each 150 g (5.3 oz) pouch contains 3 servings. Per serving: 0 calories, 0 g fat, 0 mg cholesterol, 0 g sugars. No preservatives added.**
+>
+> Each flavor pairs one Taiwanese tea extract with one fruit: oolong with peach, black tea with lychee, green tea with passion fruit. The tea comes through first, the fruit follows. The konjac keeps its chew, so every pouch is both a drink and something to bite.
+>
+> | | **Peach Oolong Tea** | **Lychee Black Tea** | **Passion Fruit Green Tea** |
+> |---|---|---|---|
+> | **Tea** | Taiwanese oolong extract | Taiwanese black tea extract | Taiwanese green tea extract |
+> | **Fruit** | Peach (from concentrate) | Lychee | Passion fruit (from concentrate) |
+> | **Taste** | Mellow tea, clear peach sweetness | Full-bodied tea, strong lychee aroma | Crisp tea, brightest acidity |
+> | **Best for** | Soft, lingering finish | Bold aroma | Sharp and refreshing |
+>
+> Ready to drink after opening. Best served chilled. No preservatives added.
+> ⚠️ **Chew slowly and carefully to avoid choking. Children and elderly should be supervised while eating.**
+
+> **纖維宣稱待確認中**，確認後若數值足夠，再把「富含膳食纖維」與「增加飽足感」加回兩版文案。
+
 #### 📌 三城 IG 系列文案（2026-09-14 定案）
 
 出口市場素材，搭配三張城市情境圖（巴黎鐵塔／東京鐵塔＋櫻花／哈里發塔）。三篇共用結尾句形成系列感，排在版面上是一組不是三則。
