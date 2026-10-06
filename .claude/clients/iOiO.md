@@ -187,8 +187,8 @@
 
 | ⚠️ 不成立或要小心 | 原因 |
 |---|---|
-| **富含膳食纖維 / enriched with dietary fiber** | **標示 <1g/份**，整包 <3g。台灣富含需 6g/100g、來源需 3g/100g；美國 good source 需 2.5g/份、rich in 需 5g/份。**連最寬鬆的門檻都不到**。詳見下方待確認 |
-| **增加飽足感 / enhance satiety** | 機制建立在纖維含量上，纖維不足即講不出來 |
+| **富含膳食纖維 / enriched with dietary fiber** | **標示 <1g/份**，整包 <3g。台灣富含需 6g/100g、來源需 3g/100g；美國 good source 需 2.5g/份、rich in 需 5g/份。**連最寬鬆的門檻都不到**。**2026-10-06 決定：這條線不談纖維宣稱**，改以 0 大卡為主軸 |
+| **增加飽足感 / enhance satiety** | 機制建立在纖維含量上，纖維不足即講不出來。同上，**不使用** |
 | **天然果香 / natural fruit** | 成分含**香料（Flavoring）**，果汁為**濃縮還原**。不可寫「天然果汁」，CLAUDE.md 的 Real Fruit 紅線同樣適用 |
 | 甜味來源的說法 | 甜味來自**醋磺內酯鉀與蔗糖素**，**不可寫「甜味來自水果本身」** |
 
@@ -198,11 +198,16 @@
 
 #### 📄 產品頁文案（2026-10-06 定稿）
 
+> 🎯 **定位主軸（2026-10-06 決定）**：主打「**0 大卡又有咀嚼口感**」。
+> **不談膳食纖維宣稱**——標示僅 <1g，過不了任何門檻，且市面上有纖維的產品很多，**0 大卡又能咬的幾乎沒有**，那才是這條線真正稀有的地方。數字乾淨、不需解釋、不會被挑戰。
+
 > 📌 **本產品僅供出口販售，台灣地區不販售。**（此行須保留在頁面上）
 >
-> **iOiO 無糖果茶蒟蒻是以台灣茶萃取搭配濃縮還原果汁製成的蒟蒻凍飲，共有蜜桃烏龍、荔枝紅茶、百香果綠茶三種口味。每包 150 公克分為 3 份，每份 50 公克、0 大卡、0 脂肪、0 膽固醇、糖 0 公克，不添加防腐劑。**
+> **iOiO 無糖果茶蒟蒻是 0 大卡的蒟蒻凍飲，共有蜜桃烏龍、荔枝紅茶、百香果綠茶三種口味。每包 150 公克分為 3 份，每份 50 公克、0 大卡、0 脂肪、0 膽固醇、糖 0 公克，不添加防腐劑。**
 >
-> 「無糖果茶」是茶與果的組合，而且糖含量為零。三種口味各用一種台灣茶萃取搭配一種水果：烏龍配蜜桃、紅茶配荔枝、綠茶配百香果。入口先是茶香，果香隨後上來。蒟蒻保留咀嚼口感，所以一包同時喝得到茶，也咬得到蒟蒻。
+> 0 大卡的飲料很多，但多半只剩下味道。這條線的差別在於**它有東西可以咬**——蒟蒻保留咀嚼口感，所以一包同時喝得到茶，也咬得到蒟蒻。
+>
+> 「無糖果茶」是茶與果的組合。三種口味各用一種台灣茶萃取搭配一種水果：烏龍配蜜桃、紅茶配荔枝、綠茶配百香果。入口先是茶香，果香隨後上來。
 >
 > 三種口味的差別在茶種與搭配的水果，風味走向也不一樣。
 >
@@ -220,9 +225,11 @@
 
 > 📌 **For export sale only. Not sold in Taiwan.**
 >
-> **iOiO Sugar Free Tea Konjac Jelly is a konjac jelly drink made with Taiwanese tea extract and fruit juice from concentrate, available in three flavors: Peach Oolong, Lychee Black Tea, and Passion Fruit Green Tea. Each 150 g (5.3 oz) pouch contains 3 servings. Per serving: 0 calories, 0 g fat, 0 mg cholesterol, 0 g sugars. No preservatives added.**
+> **iOiO Sugar Free Tea Konjac Jelly is a zero-calorie konjac jelly drink, available in three flavors: Peach Oolong, Lychee Black Tea, and Passion Fruit Green Tea. Each 150 g (5.3 oz) pouch contains 3 servings. Per serving: 0 calories, 0 g fat, 0 mg cholesterol, 0 g sugars. No preservatives added.**
 >
-> Each flavor pairs one Taiwanese tea extract with one fruit: oolong with peach, black tea with lychee, green tea with passion fruit. The tea comes through first, the fruit follows. The konjac keeps its chew, so every pouch is both a drink and something to bite.
+> Plenty of drinks are zero-calorie. Most of them are just flavor. This one gives you something to chew: the konjac keeps its bite, so every pouch is a drink and a snack at once.
+>
+> Each flavor pairs one Taiwanese tea extract with one fruit from concentrate: oolong with peach, black tea with lychee, green tea with passion fruit. The tea comes through first, the fruit follows.
 >
 > | | **Peach Oolong Tea** | **Lychee Black Tea** | **Passion Fruit Green Tea** |
 > |---|---|---|---|
@@ -233,8 +240,6 @@
 >
 > Ready to drink after opening. Best served chilled. No preservatives added.
 > ⚠️ **Chew slowly and carefully to avoid choking. Children and elderly should be supervised while eating.**
-
-> **纖維宣稱待確認中**，確認後若數值足夠，再把「富含膳食纖維」與「增加飽足感」加回兩版文案。
 
 #### 📌 三城 IG 系列文案（2026-09-14 定案）
 
