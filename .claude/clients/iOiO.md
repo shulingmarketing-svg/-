@@ -135,6 +135,90 @@
 
 **alt 不能取代正文**——alt 的本職是無障礙，搜尋權重遠低於正文，長圖也塞不下這麼多字。圖歸圖，文字另外放。
 
+#### 🌍 英文版（歐美共用，2026-10-08 定稿）
+
+> **這條線外銷歐美，使用者決定歐美共用一份英文稿**，所以每一條宣稱都取兩地較嚴的標準。美式拼寫（flavor／fiber／color），歐盟也接受。
+
+> **iOiO Konjac Drink is a konjac jelly drink you sip through a spouted cap, made in Taiwan in three flavors: Apple, Passion Fruit and White Grape. Each 100 g (3.5 oz) pouch has under 44 kcal, 0 g fat and 3,300–3,700 mg of dietary fiber, contains vitamin C, and has no added fructose, no added colors and no preservatives.**
+>
+> The whole product is built around one part: the flow-splitting cap. Sip, and the juice and the konjac pieces come up together — the spout doesn't jam halfway, and you decide how much arrives per mouthful. One mouthful is a drink and a chew at the same time, which is the thing a juice can't do and a jelly cup can't do.
+>
+> The pouch is soft-sided and the cap screws shut again. Stop halfway, close it, drop it in a bag. It takes up no room and it doesn't leak.
+>
+> The three differ in what goes in, how much fiber they carry, and how strong they taste.
+>
+> | | **APPIE**<br>Apple | **PASSION FRUIT** | **WHITE GRAPE** |
+> |---|---|---|---|
+> | **What's in it** | Apple juice, konjac, iron | Passion fruit juice, konjac, iron | White grape juice, konjac, resveratrol (a polyphenol) |
+> | **Dietary fiber** | **3,700 mg** per pouch | 3,500 mg per pouch | 3,300 mg per pouch |
+> | **Taste** | Sweet-tart and direct, clear fruit | Heavy tropical fruit, noticeably tart | Light fruit, clean finish |
+> | **Good for** | First time trying it | Layered flavor | Anyone who tires of sweet drinks |
+>
+> **Specification**
+>
+> | | |
+> |---|---|
+> | Net weight | 100 g (3.5 oz) per pouch |
+> | Serving | 1 pouch = 1 serving |
+> | Energy | Under 44 kcal per pouch |
+> | Fat | 0 g |
+> | Dietary fiber | 3,300–3,700 mg depending on flavor |
+> | Cap | Resealable flow-splitting spout |
+> | Origin | Made in Taiwan |
+>
+> **Packaging and testing**
+>
+> Phthalates not detected.
+
+##### ⚠️ 歐美營養素宣稱門檻（英文版的核心限制）
+
+**歐盟與美國都把「contains」視為 source of 等級，一樣有門檻**，只是比 rich／high 低一級。在標籤或網頁上點名任何一個營養素，都要過門檻。
+
+| 營養素 | contains 含有（歐盟／美國）| rich in 富含（歐盟／美國）|
+|---|---|---|
+| 維生素 C | ≥12 mg／≥9 mg | ≥24 mg／≥18 mg |
+| 鐵 | ≥2.1 mg／≥1.8 mg | ≥4.2 mg／≥3.6 mg |
+| 鉀 | ≥300 mg／≥470 mg | ≥600 mg／≥940 mg |
+| 維生素 A | ≥120 µg／≥90 µg | ≥240 µg／≥180 µg |
+
+皆為每 100 g 計（本品一包 100 g，per pouch ＝ per 100 g，不需換算）。歐盟依 Reg 1924/2006 Annex（NRV 15%／30%），美國依 21 CFR 101.54（DV 10%／20%）。
+
+##### 中文版 → 英文版的七個處理決定
+
+| 中文原稿 | 英文版 | 理由 |
+|---|---|---|
+| 富含維生素 C | `contains vitamin C`（放開頭事實句）| 使用者 2026-10-08 指示「含有」不寫「富含」。門檻從 24 mg 降到 12 mg，好過得多。中文版此句列在共通特色，所以屬系列級訴求，放開頭句而非表格 |
+| 含豐富的鐵 | `iron`（蘋果與百香果兩格）| 同上降級處理 |
+| 含豐富維生素 A、B、C、鐵、鉀 | **只留 iron** | 鉀 contains 門檻 300 mg／100 g，一包 100 g 到不了；**「維生素 B」在歐美不是合法標示詞**，須拆成 B1／B2／B6／B12 各自過門檻 |
+| 含白藜蘆醇（多酚類） | `resveratrol (a polyphenol)` | **保留**。白藜蘆醇不在歐盟營養素清單內，點名它是成分陳述不是 nutrition claim，不受門檻管制 |
+| 每包含膳食纖維 3300–3700 毫克 | `3,300–3,700 mg` 寫數字，**不加形容詞** | mg 數字是營養標示值，兩地都不需過門檻。歐盟走每 100 kcal 路徑其實可寫 HIGH FIBRE（7.7–8.6 g/100 kcal ≥ 3 g），但美國只到 good source（門檻 2.8 g／份，high 要 5.6 g）。歐美共用一稿取嚴者，而且 3,700 這個數字本身比弱形容詞有力 |
+| 不添加塑化劑 | 搬到 Packaging and testing，寫 `Phthalates not detected` | 🚨 **見下方說明** |
+| 每份 43 至 43.8 大卡 | `under 44 kcal` | 43.8 < 44，對標示為真，且**不與官網長圖那個 44 Kcal 打架**（使用者 2026-10-08 決定圖不改）|
+
+##### 🚨 「不添加塑化劑」為何在出口版要換位置
+
+**這與一比呀呀「塑化劑與重金屬未檢出」的決定不衝突，是市場不同。**
+
+台灣有 2011 年塑化劑事件，消費者腦袋裡本來就有這條線，寫出來是答疑。歐美消費者沒有這個記憶，`No added plasticizers` 讀起來不是安心，是**替他們製造一個原本不存在的疑慮**；而且塑化劑非合法添加物，寫「不添加」在邏輯上暗示同業添加了，踩歐盟不公平商業行為指令（2005/29/EC）與美國 FTC 對暗示性比較宣稱。
+
+處理方式與一比呀呀相同：**從「不添加」搬到「檢驗結果」，用未檢出（not detected）。** 事實一樣，位置對了，讀者不會被嚇到。
+
+##### 還沒寫進去的兩句（補到數字就能加）
+
+| 要加的句子 | 位置 | 需要的數字 |
+|---|---|---|
+| `, rich in vitamin C` | 開頭事實句 `0 g fat` 之後 | 維生素 C ≥24 mg／100 g |
+| `, rich in iron` | 表格 Apple 那欄 What's in it | 鐵 ≥4.2 mg／100 g |
+
+兩個門檻都已取歐美較嚴者，過了就兩地通用。
+
+##### 三個副作用與未解事項
+
+1. **A、B、鉀拿掉之後，百香果與蘋果的營養素格變成一樣**（都只剩 iron），中文版「百香果五種營養素」的優勢在英文版消失。沒有去生一個差異出來填——這兩款的差別交給**纖維**（3700 vs 3500）與**風味**兩列去撐。要補回來就是去要 A 與鉀的 mg
+2. **「不添加人工甜味劑」英文版沒寫**——檔案內部兩處記載對不上（共通特色欄未列、🚫 四線對照表有列）。這在歐美是很值錢的訴求（no artificial sweeteners），**但寫錯比不寫嚴重，待確認後再加**
+3. **產地寫 Made in Taiwan**。若超口感為代工、產地不同，這一行要改
+4. **標示面板相關事項不在交付範圍**（使用者 2026-10-08 劃定）：膳食纖維的 FDA 申報方式、歐盟 kJ 並列、各口味精確熱量，皆屬包裝標示工作，不在文案範圍內
+
 
 ### iOiO Sugar Free Tea Konjac 無糖果茶蒟蒻系列（150g/包，日系花卉風格包裝）
 
